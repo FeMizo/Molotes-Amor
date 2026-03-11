@@ -1,0 +1,144 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+
+import { adminClient } from "@/services/client/admin-client";
+import { cartSubtotal, useCartStore } from "@/store/cart-store";
+
+export const CheckoutPage = () => {
+  const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const subtotal = useMemo(() => cartSubtotal(items), [items]);
+
+  const submitOrder = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const order = await adminClient.createOrder({
+        customer: {
+          name,
+          phone,
+          address: address || undefined,
+        },
+        notes: notes || undefined,
+        items: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+      });
+
+      clearCart();
+      setSuccessMessage(`Pedido ${order.id} creado correctamente.`);
+      setName("");
+      setPhone("");
+      setAddress("");
+      setNotes("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo crear el pedido.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (items.length === 0) {
+    return (
+      <section className="max-w-5xl mx-auto px-4 py-20">
+        <div className="bg-white rounded-2xl p-8 border border-beige-tostado/30 text-center">
+          <h1 className="text-4xl font-serif font-bold text-sepia mb-4">Checkout</h1>
+          <p className="text-sepia/70 mb-6">Tu carrito esta vacio.</p>
+          <Link
+            href="/menu"
+            className="inline-block px-6 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors"
+          >
+            Ir al menu
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 py-20">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8">
+        <article className="bg-white rounded-2xl p-8 border border-beige-tostado/30 shadow-sm">
+          <h1 className="text-4xl font-serif font-bold text-sepia mb-6">Finalizar pedido</h1>
+          <form className="space-y-5" onSubmit={submitOrder}>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Nombre</label>
+              <input
+                required
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                className="w-full px-5 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Telefono</label>
+              <input
+                required
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                className="w-full px-5 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Direccion</label>
+              <input
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+                className="w-full px-5 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Notas</label>
+              <textarea
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                className="w-full px-5 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota min-h-28"
+              />
+            </div>
+            {errorMessage ? <p className="text-rojo-quemado font-semibold">{errorMessage}</p> : null}
+            {successMessage ? <p className="text-olivo font-semibold">{successMessage}</p> : null}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-50"
+            >
+              {loading ? "Procesando..." : "Confirmar pedido"}
+            </button>
+          </form>
+        </article>
+
+        <article className="bg-white rounded-2xl p-8 border border-beige-tostado/30 shadow-sm h-fit">
+          <h2 className="text-2xl font-serif font-bold text-sepia mb-5">Resumen</h2>
+          <div className="space-y-4">
+            {items.map((item) => (
+              <div key={item.id} className="flex justify-between border-b border-beige-tostado/30 pb-3">
+                <p className="font-semibold text-sepia">
+                  {item.quantity} x {item.name}
+                </p>
+                <p className="font-bold text-terracota">${item.quantity * item.price}</p>
+              </div>
+            ))}
+            <div className="flex justify-between text-xl pt-2">
+              <span className="font-semibold text-sepia">Total</span>
+              <span className="font-bold text-sepia">${subtotal}</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+};

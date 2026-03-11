@@ -7,7 +7,7 @@ export interface ProductFilters {
 
 const normalize = (value: string): string => value.trim().toLowerCase();
 
-export const filterProducts = (products: Product[], filters: ProductFilters): Product[] => {
+export const filterProducts = <T extends Product>(products: T[], filters: ProductFilters): T[] => {
   const query = normalize(filters.query);
   const category = filters.category;
 
@@ -24,5 +24,5 @@ export const filterProducts = (products: Product[], filters: ProductFilters): Pr
   });
 };
 
-export const featuredProducts = (products: Product[]): Product[] =>
+export const featuredProducts = <T extends Product>(products: T[]): T[] =>
   products.filter((product) => product.featured).slice(0, 3);

@@ -4,14 +4,15 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 
-import { PRODUCTS } from "@/data/products";
 import { featuredProducts } from "@/features/products/search";
+import { useCatalogProducts } from "@/hooks/use-catalog-products";
 
 import { Hero } from "./Hero";
 import { ProductCard } from "../products/ProductCard";
 
 export const HomePage = () => {
-  const topProducts = featuredProducts(PRODUCTS);
+  const { products } = useCatalogProducts();
+  const topProducts = featuredProducts(products);
 
   return (
     <div className="flex flex-col">
@@ -24,7 +25,7 @@ export const HomePage = () => {
               Favoritos de la Casa
             </h2>
             <p className="text-lg text-sepia/70">
-              Una selección de nuestros molotes más pedidos, preparados con el sazón tradicional que nos
+              Una seleccion de nuestros molotes mas pedidos, preparados con el sazon tradicional que nos
               distingue.
             </p>
           </div>
@@ -32,7 +33,7 @@ export const HomePage = () => {
             href="/menu"
             className="flex items-center space-x-2 text-terracota font-bold hover:text-rojo-quemado transition-colors group"
           >
-            <span>Ver menú completo</span>
+            <span>Ver menu completo</span>
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -57,14 +58,14 @@ export const HomePage = () => {
                 <div className="rounded-[3rem] overflow-hidden shadow-2xl">
                   <img
                     src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1000&q=80"
-                    alt="Proceso Artesanal"
+                    alt="Proceso artesanal"
                     className="w-full h-full object-cover aspect-square"
                     referrerPolicy="no-referrer"
                   />
                 </div>
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-mostaza rounded-full flex items-center justify-center text-center p-4 transform -rotate-12 shadow-xl border-4 border-white">
                   <span className="text-canela font-bold text-sm uppercase tracking-tighter">
-                    Masa de maíz 100% nixtamalizado
+                    Masa de maiz 100% nixtamalizado
                   </span>
                 </div>
               </motion.div>
@@ -74,22 +75,19 @@ export const HomePage = () => {
                 Calidad que se siente en <span className="text-terracota italic">cada mordida</span>
               </h3>
               <p className="text-lg text-sepia/70 leading-relaxed">
-                Nuestros molotes son preparados al momento, siguiendo las recetas que han pasado de generación
-                en generación. Utilizamos ingredientes locales frescos y el mejor aceite para asegurar esa
-                textura crujiente inigualable.
+                Nuestros molotes son preparados al momento, siguiendo recetas de tradicion familiar. Usamos
+                ingredientes locales frescos y coccion cuidada para conservar la textura crujiente.
               </p>
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <span className="block text-3xl font-serif font-bold text-terracota mb-1">01.</span>
-                  <h4 className="font-bold text-sepia mb-2">Ingredientes Locales</h4>
-                  <p className="text-sm text-sepia/60">Apoyamos a los productores de nuestra región.</p>
+                  <h4 className="font-bold text-sepia mb-2">Ingredientes locales</h4>
+                  <p className="text-sm text-sepia/60">Apoyamos a productores de la region.</p>
                 </div>
                 <div>
                   <span className="block text-3xl font-serif font-bold text-terracota mb-1">02.</span>
-                  <h4 className="font-bold text-sepia mb-2">Receta Secreta</h4>
-                  <p className="text-sm text-sepia/60">
-                    El sazón que nos hace únicos desde hace décadas.
-                  </p>
+                  <h4 className="font-bold text-sepia mb-2">Receta secreta</h4>
+                  <p className="text-sm text-sepia/60">El sazon que nos distingue desde hace decadas.</p>
                 </div>
               </div>
               <Link
@@ -112,18 +110,18 @@ export const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                name: "Sofía García",
-                text: "El de huitlacoche es simplemente espectacular. Me recordó a los que hacía mi abuela.",
+                name: "Sofia Garcia",
+                text: "El de huitlacoche es espectacular. Me recordo a los de mi abuela.",
                 role: "Cliente frecuente",
               },
               {
                 name: "Marco Antonio",
-                text: "Excelente servicio y la presentación es impecable. El carrito web es súper fácil de usar.",
-                role: "Foodie Local",
+                text: "Excelente servicio y gran presentacion. El carrito web es muy facil de usar.",
+                role: "Foodie local",
               },
               {
-                name: "Lucía Méndez",
-                text: "Crujientes y calientitos. Llegaron perfecto a mi casa. ¡Altamente recomendados!",
+                name: "Lucia Mendez",
+                text: "Crujientes y calientitos. Llegaron perfecto a mi casa.",
                 role: "Cliente a domicilio",
               },
             ].map((testimonial, index) => (

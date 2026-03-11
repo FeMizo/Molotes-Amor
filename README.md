@@ -1,6 +1,6 @@
 # Molotes El Tradicional
 
-Base técnica profesional con **Next.js + TypeScript**, manteniendo el diseño retro cálido original.
+Base tecnica profesional con Next.js + TypeScript, respetando la UI existente.
 
 ## Scripts
 - `npm run dev`
@@ -9,31 +9,54 @@ Base técnica profesional con **Next.js + TypeScript**, manteniendo el diseño r
 - `npm run build`
 - `npm run start`
 
-## Arquitectura
+## Modulos implementados
+- Admin funcional:
+  - `/admin/products` alta, edicion, activacion/desactivacion, destacado y eliminacion.
+  - `/admin/inventory` stock, stock minimo, backorder y estados de inventario.
+  - `/admin/orders` listado, detalle, filtro basico y cambio de estado.
+- Pedidos:
+  - Checkout en `/checkout` desde carrito.
+  - Validacion de stock antes de confirmar.
+  - Descuento de inventario al crear pedido.
+- Catalogo:
+  - `ProductCard` muestra estado de inventario y bloquea compra sin stock (si no hay backorder).
+
+## Persistencia local vs produccion
+- Modo local real:
+  - `DATA_ADAPTER_MODE=local-file`
+  - Se usa `storage/db.json` via repositorio local en servidor (`repositories/file-store.ts`).
+  - Permite cambios reales en local para productos, inventario y pedidos.
+- Modo preparado para no local:
+  - `DATA_ADAPTER_MODE=remote-api`
+  - La arquitectura ya separa repositorios y servicios (`types/storage.ts`, `repositories/local-repositories.ts`).
+  - Debes implementar adapter remoto real (API/DB) sin rehacer UI ni logica de negocio.
+  - Cliente ya soporta base URL externa con `NEXT_PUBLIC_ADMIN_API_BASE_URL`.
+
+## Estructura principal
 ```text
 app/
-  page.tsx
-  menu/page.tsx
-  nosotros/page.tsx
-  contacto/page.tsx
-  admin/page.tsx
+  api/
+    catalog/products
+    admin/products
+    admin/inventory
+    admin/orders
+  admin/
+    page.tsx
+    products/page.tsx
+    inventory/page.tsx
+    orders/page.tsx
+  checkout/page.tsx
 components/
+  admin/
+  cart/
   layout/
   home/
   products/
-  cart/
-  search/
   pages/
-  admin/
-data/
-features/
+hooks/
+repositories/
+services/
 store/
 types/
+storage/
 ```
-
-## Incluye
-- Header, Hero, ProductCard, CartDrawer y Footer preservados visualmente.
-- Buscador funcional por texto + categorías.
-- Carrito lateral con lógica real, animación y persistencia local.
-- Rutas: Inicio, Menú, Nosotros, Contacto y Admin.
-- Base de administrador lista para ampliar módulos futuros.

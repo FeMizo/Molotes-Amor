@@ -1,4 +1,4 @@
-export type ProductBadge = "Popular" | "Nuevo" | "Más pedido";
+export type ProductBadge = "Popular" | "Nuevo" | "Mas pedido";
 
 export interface Product {
   id: string;

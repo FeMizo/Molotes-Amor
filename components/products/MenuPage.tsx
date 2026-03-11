@@ -3,20 +3,26 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
-import { CATEGORIES, PRODUCTS } from "@/data/products";
 import { filterProducts } from "@/features/products/search";
+import { useCatalogProducts } from "@/hooks/use-catalog-products";
 
 import { ProductCard } from "./ProductCard";
 import { CategoryFilter } from "../search/CategoryFilter";
 import { SearchBar } from "../search/SearchBar";
 
 export const MenuPage = () => {
+  const { products, loading, error } = useCatalogProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todos");
 
+  const categories = useMemo(
+    () => ["Todos", ...Array.from(new Set(products.map((product) => product.category)))],
+    [products],
+  );
+
   const filtered = useMemo(
-    () => filterProducts(PRODUCTS, { query: searchQuery, category: activeCategory }),
-    [searchQuery, activeCategory],
+    () => filterProducts(products, { query: searchQuery, category: activeCategory }),
+    [products, searchQuery, activeCategory],
   );
 
   return (
@@ -28,7 +34,7 @@ export const MenuPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-serif font-bold text-crema mb-6"
           >
-            Nuestro <span className="text-terracota italic">Menú</span>
+            Nuestro <span className="text-terracota italic">Menu</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -36,8 +42,8 @@ export const MenuPage = () => {
             transition={{ delay: 0.2 }}
             className="text-crema/70 text-lg max-w-2xl mx-auto"
           >
-            Explora nuestra variedad de molotes artesanales, preparados con ingredientes frescos y el sazón
-            tradicional de Puebla.
+            Explora nuestra variedad de molotes artesanales, preparados con ingredientes frescos y sazon
+            tradicional poblano.
           </motion.p>
         </div>
       </section>
@@ -46,7 +52,7 @@ export const MenuPage = () => {
         <div className="max-w-7xl mx-auto px-4 space-y-8">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <CategoryFilter
-            categories={CATEGORIES}
+            categories={categories}
             activeCategory={activeCategory}
             onSelect={setActiveCategory}
           />
@@ -54,6 +60,8 @@ export const MenuPage = () => {
       </section>
 
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {loading ? <p className="text-center text-sepia/60">Cargando menu...</p> : null}
+        {error ? <p className="text-center text-rojo-quemado mb-6">{error}</p> : null}
         <AnimatePresence mode="popLayout">
           {filtered.length > 0 ? (
             <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -69,7 +77,7 @@ export const MenuPage = () => {
               className="text-center py-32 opacity-50"
             >
               <p className="text-2xl font-serif italic">
-                No encontramos molotes que coincidan con tu búsqueda.
+                No encontramos molotes que coincidan con tu busqueda.
               </p>
               <button
                 type="button"
@@ -79,7 +87,7 @@ export const MenuPage = () => {
                 }}
                 className="mt-4 text-terracota font-bold underline underline-offset-4"
               >
-                Ver todo el menú
+                Ver todo el menu
               </button>
             </motion.div>
           )}

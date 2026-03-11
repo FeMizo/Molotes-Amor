@@ -4,16 +4,23 @@ import { motion } from "motion/react";
 import { Plus, Star } from "lucide-react";
 
 import { useCartStore } from "@/store/cart-store";
-import type { Product } from "@/types/product";
+import type { CatalogProduct } from "@/types/catalog";
 
 interface ProductCardProps {
-  product: Product;
-  onAddToCart?: (product: Product) => void;
+  product: CatalogProduct;
+  onAddToCart?: (product: CatalogProduct) => void;
 }
 
 export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
   const handleAdd = () => (onAddToCart ? onAddToCart(product) : addItem(product));
+  const inventoryStatusLabel =
+    product.inventory.inventoryStatus === "disponible"
+      ? "Disponible"
+      : product.inventory.inventoryStatus === "poco-stock"
+        ? "Poco stock"
+        : "Agotado";
+  const canAdd = product.available && product.inventory.canPurchase;
 
   return (
     <motion.div
@@ -49,13 +56,26 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
 
         <p className="text-sm text-sepia/70 mb-6 line-clamp-2 min-h-[2.5rem]">{product.description}</p>
 
+        <p
+          className={`mb-3 text-xs font-semibold uppercase tracking-wider ${
+            product.inventory.inventoryStatus === "agotado"
+              ? "text-rojo-quemado"
+              : product.inventory.inventoryStatus === "poco-stock"
+                ? "text-mostaza"
+                : "text-olivo"
+          }`}
+        >
+          {inventoryStatusLabel}
+        </p>
+
         <button
           type="button"
           onClick={handleAdd}
-          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-beige-tostado/20 hover:bg-terracota hover:text-crema text-terracota font-bold rounded-xl transition-all duration-300 border border-terracota/20"
+          disabled={!canAdd}
+          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-beige-tostado/20 hover:bg-terracota hover:text-crema text-terracota font-bold rounded-xl transition-all duration-300 border border-terracota/20 disabled:opacity-45 disabled:cursor-not-allowed"
         >
           <Plus size={18} />
-          <span>Agregar al carrito</span>
+          <span>{canAdd ? "Agregar al carrito" : "Sin stock"}</span>
         </button>
       </div>
     </motion.div>

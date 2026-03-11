@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 
@@ -53,7 +54,7 @@ export const CartDrawer = () => {
               {items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-60">
                   <ShoppingBag size={64} strokeWidth={1} />
-                  <p className="text-xl font-serif">Tu carrito está vacío</p>
+                  <p className="text-xl font-serif">Tu carrito esta vacio</p>
                   <button
                     type="button"
                     onClick={closeCart}
@@ -117,11 +118,15 @@ export const CartDrawer = () => {
                   <span className="font-bold text-2xl text-sepia">${subtotal}</span>
                 </div>
                 <p className="text-xs text-sepia/50 text-center italic">
-                  * Impuestos y envío calculados al finalizar la compra
+                  * Impuestos y envio calculados al finalizar la compra
                 </p>
-                <button className="w-full py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-lg shadow-terracota/20 transition-all duration-300 transform hover:-translate-y-1">
-                  Finalizar Pedido
-                </button>
+                <Link
+                  href="/checkout"
+                  onClick={closeCart}
+                  className="block w-full text-center py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-lg shadow-terracota/20 transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  Finalizar pedido
+                </Link>
               </div>
             ) : null}
           </motion.div>
