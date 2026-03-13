@@ -32,6 +32,26 @@ const normalizeUserRole = (user: AppUser): AppUser => ({
   role: user.role ?? (user.username === "adminmolotes" ? "admin" : "user"),
 });
 
+const mergeUsersWithDefaults = (persistedUsers: AppUser[] | undefined): AppUser[] => {
+  const mergedById = new Map<string, AppUser>();
+
+  for (const user of defaultUsers) {
+    mergedById.set(user.id, normalizeUserRole(user));
+  }
+
+  for (const user of persistedUsers ?? []) {
+    const normalizedUser = normalizeUserRole(user);
+    const baseUser = mergedById.get(normalizedUser.id);
+
+    mergedById.set(normalizedUser.id, {
+      ...(baseUser ?? normalizedUser),
+      ...normalizedUser,
+    });
+  }
+
+  return [...mergedById.values()];
+};
+
 export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set) => ({
@@ -71,10 +91,7 @@ export const useAuthStore = create<AuthStoreState>()(
         return {
           ...currentState,
           ...merged,
-          users:
-            merged?.users && merged.users.length > 0
-              ? merged.users.map((user) => normalizeUserRole(user as AppUser))
-              : currentState.users,
+          users: mergeUsersWithDefaults(merged?.users as AppUser[] | undefined),
           session: merged?.session
             ? {
                 ...merged.session,

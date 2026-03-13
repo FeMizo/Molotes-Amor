@@ -12,7 +12,12 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const isAdminRoute = pathname.startsWith("/admin");
 
   if (isAdminRoute) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <AuthModal />
+      </>
+    );
   }
 
   return (
