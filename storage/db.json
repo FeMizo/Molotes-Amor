@@ -20,21 +20,21 @@
     },
     {
       "id": "2",
-      "slug": "molote-papa-chorizo",
+      "slug": "molote-de-papa-con-chorizo",
       "name": "Molote de Papa con Chorizo",
       "description": "La combinacion clasica de papa suave y chorizo artesanal crujiente.",
       "longDescription": "Relleno abundante con papa sazonada y chorizo artesanal dorado al momento.",
-      "price": 42,
       "category": "Tradicionales",
       "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
       "badge": "Popular",
-      "featured": true,
-      "available": true,
+      "featured": false,
+      "available": false,
       "tags": [
         "papa",
         "chorizo",
         "clasico"
-      ]
+      ],
+      "allowBackorder": false
     },
     {
       "id": "3",
@@ -51,6 +51,23 @@
         "queso",
         "oaxaca",
         "suave"
+      ]
+    },
+    {
+      "id": "4",
+      "slug": "molote-champinones",
+      "name": "Molote de Champinones",
+      "description": "Champinones salteados con ajo y un toque de chile serrano.",
+      "longDescription": "Receta vegetariana con champinones frescos, ajo y chile serrano en su punto.",
+      "category": "Vegetarianos",
+      "image": "https://images.unsplash.com/photo-1541518763669-279f00ed02ae?auto=format&fit=crop&w=800&q=80",
+      "badge": "Nuevo",
+      "featured": false,
+      "available": false,
+      "tags": [
+        "vegetariano",
+        "champi",
+        "ajo"
       ]
     },
     {
@@ -92,20 +109,26 @@
   "inventory": [
     {
       "productId": "1",
-      "stock": 24,
+      "stock": 21,
       "minStock": 6,
       "allowBackorder": false
     },
     {
       "productId": "2",
-      "stock": 16,
+      "stock": 15,
       "minStock": 6,
       "allowBackorder": false
     },
     {
       "productId": "3",
-      "stock": 18,
+      "stock": 16,
       "minStock": 5,
+      "allowBackorder": false
+    },
+    {
+      "productId": "4",
+      "stock": 10,
+      "minStock": 4,
       "allowBackorder": false
     },
     {
@@ -116,10 +139,190 @@
     },
     {
       "productId": "6",
-      "stock": 6,
+      "stock": 5,
       "minStock": 3,
       "allowBackorder": false
     }
   ],
-  "orders": []
+  "orders": [
+    {
+      "id": "ord-1773270246162-62",
+      "items": [
+        {
+          "productId": "1",
+          "productName": "Molote de Tinga",
+          "unitPrice": 45,
+          "quantity": 1,
+          "lineTotal": 45
+        },
+        {
+          "productId": "3",
+          "productName": "Molote de Queso Oaxaca",
+          "unitPrice": 40,
+          "quantity": 1,
+          "lineTotal": 40
+        }
+      ],
+      "subtotal": 85,
+      "total": 85,
+      "status": "preparando",
+      "createdAt": "2026-03-11T23:04:06.162Z",
+      "customer": {
+        "name": "Test",
+        "phone": "9381238531",
+        "address": "calle 28a entre 21 y 23 col guanal"
+      },
+      "notes": "enfrente de carniceria guanal, segunda casa de esquina"
+    },
+    {
+      "id": "ord-1773270393589-180",
+      "items": [
+        {
+          "productId": "3",
+          "productName": "Molote de Queso Oaxaca",
+          "unitPrice": 40,
+          "quantity": 1,
+          "lineTotal": 40
+        },
+        {
+          "productId": "1",
+          "productName": "Molote de Tinga",
+          "unitPrice": 45,
+          "quantity": 1,
+          "lineTotal": 45
+        },
+        {
+          "productId": "2",
+          "productName": "Molote de Papa con Chorizo",
+          "unitPrice": 10,
+          "quantity": 1,
+          "lineTotal": 10
+        }
+      ],
+      "subtotal": 95,
+      "total": 95,
+      "status": "pendiente",
+      "createdAt": "2026-03-11T23:06:33.589Z",
+      "customer": {
+        "name": "test",
+        "phone": "test",
+        "address": "test"
+      },
+      "notes": "test"
+    },
+    {
+      "id": "ord-1773362040939-420",
+      "items": [
+        {
+          "productId": "6",
+          "productName": "Molote de Huitlacoche",
+          "unitPrice": 55,
+          "quantity": 1,
+          "lineTotal": 55
+        },
+        {
+          "productId": "1",
+          "productName": "Molote de Tinga",
+          "unitPrice": 45,
+          "quantity": 1,
+          "lineTotal": 45
+        }
+      ],
+      "subtotal": 100,
+      "total": 100,
+      "status": "preparando",
+      "createdAt": "2026-03-13T00:34:00.939Z",
+      "customer": {
+        "name": "vita",
+        "phone": "9381809229",
+        "address": "c46545"
+      },
+      "notes": "fghj"
+    }
+  ],
+  "siteContent": {
+    "home": {
+      "heroBadge": "Tradicion poblana desde 1985",
+      "heroTitle": "El Arte del",
+      "heroHighlight": "Molote Perfecto",
+      "heroDescription": "Descubre el sabor autentico de nuestra cocina artesanal. Crujientes por fuera, suaves por dentro y llenos de historia en cada bocado.",
+      "heroPrimaryCtaLabel": "Ver menu completo",
+      "heroSecondaryCtaLabel": "Nuestra historia",
+      "heroImage": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&w=1000&q=80",
+      "heroFloatingCount": "+500",
+      "heroFloatingQuote": "Los mejores molotes que he probado en mi vida.",
+      "featuredTitle": "Favoritos de la Casa",
+      "featuredDescription": "Una seleccion de nuestros molotes mas pedidos, preparados con el sazon tradicional que nos distingue.",
+      "featuredCtaLabel": "Ver menu completo",
+      "storyTitle": "Calidad que se siente en",
+      "storyHighlight": "cada mordida",
+      "storyDescription": "Nuestros molotes son preparados al momento, siguiendo recetas de tradicion familiar. Usamos ingredientes locales frescos y coccion cuidada para conservar la textura crujiente.",
+      "storyImage": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1000&q=80",
+      "storyBadge": "Masa de maiz 100% nixtamalizado",
+      "storyItemOneTitle": "Ingredientes locales",
+      "storyItemOneDescription": "Apoyamos a productores de la region.",
+      "storyItemTwoTitle": "Receta secreta",
+      "storyItemTwoDescription": "El sazon que nos distingue desde hace decadas.",
+      "storyCtaLabel": "Conoce nuestra historia",
+      "testimonialsTitle": "Lo que dicen nuestros clientes",
+      "testimonialOneName": "Sofia Garcia",
+      "testimonialOneText": "El de huitlacoche es espectacular. Me recordo a los de mi abuela.",
+      "testimonialOneRole": "Cliente frecuente",
+      "testimonialTwoName": "Marco Antonio",
+      "testimonialTwoText": "Excelente servicio y gran presentacion. El carrito web es muy facil de usar.",
+      "testimonialTwoRole": "Foodie local",
+      "testimonialThreeName": "Lucia Mendez",
+      "testimonialThreeText": "Crujientes y calientitos. Llegaron perfecto a mi casa.",
+      "testimonialThreeRole": "Cliente a domicilio"
+    },
+    "menu": {
+      "title": "Nuestro",
+      "highlight": "Menu",
+      "description": "Explora nuestra variedad de molotes artesanales, preparados con ingredientes frescos y sazon tradicional poblano.",
+      "searchPlaceholder": "Busca tu molote favorito...",
+      "emptyStateTitle": "No encontramos molotes que coincidan con tu busqueda.",
+      "emptyStateCtaLabel": "Ver todo el menu"
+    },
+    "about": {
+      "eyebrow": "Nuestra Historia",
+      "title": "Tradicion que se",
+      "highlight": "Saborea con el Alma",
+      "introTitle": "Desde 1985, un sueno hecho realidad",
+      "introDescriptionOne": "Todo comenzo en una pequena cocina en el corazon de Puebla. Dona Elena, con su amor por la cocina tradicional, empezo a preparar molotes para sus vecinos. Lo que empezo como un pasatiempo se convirtio en un legado familiar.",
+      "introDescriptionTwo": "Hoy, en Molotes El Tradicional, mantenemos viva esa esencia. Cada molote es una obra de arte culinaria, hecha a mano con la misma dedicacion y los mismos ingredientes de alta calidad que Dona Elena usaba hace mas de tres decadas.",
+      "image": "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1000&q=80",
+      "valueOneTitle": "Pasion",
+      "valueOneDescription": "Amamos lo que hacemos.",
+      "valueTwoTitle": "Familia",
+      "valueTwoDescription": "Unidos por el sabor.",
+      "pillarsTitle": "Nuestros Pilares",
+      "pillarsSubtitle": "Lo que nos hace diferentes",
+      "pillarOneTitle": "Ingredientes Frescos",
+      "pillarOneDescription": "Seleccionamos diariamente los mejores productos de los mercados locales para garantizar frescura.",
+      "pillarTwoTitle": "Tecnica Ancestral",
+      "pillarTwoDescription": "Respetamos los tiempos y procesos tradicionales del nixtamal y el amasado manual.",
+      "pillarThreeTitle": "Calidad Premium",
+      "pillarThreeDescription": "Cada molote pasa por un control de calidad para asegurar que llegue perfecto a tu mesa."
+    },
+    "contact": {
+      "title": "Ponte en",
+      "highlight": "Contacto",
+      "description": "Tienes alguna duda, sugerencia o pedido especial? Estamos aqui para escucharte y brindarte el mejor servicio.",
+      "infoTitle": "Informacion de Contacto",
+      "addressLabel": "Direccion",
+      "addressValue": "Av. Reforma 123, Centro Historico, Puebla, Pue.",
+      "phoneLabel": "Telefono",
+      "phoneValue": "+52 (222) 123 4567",
+      "emailLabel": "Email",
+      "emailValue": "hola@molotestradicional.com",
+      "hoursLabel": "Horario",
+      "hoursValue": "Lun - Sab: 9:00 - 21:00 | Dom: 10:00 - 18:00",
+      "mapTitle": "Mapa interactivo proximamente",
+      "mapCtaLabel": "Abrir en Google Maps",
+      "formTitle": "Envianos un mensaje",
+      "successTitle": "Mensaje enviado",
+      "successDescription": "Gracias por contactarnos. Te responderemos lo mas pronto posible.",
+      "submitLabel": "Enviar mensaje"
+    }
+  }
 }

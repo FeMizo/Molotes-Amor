@@ -4,7 +4,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 
-export const Hero = () => {
+import type { HomeContent } from "@/types/site-content";
+
+export const Hero = ({ content }: { content: HomeContent }) => {
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-crema py-20">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
@@ -20,29 +22,26 @@ export const Hero = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-olivo/10 text-olivo text-xs font-bold uppercase tracking-[0.2em]">
-              Tradición Poblana desde 1985
+              {content.heroBadge}
             </span>
             <h2 className="text-6xl md:text-8xl font-serif font-bold text-sepia leading-[0.9] mb-8">
-              El Arte del <br />
-              <span className="text-terracota italic">Molote Perfecto</span>
+              {content.heroTitle} <br />
+              <span className="text-terracota italic">{content.heroHighlight}</span>
             </h2>
-            <p className="text-xl text-sepia/80 mb-10 max-w-lg leading-relaxed">
-              Descubre el sabor auténtico de nuestra cocina artesanal. Crujientes por fuera, suaves por
-              dentro y llenos de historia en cada bocado.
-            </p>
+            <p className="text-xl text-sepia/80 mb-10 max-w-lg leading-relaxed">{content.heroDescription}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/menu"
                 className="px-8 py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-xl shadow-terracota/20 transition-all duration-300 flex items-center justify-center group"
               >
-                Ver Menú Completo
+                {content.heroPrimaryCtaLabel}
                 <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/nosotros"
                 className="px-8 py-4 bg-white border-2 border-beige-tostado text-sepia font-bold rounded-xl hover:bg-beige-tostado/10 transition-all duration-300 text-center"
               >
-                Nuestra Historia
+                {content.heroSecondaryCtaLabel}
               </Link>
             </div>
           </motion.div>
@@ -55,7 +54,7 @@ export const Hero = () => {
           >
             <div className="relative z-10 rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white transform rotate-3 hover:rotate-0 transition-transform duration-700">
               <img
-                src="https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&w=1000&q=80"
+                src={content.heroImage}
                 alt="Molotes Tradicionales"
                 className="w-full h-full object-cover aspect-[4/5]"
                 referrerPolicy="no-referrer"
@@ -77,11 +76,9 @@ export const Hero = () => {
                     </div>
                   ))}
                 </div>
-                <span className="text-xs font-bold text-sepia">+500</span>
+                <span className="text-xs font-bold text-sepia">{content.heroFloatingCount}</span>
               </div>
-              <p className="text-sm font-medium text-sepia">
-                &quot;Los mejores molotes que he probado en mi vida.&quot;
-              </p>
+              <p className="text-sm font-medium text-sepia">&quot;{content.heroFloatingQuote}&quot;</p>
             </motion.div>
           </motion.div>
         </div>

@@ -8,6 +8,7 @@ export const AdminInventoryManager = () => {
   const { rows, loading, error, updateRow } = useAdminInventory();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
   const saveRow = async (payload: {
     productId: string;
@@ -18,11 +19,15 @@ export const AdminInventoryManager = () => {
   }) => {
     setFeedback(null);
     setFeedbackError(null);
+    setPendingProductId(payload.productId);
+
     try {
       await updateRow(payload);
       setFeedback("Inventario actualizado.");
     } catch (error) {
       setFeedbackError(error instanceof Error ? error.message : "No se pudo actualizar inventario.");
+    } finally {
+      setPendingProductId(null);
     }
   };
 
@@ -66,6 +71,7 @@ export const AdminInventoryManager = () => {
               minStock={row.minStock}
               allowBackorder={row.allowBackorder}
               available={row.available}
+              saving={pendingProductId === row.productId}
               onSave={saveRow}
             />
           </div>
@@ -81,6 +87,7 @@ const InventoryRowEditor = ({
   minStock,
   allowBackorder,
   available,
+  saving,
   onSave,
 }: {
   productId: string;
@@ -88,6 +95,7 @@ const InventoryRowEditor = ({
   minStock?: number;
   allowBackorder: boolean;
   available: boolean;
+  saving: boolean;
   onSave: (payload: {
     productId: string;
     stock: number;
@@ -107,6 +115,7 @@ const InventoryRowEditor = ({
         type="number"
         value={stockValue}
         onChange={(event) => setStockValue(event.target.value)}
+        disabled={saving}
         className="w-20 px-3 py-2 bg-crema border border-beige-tostado/30 rounded-lg focus:outline-none focus:border-terracota"
         title="Stock"
       />
@@ -114,6 +123,7 @@ const InventoryRowEditor = ({
         type="number"
         value={minValue}
         onChange={(event) => setMinValue(event.target.value)}
+        disabled={saving}
         className="w-24 px-3 py-2 bg-crema border border-beige-tostado/30 rounded-lg focus:outline-none focus:border-terracota"
         title="Minimo"
       />
@@ -121,6 +131,7 @@ const InventoryRowEditor = ({
         <input
           type="checkbox"
           checked={allowBackorderValue}
+          disabled={saving}
           onChange={(event) => setAllowBackorderValue(event.target.checked)}
         />
         Backorder
@@ -129,12 +140,14 @@ const InventoryRowEditor = ({
         <input
           type="checkbox"
           checked={availableValue}
+          disabled={saving}
           onChange={(event) => setAvailableValue(event.target.checked)}
         />
         Disponible
       </label>
       <button
         type="button"
+        disabled={saving}
         onClick={() =>
           onSave({
             productId,
@@ -144,9 +157,9 @@ const InventoryRowEditor = ({
             available: availableValue,
           })
         }
-        className="px-3 py-2 rounded-lg bg-terracota hover:bg-rojo-quemado text-crema text-sm font-semibold transition-colors"
+        className="px-3 py-2 rounded-lg bg-terracota hover:bg-rojo-quemado text-crema text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Guardar
+        {saving ? "Guardando..." : "Guardar"}
       </button>
     </div>
   );

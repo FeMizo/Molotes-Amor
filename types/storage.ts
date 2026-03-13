@@ -1,11 +1,13 @@
 import type { Inventory } from "@/types/inventory";
 import type { Order, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
+import type { SiteContent, SiteContentRepository } from "@/types/site-content";
 
 export interface DataStore {
   products: Product[];
   inventory: Inventory[];
   orders: Order[];
+  siteContent: SiteContent;
 }
 
 export interface ProductRepository {
@@ -29,3 +31,5 @@ export interface OrderRepository {
   create(order: Order): Promise<Order>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
 }
+
+export type { SiteContentRepository };

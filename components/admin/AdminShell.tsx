@@ -21,7 +21,7 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
             Panel <span className="text-terracota italic">Administrador</span>
           </h1>
           <p className="text-crema/70 mt-3">
-            Gestion de productos, inventario y pedidos sin romper el diseno existente.
+            Gestion de productos, inventario, pedidos y contenido sin romper el diseno existente.
           </p>
           <nav className="mt-6 flex flex-wrap gap-2">
             {links.map((link) => (

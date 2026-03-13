@@ -1,5 +1,9 @@
 import { ContactPage } from "@/components/pages/ContactPage";
+import { getSiteContent } from "@/services/content/site-content.service";
 
-export default function Page() {
-  return <ContactPage />;
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const content = await getSiteContent();
+  return <ContactPage content={content.contact} />;
 }

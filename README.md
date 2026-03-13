@@ -8,6 +8,16 @@ Base tecnica profesional con Next.js + TypeScript, respetando la UI existente.
 - `npm run typecheck`
 - `npm run build`
 - `npm run start`
+- `npm run db:up`
+- `npm run db:down`
+- `npm run db:logs`
+
+## Desarrollo local con Postgres
+1. Crea `.env.local` a partir de `.env.example`.
+2. Levanta la base con `npm run db:up`.
+3. Arranca la app con `npm run dev`.
+
+Si `DATA_ADAPTER_MODE=database`, la app crea el schema automaticamente y carga el seed inicial la primera vez que encuentra una base vacia.
 
 ## Modulos implementados
 - Admin funcional:
@@ -21,16 +31,25 @@ Base tecnica profesional con Next.js + TypeScript, respetando la UI existente.
 - Catalogo:
   - `ProductCard` muestra estado de inventario y bloquea compra sin stock (si no hay backorder).
 
-## Persistencia local vs produccion
-- Modo local real:
+## Persistencia local vs Vercel
+- Modo recomendado:
+  - `DATA_ADAPTER_MODE=database`
+  - Usa Postgres via `DATABASE_URL`.
+  - Funciona en local con Docker y en Vercel con una DB administrada.
+- Modo fallback:
   - `DATA_ADAPTER_MODE=local-file`
   - Se usa `storage/db.json` via repositorio local en servidor (`repositories/file-store.ts`).
-  - Permite cambios reales en local para productos, inventario y pedidos.
-- Modo preparado para no local:
+  - Util para pruebas sin DB, pero no para Vercel.
+- Modo externo:
   - `DATA_ADAPTER_MODE=remote-api`
-  - La arquitectura ya separa repositorios y servicios (`types/storage.ts`, `repositories/local-repositories.ts`).
-  - Debes implementar adapter remoto real (API/DB) sin rehacer UI ni logica de negocio.
-  - Cliente ya soporta base URL externa con `NEXT_PUBLIC_ADMIN_API_BASE_URL`.
+  - Sigue disponible como stub si luego separas frontend y backend.
+
+## Deploy en Vercel
+- Conecta el repo como proyecto Next.js normal.
+- Configura `DATA_ADAPTER_MODE=database`.
+- Configura `DATABASE_URL` con tu Postgres administrado.
+- Si tu proveedor requiere SSL y la URL no lo forza, deja `POSTGRES_SSL` sin definir.
+- No uses `output: "export"`: este proyecto depende de `app/api` y persistencia en servidor.
 
 ## Estructura principal
 ```text

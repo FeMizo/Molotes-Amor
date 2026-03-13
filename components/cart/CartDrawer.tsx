@@ -76,7 +76,12 @@ export const CartDrawer = () => {
                     </div>
                     <div className="flex-1 flex flex-col justify-between">
                       <div className="flex justify-between">
-                        <h4 className="font-bold text-sepia">{item.name}</h4>
+                        <div>
+                          <h4 className="font-bold text-sepia">{item.name}</h4>
+                          {item.maxQuantity ? (
+                            <p className="text-xs text-sepia/55">Maximo disponible: {item.maxQuantity}</p>
+                          ) : null}
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
@@ -98,7 +103,8 @@ export const CartDrawer = () => {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="p-1 hover:bg-beige-tostado/20 transition-colors"
+                            disabled={item.maxQuantity !== undefined && item.quantity >= item.maxQuantity}
+                            className="p-1 hover:bg-beige-tostado/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <Plus size={14} />
                           </button>

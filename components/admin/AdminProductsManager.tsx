@@ -34,6 +34,8 @@ export const AdminProductsManager = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.category))),
@@ -45,6 +47,7 @@ export const AdminProductsManager = () => {
     if (!product) {
       return;
     }
+
     setEditingId(product.id);
     setForm({
       name: product.name,
@@ -75,6 +78,8 @@ export const AdminProductsManager = () => {
     event.preventDefault();
     setSubmitError(null);
     setStatusMessage(null);
+    setSubmitting(true);
+
     try {
       const payload = {
         name: form.name,
@@ -100,17 +105,27 @@ export const AdminProductsManager = () => {
         await createProduct(payload);
         setStatusMessage("Producto creado correctamente.");
       }
+
       resetForm();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "No se pudo guardar el producto.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const toggleFlags = async (id: string, key: "available" | "featured", currentValue: boolean) => {
+    setSubmitError(null);
+    setStatusMessage(null);
+    setPendingAction(`${key}:${id}`);
+
     try {
       await updateProduct(id, { [key]: !currentValue });
+      setStatusMessage("Producto actualizado correctamente.");
     } catch {
       setSubmitError("No se pudo actualizar el estado del producto.");
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -118,6 +133,11 @@ export const AdminProductsManager = () => {
     if (!confirm("Eliminar este producto?")) {
       return;
     }
+
+    setSubmitError(null);
+    setStatusMessage(null);
+    setPendingAction(`delete:${id}`);
+
     try {
       await deleteProduct(id);
       if (editingId === id) {
@@ -126,6 +146,8 @@ export const AdminProductsManager = () => {
       setStatusMessage("Producto eliminado.");
     } catch {
       setSubmitError("No se pudo eliminar el producto.");
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -257,14 +279,18 @@ export const AdminProductsManager = () => {
           {error ? <p className="text-rojo-quemado font-semibold">{error}</p> : null}
 
           <div className="flex gap-2">
-            <button className="px-5 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors">
-              {editingId ? "Guardar cambios" : "Crear producto"}
+            <button
+              disabled={submitting}
+              className="px-5 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Guardando..." : editingId ? "Guardar cambios" : "Crear producto"}
             </button>
             {editingId ? (
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-5 py-3 bg-beige-tostado/30 text-sepia font-bold rounded-xl"
+                disabled={submitting}
+                className="px-5 py-3 bg-beige-tostado/30 text-sepia font-bold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -276,7 +302,9 @@ export const AdminProductsManager = () => {
       <article className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-serif font-bold text-sepia">Listado de productos</h2>
-          <span className="text-sm font-semibold text-sepia/70">{loading ? "Cargando..." : `${products.length} items`}</span>
+          <span className="text-sm font-semibold text-sepia/70">
+            {loading ? "Cargando..." : `${products.length} items`}
+          </span>
         </div>
 
         {categories.length > 0 ? (
@@ -284,49 +312,60 @@ export const AdminProductsManager = () => {
         ) : null}
 
         <div className="space-y-3 max-h-[700px] overflow-auto pr-1">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="border border-beige-tostado/20 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-            >
-              <div>
-                <h3 className="font-bold text-sepia">{product.name}</h3>
-                <p className="text-sm text-sepia/70">
-                  ${product.price} · {product.category} · Stock: {product.inventory.stock}
-                </p>
+          {products.map((product) => {
+            const isAvailabilityPending = pendingAction === `available:${product.id}`;
+            const isFeaturedPending = pendingAction === `featured:${product.id}`;
+            const isDeletePending = pendingAction === `delete:${product.id}`;
+            const hasPendingAction = pendingAction !== null;
+
+            return (
+              <div
+                key={product.id}
+                className="border border-beige-tostado/20 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+              >
+                <div>
+                  <h3 className="font-bold text-sepia">{product.name}</h3>
+                  <p className="text-sm text-sepia/70">
+                    ${product.price} · {product.category} · Stock: {product.inventory.stock}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fillFormForEdit(product.id)}
+                    disabled={submitting || hasPendingAction}
+                    className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void toggleFlags(product.id, "available", product.available)}
+                    disabled={submitting || hasPendingAction}
+                    className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isAvailabilityPending ? "Guardando..." : product.available ? "Desactivar" : "Activar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void toggleFlags(product.id, "featured", product.featured)}
+                    disabled={submitting || hasPendingAction}
+                    className="px-3 py-1.5 rounded-lg bg-beige-tostado/30 text-sm font-semibold text-sepia hover:bg-beige-tostado/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isFeaturedPending ? "Guardando..." : product.featured ? "Quitar destacado" : "Destacar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void remove(product.id)}
+                    disabled={submitting || hasPendingAction}
+                    className="px-3 py-1.5 rounded-lg bg-rojo-quemado/10 text-sm font-semibold text-rojo-quemado hover:bg-rojo-quemado/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isDeletePending ? "Eliminando..." : "Eliminar"}
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => fillFormForEdit(product.id)}
-                  className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota"
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFlags(product.id, "available", product.available)}
-                  className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota"
-                >
-                  {product.available ? "Desactivar" : "Activar"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFlags(product.id, "featured", product.featured)}
-                  className="px-3 py-1.5 rounded-lg bg-beige-tostado/30 text-sm font-semibold text-sepia hover:bg-beige-tostado/50"
-                >
-                  {product.featured ? "Quitar destacado" : "Destacar"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void remove(product.id)}
-                  className="px-3 py-1.5 rounded-lg bg-rojo-quemado/10 text-sm font-semibold text-rojo-quemado hover:bg-rojo-quemado/20"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {!loading && products.length === 0 ? (
             <p className="text-sepia/60 text-center py-10">No hay productos cargados.</p>
           ) : null}

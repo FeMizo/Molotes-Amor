@@ -13,14 +13,19 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
+  const items = useCartStore((state) => state.items);
   const handleAdd = () => (onAddToCart ? onAddToCart(product) : addItem(product));
+  const currentCartItem = items.find((item) => item.id === product.id);
   const inventoryStatusLabel =
     product.inventory.inventoryStatus === "disponible"
       ? "Disponible"
       : product.inventory.inventoryStatus === "poco-stock"
         ? "Poco stock"
         : "Agotado";
-  const canAdd = product.available && product.inventory.canPurchase;
+  const canAdd =
+    product.available &&
+    product.inventory.canPurchase &&
+    (currentCartItem?.quantity ?? 0) < product.inventory.stock;
 
   return (
     <motion.div
@@ -75,7 +80,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-beige-tostado/20 hover:bg-terracota hover:text-crema text-terracota font-bold rounded-xl transition-all duration-300 border border-terracota/20 disabled:opacity-45 disabled:cursor-not-allowed"
         >
           <Plus size={18} />
-          <span>{canAdd ? "Agregar al carrito" : "Sin stock"}</span>
+          <span>{canAdd ? "Agregar al carrito" : currentCartItem ? "Maximo en carrito" : "Sin stock"}</span>
         </button>
       </div>
     </motion.div>

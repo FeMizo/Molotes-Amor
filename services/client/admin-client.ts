@@ -1,4 +1,5 @@
 import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
+import type { SiteContent } from "@/types/site-content";
 
 import { httpRequest } from "./http";
 
@@ -92,6 +93,12 @@ export const adminClient = {
   createOrder: (payload: CreateOrderInput) =>
     httpRequest<Order>("/api/admin/orders", {
       method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  getSiteContent: () => httpRequest<SiteContent>("/api/admin/content"),
+  updateSiteContent: (payload: SiteContent) =>
+    httpRequest<SiteContent>("/api/admin/content", {
+      method: "PUT",
       body: JSON.stringify(payload),
     }),
 };

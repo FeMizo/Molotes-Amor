@@ -3,15 +3,15 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type { CatalogProduct } from "@/types/catalog";
 import type { CartItem } from "@/types/cart";
-import type { Product } from "@/types/product";
 
 interface CartState {
   isOpen: boolean;
   items: CartItem[];
   openCart: () => void;
   closeCart: () => void;
-  addItem: (product: Product) => void;
+  addItem: (product: CatalogProduct) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, delta: number) => void;
   clearCart: () => void;
@@ -27,12 +27,19 @@ export const useCartStore = create<CartState>()(
       addItem: (product) =>
         set((state) => {
           const existing = state.items.find((item) => item.id === product.id);
+          const maxQuantity = Math.max(1, product.inventory.stock);
 
           if (existing) {
             return {
               isOpen: true,
               items: state.items.map((item) =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+                item.id === product.id
+                  ? {
+                      ...item,
+                      maxQuantity,
+                      quantity: Math.min(item.quantity + 1, maxQuantity),
+                    }
+                  : item,
               ),
             };
           }
@@ -47,6 +54,7 @@ export const useCartStore = create<CartState>()(
                 price: product.price,
                 image: product.image,
                 quantity: 1,
+                maxQuantity,
               },
             ],
           };
@@ -63,9 +71,10 @@ export const useCartStore = create<CartState>()(
                 return item;
               }
 
+              const maxQuantity = Math.max(1, item.maxQuantity ?? item.quantity);
               return {
                 ...item,
-                quantity: Math.max(1, item.quantity + delta),
+                quantity: Math.min(maxQuantity, Math.max(1, item.quantity + delta)),
               };
             })
             .filter((item) => item.quantity > 0),

@@ -7,6 +7,14 @@ import type { OrderStatus } from "@/types/order";
 
 const statuses: OrderStatus[] = ["pendiente", "confirmado", "preparando", "entregado", "cancelado"];
 
+const statusStyles: Record<OrderStatus, string> = {
+  pendiente: "bg-mostaza/20 text-canela border-mostaza/30",
+  confirmado: "bg-sky-100 text-sky-700 border-sky-200",
+  preparando: "bg-orange-100 text-orange-700 border-orange-200",
+  entregado: "bg-olivo/15 text-olivo border-olivo/25",
+  cancelado: "bg-rojo-quemado/10 text-rojo-quemado border-rojo-quemado/20",
+};
+
 export const AdminOrdersManager = () => {
   const { orders, loading, error, updateStatus } = useAdminOrders();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -19,6 +27,7 @@ export const AdminOrdersManager = () => {
     if (!query) {
       return orders;
     }
+
     return orders.filter((order) => {
       const target = `${order.id} ${order.customer.name} ${order.customer.phone} ${order.status}`.toLowerCase();
       return target.includes(query);
@@ -30,6 +39,7 @@ export const AdminOrdersManager = () => {
   const changeStatus = async (id: string, status: OrderStatus) => {
     setFeedback(null);
     setFeedbackError(null);
+
     try {
       await updateStatus(id, status);
       setFeedback("Estado actualizado.");
@@ -65,8 +75,13 @@ export const AdminOrdersManager = () => {
               }`}
             >
               <p className="font-bold text-sepia">{order.id}</p>
-              <p className="text-sm text-sepia/70">
-                {order.customer.name} · {order.status}
+              <p className="text-sm text-sepia/70 mb-2">{order.customer.name}</p>
+              <p>
+                <span
+                  className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statusStyles[order.status]}`}
+                >
+                  {order.status}
+                </span>
               </p>
               <p className="text-sm text-terracota font-semibold mt-1">${order.total}</p>
             </button>
@@ -82,8 +97,15 @@ export const AdminOrdersManager = () => {
           <p className="text-sepia/60">Selecciona un pedido para ver detalle.</p>
         ) : (
           <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-serif font-bold text-sepia">{selectedOrder.id}</h2>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-sepia">{selectedOrder.id}</h2>
+                <span
+                  className={`mt-2 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statusStyles[selectedOrder.status]}`}
+                >
+                  {selectedOrder.status}
+                </span>
+              </div>
               <select
                 value={selectedOrder.status}
                 onChange={(event) => void changeStatus(selectedOrder.id, event.target.value as OrderStatus)}

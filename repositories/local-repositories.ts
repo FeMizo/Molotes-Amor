@@ -1,8 +1,10 @@
 import type { Inventory } from "@/types/inventory";
 import type { Order, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
-import type { InventoryRepository, OrderRepository, ProductRepository } from "@/types/storage";
+import type { SiteContent } from "@/types/site-content";
+import type { InventoryRepository, OrderRepository, ProductRepository, SiteContentRepository } from "@/types/storage";
 
+import { postgresRepositories } from "./postgres-repositories";
 import { readStore, writeStore } from "./file-store";
 
 export const localProductRepository: ProductRepository = {
@@ -102,17 +104,34 @@ export const localOrderRepository: OrderRepository = {
   },
 };
 
+export const localSiteContentRepository: SiteContentRepository = {
+  async get() {
+    const store = await readStore();
+    return store.siteContent;
+  },
+  async update(content) {
+    const store = await readStore();
+    store.siteContent = content satisfies SiteContent;
+    await writeStore(store);
+    return store.siteContent;
+  },
+};
+
 export interface Repositories {
   products: ProductRepository;
   inventory: InventoryRepository;
   orders: OrderRepository;
+  siteContent: SiteContentRepository;
 }
 
 export const localRepositories: Repositories = {
   products: localProductRepository,
   inventory: localInventoryRepository,
   orders: localOrderRepository,
+  siteContent: localSiteContentRepository,
 };
+
+export const databaseRepositories: Repositories = postgresRepositories;
 
 const notImplemented = () => {
   throw new Error("Adapter remoto no implementado: conecta tu API externa en repositories/remote-repositories.ts");
@@ -138,14 +157,22 @@ const remoteStub: Repositories = {
     create: notImplemented,
     updateStatus: notImplemented,
   },
+  siteContent: {
+    get: notImplemented,
+    update: notImplemented,
+  },
 };
 
 export const getRepositories = (): Repositories => {
-  const mode = process.env.DATA_ADAPTER_MODE ?? "local-file";
+  const mode = process.env.DATA_ADAPTER_MODE ?? (process.env.DATABASE_URL ? "database" : "local-file");
+  if (mode === "database") {
+    return databaseRepositories;
+  }
   if (mode === "remote-api") {
     return remoteStub;
   }
   return localRepositories;
 };
 
-export const isLocalFileMode = (): boolean => (process.env.DATA_ADAPTER_MODE ?? "local-file") === "local-file";
+export const isLocalFileMode = (): boolean =>
+  (process.env.DATA_ADAPTER_MODE ?? (process.env.DATABASE_URL ? "database" : "local-file")) === "local-file";

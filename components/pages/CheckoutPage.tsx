@@ -18,18 +18,25 @@ export const CheckoutPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const subtotal = useMemo(() => cartSubtotal(items), [items]);
+  const normalizedPhone = phone.replace(/\D/g, "");
 
   const submitOrder = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    if (normalizedPhone.length < 10 || normalizedPhone.length > 15) {
+      setErrorMessage("Ingresa un telefono valido de 10 a 15 digitos.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const order = await adminClient.createOrder({
         customer: {
           name,
-          phone,
+          phone: normalizedPhone,
           address: address || undefined,
         },
         notes: notes || undefined,
@@ -88,10 +95,15 @@ export const CheckoutPage = () => {
               <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Telefono</label>
               <input
                 required
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
+                pattern="[0-9+()\\-\\s]+"
                 className="w-full px-5 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
               />
+              <p className="text-xs text-sepia/55">Solo numeros. Puedes incluir lada o prefijo internacional.</p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Direccion</label>

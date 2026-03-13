@@ -3,6 +3,8 @@
 import { motion } from "motion/react";
 import { Heart, History, Users, Utensils } from "lucide-react";
 
+import type { AboutContent } from "@/types/site-content";
+
 const Star = ({ size, className }: { size: number; className?: string }) => (
   <svg
     width={size}
@@ -19,7 +21,7 @@ const Star = ({ size, className }: { size: number; className?: string }) => (
   </svg>
 );
 
-export const AboutPage = () => {
+export const AboutPage = ({ content }: { content: AboutContent }) => {
   return (
     <div className="bg-crema">
       <section className="relative py-32 bg-sepia overflow-hidden">
@@ -32,7 +34,7 @@ export const AboutPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-mostaza font-bold uppercase tracking-[0.3em] text-xs mb-4 block"
           >
-            Nuestra Historia
+            {content.eyebrow}
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -40,8 +42,8 @@ export const AboutPage = () => {
             transition={{ delay: 0.1 }}
             className="text-5xl md:text-7xl font-serif font-bold text-crema mb-8"
           >
-            Tradición que se <br />
-            <span className="text-terracota italic">Saborea con el Alma</span>
+            {content.title} <br />
+            <span className="text-terracota italic">{content.highlight}</span>
           </motion.h1>
         </div>
       </section>
@@ -49,26 +51,18 @@ export const AboutPage = () => {
       <section className="py-24 px-4 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
-            <h2 className="text-4xl font-serif font-bold text-sepia">Desde 1985, un sueño hecho realidad</h2>
+            <h2 className="text-4xl font-serif font-bold text-sepia">{content.introTitle}</h2>
             <div className="w-20 h-1 bg-terracota" />
-            <p className="text-lg text-sepia/70 leading-relaxed">
-              Todo comenzó en una pequeña cocina en el corazón de Puebla. Doña Elena, con su amor por la
-              cocina tradicional, empezó a preparar molotes para sus vecinos. Lo que empezó como un pasatiempo
-              se convirtió en un legado familiar.
-            </p>
-            <p className="text-lg text-sepia/70 leading-relaxed">
-              Hoy, en Molotes El Tradicional, mantenemos viva esa esencia. Cada molote es una obra de arte
-              culinaria, hecha a mano con la misma dedicación y los mismos ingredientes de alta calidad que
-              Doña Elena usaba hace más de tres décadas.
-            </p>
+            <p className="text-lg text-sepia/70 leading-relaxed">{content.introDescriptionOne}</p>
+            <p className="text-lg text-sepia/70 leading-relaxed">{content.introDescriptionTwo}</p>
             <div className="grid grid-cols-2 gap-6 pt-4">
               <div className="flex items-start space-x-3">
                 <div className="p-2 bg-terracota/10 rounded-lg text-terracota">
                   <Heart size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sepia">Pasión</h4>
-                  <p className="text-sm text-sepia/60">Amamos lo que hacemos.</p>
+                  <h4 className="font-bold text-sepia">{content.valueOneTitle}</h4>
+                  <p className="text-sm text-sepia/60">{content.valueOneDescription}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
@@ -76,8 +70,8 @@ export const AboutPage = () => {
                   <Users size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sepia">Familia</h4>
-                  <p className="text-sm text-sepia/60">Unidos por el sabor.</p>
+                  <h4 className="font-bold text-sepia">{content.valueTwoTitle}</h4>
+                  <p className="text-sm text-sepia/60">{content.valueTwoDescription}</p>
                 </div>
               </div>
             </div>
@@ -85,7 +79,7 @@ export const AboutPage = () => {
           <div className="relative">
             <div className="rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white transform -rotate-2">
               <img
-                src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1000&q=80"
+                src={content.image}
                 alt="Nuestra Cocina"
                 className="w-full h-full object-cover aspect-[4/5]"
                 referrerPolicy="no-referrer"
@@ -98,25 +92,25 @@ export const AboutPage = () => {
       <section className="bg-beige-tostado/10 py-24">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif font-bold text-sepia">Nuestros Pilares</h2>
-            <p className="text-sepia/60 mt-4 italic">Lo que nos hace diferentes</p>
+            <h2 className="text-4xl font-serif font-bold text-sepia">{content.pillarsTitle}</h2>
+            <p className="text-sepia/60 mt-4 italic">{content.pillarsSubtitle}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
               {
                 icon: <Utensils size={32} />,
-                title: "Ingredientes Frescos",
-                desc: "Seleccionamos diariamente los mejores productos de los mercados locales para garantizar frescura.",
+                title: content.pillarOneTitle,
+                desc: content.pillarOneDescription,
               },
               {
                 icon: <History size={32} />,
-                title: "Técnica Ancestral",
-                desc: "Respetamos los tiempos y procesos tradicionales del nixtamal y el amasado manual.",
+                title: content.pillarTwoTitle,
+                desc: content.pillarTwoDescription,
               },
               {
                 icon: <Star size={32} />,
-                title: "Calidad Premium",
-                desc: "Cada molote pasa por un control de calidad para asegurar que llegue perfecto a tu mesa.",
+                title: content.pillarThreeTitle,
+                desc: content.pillarThreeDescription,
               },
             ].map((item, i) => (
               <motion.div
