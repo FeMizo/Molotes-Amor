@@ -16,7 +16,7 @@ interface AuthStoreState {
   session: UserSession | null;
   authModalOpen: boolean;
   authModalReason?: string;
-  login: (credentials: { username: string; password: string }) => void;
+  login: (credentials: { username: string; password: string }) => AppUser;
   setUsers: (users: AppUser[]) => void;
   setSession: (session: UserSession | null) => void;
   openAuthModal: (reason?: string) => void;
@@ -54,20 +54,22 @@ const mergeUsersWithDefaults = (persistedUsers: AppUser[] | undefined): AppUser[
 
 export const useAuthStore = create<AuthStoreState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       users: defaultUsers,
       session: null,
       authModalOpen: false,
       authModalReason: undefined,
-      login: (credentials) =>
-        set((state) => {
-          const user = authenticateUser(state.users, credentials);
-          return {
-            session: createSession(user),
-            authModalOpen: false,
-            authModalReason: undefined,
-          };
-        }),
+      login: (credentials) => {
+        const user = authenticateUser(get().users, credentials);
+
+        set({
+          session: createSession(user),
+          authModalOpen: false,
+          authModalReason: undefined,
+        });
+
+        return user;
+      },
       setUsers: (users) => set({ users }),
       setSession: (session) => set({ session, authModalOpen: false, authModalReason: undefined }),
       openAuthModal: (reason) => set({ authModalOpen: true, authModalReason: reason }),

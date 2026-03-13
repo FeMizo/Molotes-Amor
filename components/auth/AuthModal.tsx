@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useAuthStore } from "@/store/auth-store";
 
 import { ModalShell } from "../shared/ModalShell";
 
 export const AuthModal = () => {
+  const router = useRouter();
   const authModalOpen = useAuthStore((state) => state.authModalOpen);
   const authModalReason = useAuthStore((state) => state.authModalReason);
   const closeAuthModal = useAuthStore((state) => state.closeAuthModal);
@@ -32,9 +34,10 @@ export const AuthModal = () => {
     setError(null);
 
     try {
-      login({ username, password });
+      const user = login({ username, password });
       setUsername("");
       setPassword("");
+      router.push(user.role === "admin" ? "/admin" : "/mi-cuenta");
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "No se pudo iniciar sesion.",
