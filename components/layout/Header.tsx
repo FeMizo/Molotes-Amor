@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, ShoppingBasket } from "lucide-react";
+import { Menu, Search, ShoppingBasket, UserRound } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { cartItemCount, useCartStore } from "@/store/cart-store";
@@ -51,6 +51,13 @@ export const Header = () => {
           <div className="flex items-center space-x-4">
             <Link href="/menu" className="p-2 text-sepia hover:text-terracota transition-colors hidden sm:block">
               <Search size={20} />
+            </Link>
+            <Link
+              href="/mi-cuenta"
+              className="p-2 text-sepia hover:text-terracota transition-colors"
+              aria-label="Mi cuenta"
+            >
+              <UserRound size={22} />
             </Link>
             <button
               type="button"

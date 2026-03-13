@@ -8,6 +8,7 @@ const allowedStatuses: OrderStatus[] = [
   "pendiente",
   "confirmado",
   "preparando",
+  "en-camino",
   "entregado",
   "cancelado",
 ];

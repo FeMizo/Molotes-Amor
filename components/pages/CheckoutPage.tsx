@@ -4,11 +4,14 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 import { adminClient } from "@/services/client/admin-client";
+import { useAccountStore } from "@/store/account-store";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
 
 export const CheckoutPage = () => {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
+  const rememberOrder = useAccountStore((state) => state.rememberOrder);
+  const updateProfile = useAccountStore((state) => state.updateProfile);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -46,6 +49,19 @@ export const CheckoutPage = () => {
         })),
       });
 
+      const [firstName, ...lastNameParts] = name.trim().split(/\s+/);
+      updateProfile({
+        firstName: firstName || name,
+        lastName: lastNameParts.join(" "),
+        phone: normalizedPhone,
+      });
+      rememberOrder({
+        ...order,
+        source: "checkout",
+        channel: address ? "delivery" : "pickup",
+        etaLabel: address ? "20 a 30 min" : "12 a 18 min",
+        trackingNote: "Pedido recien creado. Lo veras reflejado en tu centro de pedidos.",
+      });
       clearCart();
       setSuccessMessage(`Pedido ${order.id} creado correctamente.`);
       setName("");
@@ -63,14 +79,28 @@ export const CheckoutPage = () => {
     return (
       <section className="max-w-5xl mx-auto px-4 py-20">
         <div className="bg-white rounded-2xl p-8 border border-beige-tostado/30 text-center">
-          <h1 className="text-4xl font-serif font-bold text-sepia mb-4">Checkout</h1>
-          <p className="text-sepia/70 mb-6">Tu carrito esta vacio.</p>
-          <Link
-            href="/menu"
-            className="inline-block px-6 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors"
-          >
-            Ir al menu
-          </Link>
+          <h1 className="text-4xl font-serif font-bold text-sepia mb-4">
+            {successMessage ? "Pedido confirmado" : "Checkout"}
+          </h1>
+          <p className="text-sepia/70 mb-6">
+            {successMessage ?? "Tu carrito esta vacio."}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {successMessage ? (
+              <Link
+                href="/mi-cuenta"
+                className="inline-block px-6 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors"
+              >
+                Ver mi centro de pedidos
+              </Link>
+            ) : null}
+            <Link
+              href="/menu"
+              className="inline-block px-6 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors"
+            >
+              Ir al menu
+            </Link>
+          </div>
         </div>
       </section>
     );

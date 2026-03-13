@@ -3,8 +3,11 @@
 import { motion } from "motion/react";
 import { Plus, Star } from "lucide-react";
 
+import { useAccountStore } from "@/store/account-store";
 import { useCartStore } from "@/store/cart-store";
 import type { CatalogProduct } from "@/types/catalog";
+
+import { FavoriteToggleButton } from "./FavoriteToggleButton";
 
 interface ProductCardProps {
   product: CatalogProduct;
@@ -14,8 +17,11 @@ interface ProductCardProps {
 export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
+  const favoriteProductIds = useAccountStore((state) => state.favoriteProductIds);
+  const toggleFavorite = useAccountStore((state) => state.toggleFavorite);
   const handleAdd = () => (onAddToCart ? onAddToCart(product) : addItem(product));
   const currentCartItem = items.find((item) => item.id === product.id);
+  const isFavorite = favoriteProductIds.includes(product.id);
   const inventoryStatusLabel =
     product.inventory.inventoryStatus === "disponible"
       ? "Disponible"
@@ -43,6 +49,10 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           </span>
         </div>
       ) : null}
+
+      <div className="absolute top-4 right-4 z-10">
+        <FavoriteToggleButton active={isFavorite} onToggle={() => toggleFavorite(product.id)} />
+      </div>
 
       <div className="aspect-[4/3] overflow-hidden bg-beige-tostado/10">
         <img

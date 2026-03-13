@@ -1,4 +1,10 @@
-export type OrderStatus = "pendiente" | "confirmado" | "preparando" | "entregado" | "cancelado";
+export type OrderStatus =
+  | "pendiente"
+  | "confirmado"
+  | "preparando"
+  | "en-camino"
+  | "entregado"
+  | "cancelado";
 
 export interface OrderItem {
   productId: string;

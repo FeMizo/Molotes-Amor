@@ -213,7 +213,7 @@ export const AdminContentManager = () => {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-sepia">Contenido del sitio</h2>
-          <p className="text-sepia/70 mt-1">Edita Home, Menu, Nosotros y Contacto desde el dashboard.</p>
+          <p className="text-sepia/70 mt-1">Edita Home, Menu, Nosotros y Contacto en una seccion separada del flujo operativo.</p>
         </div>
         <span className="text-sm font-semibold text-sepia/60">{loading ? "Cargando..." : "Listo para editar"}</span>
       </div>

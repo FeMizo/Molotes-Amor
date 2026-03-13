@@ -32,9 +32,17 @@ export const AdminInventoryManager = () => {
   };
 
   return (
-    <article className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
+    <article className="bg-white rounded-[2rem] p-6 border border-beige-tostado/30 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-serif font-bold text-sepia">Inventario</h2>
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+            Inventario
+          </p>
+          <h2 className="mt-2 text-2xl font-serif font-bold text-sepia">Control de stock</h2>
+          <p className="mt-2 text-sepia/65">
+            Actualiza existencia, minimo operativo, backorder y disponibilidad publica desde una sola vista.
+          </p>
+        </div>
         <span className="text-sm text-sepia/70">{loading ? "Cargando..." : `${rows.length} productos`}</span>
       </div>
       {feedback ? <p className="text-olivo font-semibold mb-3">{feedback}</p> : null}

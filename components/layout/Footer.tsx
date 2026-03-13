@@ -45,6 +45,11 @@ export const Footer = () => (
               </Link>
             </li>
             <li>
+              <Link href="/mi-cuenta" className="hover:text-crema transition-colors">
+                Mi Cuenta
+              </Link>
+            </li>
+            <li>
               <Link href="/admin" className="hover:text-crema transition-colors">
                 Administrador
               </Link>

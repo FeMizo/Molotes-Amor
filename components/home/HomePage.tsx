@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 
 import { featuredProducts } from "@/features/products/search";
 import { useCatalogProducts } from "@/hooks/use-catalog-products";
+import { useAccountStore } from "@/store/account-store";
 import type { HomeContent } from "@/types/site-content";
 
 import { Hero } from "./Hero";
@@ -13,7 +14,9 @@ import { ProductCard } from "../products/ProductCard";
 
 export const HomePage = ({ content }: { content: HomeContent }) => {
   const { products } = useCatalogProducts();
+  const favoriteProductIds = useAccountStore((state) => state.favoriteProductIds);
   const topProducts = featuredProducts(products);
+  const favoriteProducts = products.filter((product) => favoriteProductIds.includes(product.id));
 
   return (
     <div className="flex flex-col">
@@ -40,6 +43,34 @@ export const HomePage = ({ content }: { content: HomeContent }) => {
           ))}
         </div>
       </section>
+
+      {favoriteProducts.length > 0 ? (
+        <section className="pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <div className="rounded-[2rem] border border-beige-tostado/25 bg-white p-8 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+                  Tus favoritos
+                </p>
+                <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
+                  Lo que siempre te antoja
+                </h2>
+                <p className="mt-2 text-sepia/65">
+                  Guarda tus molotes preferidos y regresa a ellos mas rapido desde inicio y tu cuenta.
+                </p>
+              </div>
+              <Link href="/mi-cuenta" className="font-bold text-terracota">
+                Abrir mi cuenta
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {favoriteProducts.slice(0, 3).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="bg-beige-tostado/10 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

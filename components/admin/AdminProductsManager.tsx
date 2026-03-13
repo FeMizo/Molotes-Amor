@@ -29,18 +29,42 @@ const parseList = (value: string): string[] =>
     .filter(Boolean);
 
 export const AdminProductsManager = () => {
-  const { products, loading, error, createProduct, updateProduct, deleteProduct } = useAdminProducts();
+  const { products, loading, error, createProduct, updateProduct, deleteProduct } =
+    useAdminProducts();
   const [form, setForm] = useState<ProductAdminFormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [availabilityFilter, setAvailabilityFilter] = useState<
+    "todos" | "activos" | "inactivos" | "destacados"
+  >("todos");
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.category))),
     [products],
   );
+  const lowStockCount = products.filter(
+    (product) => product.inventory.stock <= (product.inventory.minStock ?? 0),
+  ).length;
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return products.filter((product) => {
+      const matchesQuery =
+        normalizedQuery.length === 0 ||
+        `${product.name} ${product.category} ${product.tags.join(" ")}`.toLowerCase().includes(normalizedQuery);
+      const matchesAvailability =
+        availabilityFilter === "todos" ||
+        (availabilityFilter === "activos" && product.available) ||
+        (availabilityFilter === "inactivos" && !product.available) ||
+        (availabilityFilter === "destacados" && product.featured);
+
+      return matchesQuery && matchesAvailability;
+    });
+  }, [availabilityFilter, products, query]);
 
   const fillFormForEdit = (id: string) => {
     const product = products.find((item) => item.id === id);
@@ -62,7 +86,10 @@ export const AdminProductsManager = () => {
       tags: product.tags.join(", "),
       badge: product.badge ?? "",
       stock: String(product.inventory.stock),
-      minStock: product.inventory.minStock !== undefined ? String(product.inventory.minStock) : "",
+      minStock:
+        product.inventory.minStock !== undefined
+          ? String(product.inventory.minStock)
+          : "",
       allowBackorder: product.inventory.allowBackorder,
     });
     setStatusMessage(null);
@@ -114,7 +141,11 @@ export const AdminProductsManager = () => {
     }
   };
 
-  const toggleFlags = async (id: string, key: "available" | "featured", currentValue: boolean) => {
+  const toggleFlags = async (
+    id: string,
+    key: "available" | "featured",
+    currentValue: boolean,
+  ) => {
     setSubmitError(null);
     setStatusMessage(null);
     setPendingAction(`${key}:${id}`);
@@ -152,225 +183,332 @@ export const AdminProductsManager = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1.8fr] gap-8">
-      <article className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
-        <h2 className="text-2xl font-serif font-bold text-sepia mb-4">
-          {editingId ? "Editar producto" : "Nuevo producto"}
-        </h2>
-        <form className="space-y-3" onSubmit={submit}>
-          <input
-            required
-            placeholder="Nombre"
-            value={form.name}
-            onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-            className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-          />
-          <input
-            required
-            placeholder="Descripcion corta"
-            value={form.description}
-            onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-            className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-          />
-          <textarea
-            required
-            placeholder="Descripcion larga"
-            value={form.longDescription}
-            onChange={(event) => setForm((prev) => ({ ...prev, longDescription: event.target.value }))}
-            className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota min-h-24"
-          />
-          <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-6">
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+              Productos
+            </p>
+            <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
+              Catalogo y administracion
+            </h2>
+            <p className="mt-2 text-sepia/65">
+              Gestiona productos con una vista mas ordenada, buscador interno y segmentacion por disponibilidad.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl bg-crema px-4 py-3">
+              <p className="text-sm text-sepia/55">Total</p>
+              <p className="mt-1 text-2xl font-serif font-bold text-sepia">{products.length}</p>
+            </div>
+            <div className="rounded-2xl bg-crema px-4 py-3">
+              <p className="text-sm text-sepia/55">Destacados</p>
+              <p className="mt-1 text-2xl font-serif font-bold text-sepia">
+                {products.filter((product) => product.featured).length}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-crema px-4 py-3">
+              <p className="text-sm text-sepia/55">Bajo stock</p>
+              <p className="mt-1 text-2xl font-serif font-bold text-sepia">{lowStockCount}</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.15fr_1.1fr]">
+        <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-2xl font-serif font-bold text-sepia">
+              {editingId ? "Editar producto" : "Nuevo producto"}
+            </h3>
+            <p className="mt-2 text-sepia/65">
+              Mantiene el mismo flujo actual, pero con mejor jerarquia y formularios mas legibles.
+            </p>
+          </div>
+
+          <form className="space-y-4" onSubmit={submit}>
             <input
               required
-              placeholder="Precio"
-              type="number"
-              value={form.price}
-              onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+              placeholder="Nombre"
+              value={form.name}
+              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
             />
             <input
-              placeholder="Precio anterior"
-              type="number"
-              value={form.previousPrice}
-              onChange={(event) => setForm((prev) => ({ ...prev, previousPrice: event.target.value }))}
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              placeholder="Categoria"
-              value={form.category}
-              onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-            />
-            <input
-              placeholder="Badge"
-              value={form.badge}
+              required
+              placeholder="Descripcion corta"
+              value={form.description}
               onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  badge: event.target.value as ProductAdminFormState["badge"],
-                }))
+                setForm((prev) => ({ ...prev, description: event.target.value }))
               }
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
             />
-          </div>
-          <input
-            placeholder="URL imagen"
-            value={form.image}
-            onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
-            className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-          />
-          <input
-            placeholder="Tags separados por coma"
-            value={form.tags}
-            onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))}
-            className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-          />
-
-          <div className="grid grid-cols-3 gap-3">
-            <input
-              type="number"
-              placeholder="Stock"
-              value={form.stock}
-              onChange={(event) => setForm((prev) => ({ ...prev, stock: event.target.value }))}
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
+            <textarea
+              required
+              placeholder="Descripcion larga"
+              value={form.longDescription}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, longDescription: event.target.value }))
+              }
+              className="min-h-24 w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
             />
-            <input
-              type="number"
-              placeholder="Stock minimo"
-              value={form.minStock}
-              onChange={(event) => setForm((prev) => ({ ...prev, minStock: event.target.value }))}
-              className="px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-            />
-            <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
+            <div className="grid gap-3 md:grid-cols-2">
               <input
-                type="checkbox"
-                checked={form.allowBackorder}
+                required
+                placeholder="Precio"
+                type="number"
+                value={form.price}
+                onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              />
+              <input
+                placeholder="Precio anterior"
+                type="number"
+                value={form.previousPrice}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, allowBackorder: event.target.checked }))
+                  setForm((prev) => ({ ...prev, previousPrice: event.target.value }))
                 }
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
               />
-              Backorder
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
               <input
-                type="checkbox"
-                checked={form.available}
-                onChange={(event) => setForm((prev) => ({ ...prev, available: event.target.checked }))}
+                placeholder="Categoria"
+                value={form.category}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, category: event.target.value }))
+                }
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
               />
-              Disponible
-            </label>
-            <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
               <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={(event) => setForm((prev) => ({ ...prev, featured: event.target.checked }))}
+                placeholder="Badge"
+                value={form.badge}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    badge: event.target.value as ProductAdminFormState["badge"],
+                  }))
+                }
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
               />
-              Destacado
-            </label>
-          </div>
+            </div>
+            <input
+              placeholder="URL imagen"
+              value={form.image}
+              onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
+              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+            />
+            <input
+              placeholder="Tags separados por coma"
+              value={form.tags}
+              onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))}
+              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+            />
 
-          {statusMessage ? <p className="text-olivo font-semibold">{statusMessage}</p> : null}
-          {submitError ? <p className="text-rojo-quemado font-semibold">{submitError}</p> : null}
-          {error ? <p className="text-rojo-quemado font-semibold">{error}</p> : null}
+            <div className="grid gap-3 md:grid-cols-3">
+              <input
+                type="number"
+                placeholder="Stock"
+                value={form.stock}
+                onChange={(event) => setForm((prev) => ({ ...prev, stock: event.target.value }))}
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              />
+              <input
+                type="number"
+                placeholder="Stock minimo"
+                value={form.minStock}
+                onChange={(event) => setForm((prev) => ({ ...prev, minStock: event.target.value }))}
+                className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              />
+              <label className="flex items-center gap-2 rounded-xl bg-crema px-4 py-3 text-sm font-semibold text-sepia">
+                <input
+                  type="checkbox"
+                  checked={form.allowBackorder}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, allowBackorder: event.target.checked }))
+                  }
+                />
+                Backorder
+              </label>
+            </div>
 
-          <div className="flex gap-2">
-            <button
-              disabled={submitting}
-              className="px-5 py-3 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {submitting ? "Guardando..." : editingId ? "Guardar cambios" : "Crear producto"}
-            </button>
-            {editingId ? (
+            <div className="flex flex-wrap gap-4 rounded-xl bg-crema px-4 py-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
+                <input
+                  type="checkbox"
+                  checked={form.available}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, available: event.target.checked }))
+                  }
+                />
+                Disponible
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
+                <input
+                  type="checkbox"
+                  checked={form.featured}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, featured: event.target.checked }))
+                  }
+                />
+                Destacado
+              </label>
+            </div>
+
+            {statusMessage ? <p className="font-semibold text-olivo">{statusMessage}</p> : null}
+            {submitError ? <p className="font-semibold text-rojo-quemado">{submitError}</p> : null}
+            {error ? <p className="font-semibold text-rojo-quemado">{error}</p> : null}
+
+            <div className="flex flex-wrap gap-3">
               <button
-                type="button"
-                onClick={resetForm}
                 disabled={submitting}
-                className="px-5 py-3 bg-beige-tostado/30 text-sepia font-bold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                className="rounded-xl bg-terracota px-5 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Cancelar
+                {submitting ? "Guardando..." : editingId ? "Guardar cambios" : "Crear producto"}
               </button>
+              {editingId ? (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  disabled={submitting}
+                  className="rounded-xl border border-beige-tostado/35 px-5 py-3 font-bold text-sepia disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+              ) : null}
+            </div>
+          </form>
+        </article>
+
+        <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-sepia">Listado de productos</h3>
+                <p className="mt-1 text-sepia/65">
+                  Busca rapido por nombre, categoria o tags y filtra por estado.
+                </p>
+              </div>
+              <span className="text-sm font-semibold text-sepia/70">
+                {loading ? "Cargando..." : `${filteredProducts.length} visibles`}
+              </span>
+            </div>
+
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar por nombre, categoria o tags"
+              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+            />
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                ["todos", "Todos"],
+                ["activos", "Activos"],
+                ["inactivos", "Inactivos"],
+                ["destacados", "Destacados"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() =>
+                    setAvailabilityFilter(value as typeof availabilityFilter)
+                  }
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                    availabilityFilter === value
+                      ? "border-terracota bg-terracota text-crema"
+                      : "border-beige-tostado/30 bg-crema text-sepia"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {categories.length > 0 ? (
+              <p className="text-sm text-sepia/60">Categorias: {categories.join(", ")}</p>
             ) : null}
           </div>
-        </form>
-      </article>
 
-      <article className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-serif font-bold text-sepia">Listado de productos</h2>
-          <span className="text-sm font-semibold text-sepia/70">
-            {loading ? "Cargando..." : `${products.length} items`}
-          </span>
-        </div>
+          <div className="mt-5 space-y-3 max-h-[760px] overflow-auto pr-1">
+            {filteredProducts.map((product) => {
+              const isAvailabilityPending = pendingAction === `available:${product.id}`;
+              const isFeaturedPending = pendingAction === `featured:${product.id}`;
+              const isDeletePending = pendingAction === `delete:${product.id}`;
+              const hasPendingAction = pendingAction !== null;
 
-        {categories.length > 0 ? (
-          <p className="text-sm text-sepia/60 mb-3">Categorias: {categories.join(", ")}</p>
-        ) : null}
-
-        <div className="space-y-3 max-h-[700px] overflow-auto pr-1">
-          {products.map((product) => {
-            const isAvailabilityPending = pendingAction === `available:${product.id}`;
-            const isFeaturedPending = pendingAction === `featured:${product.id}`;
-            const isDeletePending = pendingAction === `delete:${product.id}`;
-            const hasPendingAction = pendingAction !== null;
-
-            return (
-              <div
-                key={product.id}
-                className="border border-beige-tostado/20 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-              >
-                <div>
-                  <h3 className="font-bold text-sepia">{product.name}</h3>
-                  <p className="text-sm text-sepia/70">
-                    ${product.price} · {product.category} · Stock: {product.inventory.stock}
-                  </p>
+              return (
+                <div
+                  key={product.id}
+                  className="rounded-2xl border border-beige-tostado/20 p-4"
+                >
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-bold text-sepia">{product.name}</h4>
+                        {product.featured ? (
+                          <span className="rounded-full bg-mostaza/20 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-canela">
+                            destacado
+                          </span>
+                        ) : null}
+                        {!product.available ? (
+                          <span className="rounded-full bg-rojo-quemado/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-rojo-quemado">
+                            inactivo
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-sm text-sepia/70">
+                        ${product.price} · {product.category} · Stock {product.inventory.stock}
+                      </p>
+                      <p className="mt-1 text-sm text-sepia/55">{product.tags.join(", ")}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fillFormForEdit(product.id)}
+                        disabled={submitting || hasPendingAction}
+                        className="rounded-xl border border-beige-tostado/35 px-3 py-2 text-sm font-semibold text-sepia transition-colors hover:border-terracota disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void toggleFlags(product.id, "available", product.available)}
+                        disabled={submitting || hasPendingAction}
+                        className="rounded-xl border border-beige-tostado/35 px-3 py-2 text-sm font-semibold text-sepia transition-colors hover:border-terracota disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isAvailabilityPending ? "Guardando..." : product.available ? "Desactivar" : "Activar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void toggleFlags(product.id, "featured", product.featured)}
+                        disabled={submitting || hasPendingAction}
+                        className="rounded-xl bg-beige-tostado/30 px-3 py-2 text-sm font-semibold text-sepia transition-colors hover:bg-beige-tostado/50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isFeaturedPending ? "Guardando..." : product.featured ? "Quitar destacado" : "Destacar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(product.id)}
+                        disabled={submitting || hasPendingAction}
+                        className="rounded-xl bg-rojo-quemado/10 px-3 py-2 text-sm font-semibold text-rojo-quemado transition-colors hover:bg-rojo-quemado/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isDeletePending ? "Eliminando..." : "Eliminar"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fillFormForEdit(product.id)}
-                    disabled={submitting || hasPendingAction}
-                    className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void toggleFlags(product.id, "available", product.available)}
-                    disabled={submitting || hasPendingAction}
-                    className="px-3 py-1.5 rounded-lg border border-beige-tostado/40 text-sm font-semibold text-sepia hover:border-terracota disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isAvailabilityPending ? "Guardando..." : product.available ? "Desactivar" : "Activar"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void toggleFlags(product.id, "featured", product.featured)}
-                    disabled={submitting || hasPendingAction}
-                    className="px-3 py-1.5 rounded-lg bg-beige-tostado/30 text-sm font-semibold text-sepia hover:bg-beige-tostado/50 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isFeaturedPending ? "Guardando..." : product.featured ? "Quitar destacado" : "Destacar"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void remove(product.id)}
-                    disabled={submitting || hasPendingAction}
-                    className="px-3 py-1.5 rounded-lg bg-rojo-quemado/10 text-sm font-semibold text-rojo-quemado hover:bg-rojo-quemado/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isDeletePending ? "Eliminando..." : "Eliminar"}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-          {!loading && products.length === 0 ? (
-            <p className="text-sepia/60 text-center py-10">No hay productos cargados.</p>
-          ) : null}
-        </div>
-      </article>
+              );
+            })}
+            {!loading && filteredProducts.length === 0 ? (
+              <p className="rounded-2xl bg-crema px-4 py-10 text-center text-sepia/60">
+                No hay productos para ese filtro.
+              </p>
+            ) : null}
+          </div>
+        </article>
+      </div>
     </div>
   );
 };
