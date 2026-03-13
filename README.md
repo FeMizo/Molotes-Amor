@@ -34,7 +34,7 @@ Si `DATA_ADAPTER_MODE=database`, la app crea el schema automaticamente y carga e
 ## Persistencia local vs Vercel
 - Modo recomendado:
   - `DATA_ADAPTER_MODE=database`
-  - Usa Postgres via `DATABASE_URL`.
+  - Usa Postgres via `molotes_DATABASE_URL`.
   - Funciona en local con Docker y en Vercel con una DB administrada.
 - Modo fallback:
   - `DATA_ADAPTER_MODE=local-file`
@@ -47,7 +47,7 @@ Si `DATA_ADAPTER_MODE=database`, la app crea el schema automaticamente y carga e
 ## Deploy en Vercel
 - Conecta el repo como proyecto Next.js normal.
 - Configura `DATA_ADAPTER_MODE=database`.
-- Configura `DATABASE_URL` con tu Postgres administrado.
+- Configura `molotes_DATABASE_URL` con tu Postgres administrado.
 - Si tu proveedor requiere SSL y la URL no lo forza, deja `POSTGRES_SSL` sin definir.
 - No uses `output: "export"`: este proyecto depende de `app/api` y persistencia en servidor.
 

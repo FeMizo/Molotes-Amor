@@ -2,10 +2,35 @@ import type { Inventory } from "@/types/inventory";
 import type { Order, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
-import type { InventoryRepository, OrderRepository, ProductRepository, SiteContentRepository } from "@/types/storage";
+import type {
+  InventoryRepository,
+  OrderRepository,
+  ProductRepository,
+  SiteContentRepository,
+} from "@/types/storage";
 
 import { postgresRepositories } from "./postgres-repositories";
 import { readStore, writeStore } from "./file-store";
+
+const toProductRecord = (
+  current: Product,
+  patch: Partial<Product>,
+): Product => ({
+  id: current.id,
+  slug: patch.slug ?? current.slug,
+  name: patch.name ?? current.name,
+  description: patch.description ?? current.description,
+  longDescription: patch.longDescription ?? current.longDescription,
+  price: patch.price ?? current.price,
+  previousPrice:
+    "previousPrice" in patch ? patch.previousPrice : current.previousPrice,
+  category: patch.category ?? current.category,
+  image: patch.image ?? current.image,
+  featured: patch.featured ?? current.featured,
+  available: patch.available ?? current.available,
+  tags: patch.tags ?? current.tags,
+  badge: "badge" in patch ? patch.badge : current.badge,
+});
 
 export const localProductRepository: ProductRepository = {
   async list() {
@@ -28,7 +53,7 @@ export const localProductRepository: ProductRepository = {
     if (idx < 0) {
       throw new Error("Producto no encontrado");
     }
-    const updated = { ...store.products[idx], ...patch } satisfies Product;
+    const updated = toProductRecord(store.products[idx], patch);
     store.products[idx] = updated;
     await writeStore(store);
     return updated;
@@ -36,7 +61,9 @@ export const localProductRepository: ProductRepository = {
   async remove(id) {
     const store = await readStore();
     store.products = store.products.filter((product) => product.id !== id);
-    store.inventory = store.inventory.filter((inventory) => inventory.productId !== id);
+    store.inventory = store.inventory.filter(
+      (inventory) => inventory.productId !== id,
+    );
     await writeStore(store);
   },
 };
@@ -52,7 +79,9 @@ export const localInventoryRepository: InventoryRepository = {
   },
   async upsert(record) {
     const store = await readStore();
-    const idx = store.inventory.findIndex((item) => item.productId === record.productId);
+    const idx = store.inventory.findIndex(
+      (item) => item.productId === record.productId,
+    );
     if (idx < 0) {
       store.inventory.push(record);
     } else {
@@ -63,7 +92,9 @@ export const localInventoryRepository: InventoryRepository = {
   },
   async adjustStock(productId, delta) {
     const store = await readStore();
-    const idx = store.inventory.findIndex((item) => item.productId === productId);
+    const idx = store.inventory.findIndex(
+      (item) => item.productId === productId,
+    );
     if (idx < 0) {
       throw new Error("Inventario no encontrado");
     }
@@ -79,7 +110,9 @@ export const localInventoryRepository: InventoryRepository = {
 export const localOrderRepository: OrderRepository = {
   async list() {
     const store = await readStore();
-    return [...store.orders].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+    return [...store.orders].sort(
+      (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
+    );
   },
   async findById(id) {
     const store = await readStore();
@@ -134,7 +167,9 @@ export const localRepositories: Repositories = {
 export const databaseRepositories: Repositories = postgresRepositories;
 
 const notImplemented = () => {
-  throw new Error("Adapter remoto no implementado: conecta tu API externa en repositories/remote-repositories.ts");
+  throw new Error(
+    "Adapter remoto no implementado: conecta tu API externa en repositories/remote-repositories.ts",
+  );
 };
 
 const remoteStub: Repositories = {
@@ -164,7 +199,9 @@ const remoteStub: Repositories = {
 };
 
 export const getRepositories = (): Repositories => {
-  const mode = process.env.DATA_ADAPTER_MODE ?? (process.env.DATABASE_URL ? "database" : "local-file");
+  const mode =
+    process.env.DATA_ADAPTER_MODE ??
+    (process.env.molotes_DATABASE_URL ? "database" : "local-file");
   if (mode === "database") {
     return databaseRepositories;
   }
@@ -175,4 +212,6 @@ export const getRepositories = (): Repositories => {
 };
 
 export const isLocalFileMode = (): boolean =>
-  (process.env.DATA_ADAPTER_MODE ?? (process.env.DATABASE_URL ? "database" : "local-file")) === "local-file";
+  (process.env.DATA_ADAPTER_MODE ??
+    (process.env.molotes_DATABASE_URL ? "database" : "local-file")) ===
+  "local-file";

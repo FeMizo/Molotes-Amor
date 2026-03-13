@@ -29,3 +29,6 @@ Thumbs.db
 
 # extras
 /dist
+
+.vercel
+.env*.local

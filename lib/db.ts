@@ -1,4 +1,9 @@
-import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
+import {
+  Pool,
+  type PoolClient,
+  type QueryResult,
+  type QueryResultRow,
+} from "pg";
 
 import { seedStore } from "@/data/seed-store";
 
@@ -8,9 +13,9 @@ const globalForDb = globalThis as typeof globalThis & {
 };
 
 const resolveConnectionString = (): string => {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.molotes_DATABASE_URL;
   if (!connectionString) {
-    throw new Error("DATABASE_URL no esta configurada.");
+    throw new Error("molotes_DATABASE_URL no esta configurada.");
   }
   return connectionString;
 };
@@ -103,7 +108,9 @@ const createSchema = async (client: PoolClient): Promise<void> => {
 
 const seedDatabase = async (client: PoolClient): Promise<void> => {
   const seed = seedStore();
-  const existing = await client.query<{ count: string }>("SELECT COUNT(*)::text AS count FROM products");
+  const existing = await client.query<{ count: string }>(
+    "SELECT COUNT(*)::text AS count FROM products",
+  );
 
   if (Number(existing.rows[0]?.count ?? "0") === 0) {
     for (const product of seed.products) {
@@ -153,7 +160,12 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
           VALUES ($1, $2, $3, $4)
           ON CONFLICT (product_id) DO NOTHING
         `,
-        [record.productId, record.stock, record.minStock ?? null, record.allowBackorder],
+        [
+          record.productId,
+          record.stock,
+          record.minStock ?? null,
+          record.allowBackorder,
+        ],
       );
     }
   }
@@ -197,7 +209,9 @@ export const dbQuery = async <TRow extends QueryResultRow = QueryResultRow>(
   return getPool().query<TRow>(text, params);
 };
 
-export const withDbClient = async <T>(callback: (client: PoolClient) => Promise<T>): Promise<T> => {
+export const withDbClient = async <T>(
+  callback: (client: PoolClient) => Promise<T>,
+): Promise<T> => {
   await ensureDatabaseReady();
   const client = await getPool().connect();
   try {

@@ -19,6 +19,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     return ok(updated);
   } catch (error) {
+    if (error instanceof Error && error.message === "Producto no encontrado") {
+      return fail(error.message, 404);
+    }
     return fail(error instanceof Error ? error.message : "No se pudo actualizar producto.", 500);
   }
 }
@@ -29,6 +32,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     await deleteProductWithInventory(id);
     return ok({ ok: true });
   } catch (error) {
+    if (error instanceof Error && error.message === "Producto no encontrado") {
+      return fail(error.message, 404);
+    }
     return fail(error instanceof Error ? error.message : "No se pudo eliminar producto.", 500);
   }
 }
