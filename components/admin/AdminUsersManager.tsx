@@ -3,10 +3,14 @@
 import { useMemo, useState } from "react";
 
 import { listAdminUsers } from "@/services/account/account.service";
+import { useAdminOrders } from "@/hooks/use-admin-orders";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { useAuthStore } from "@/store/auth-store";
 
 export const AdminUsersManager = () => {
-  const users = useMemo(() => listAdminUsers(), []);
+  const usersSeed = useAuthStore((state) => state.users);
+  const { orders, loading, error } = useAdminOrders();
+  const users = useMemo(() => listAdminUsers(usersSeed, orders), [orders, usersSeed]);
   const [query, setQuery] = useState("");
   const [contactFilter, setContactFilter] = useState<
     "todos" | "whatsapp" | "telefono" | "email"
@@ -67,6 +71,11 @@ export const AdminUsersManager = () => {
       </article>
 
       <div className="grid gap-4 xl:grid-cols-2">
+        {error ? (
+          <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm xl:col-span-2">
+            <p className="font-semibold text-rojo-quemado">{error}</p>
+          </article>
+        ) : null}
         {filteredUsers.map((user) => (
           <article
             key={user.id}
@@ -115,7 +124,9 @@ export const AdminUsersManager = () => {
             </div>
 
             <p className="mt-5 text-sm text-sepia/60">
-              Ultima actividad: {user.lastOrderAt ? formatDate(user.lastOrderAt) : "sin pedidos"}
+              {loading
+                ? "Cargando actividad..."
+                : `Ultima actividad: ${user.lastOrderAt ? formatDate(user.lastOrderAt) : "sin pedidos"}`}
             </p>
           </article>
         ))}

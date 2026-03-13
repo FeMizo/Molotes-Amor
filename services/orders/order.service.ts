@@ -50,6 +50,8 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     total: subtotal,
     status: "pendiente",
     createdAt: new Date().toISOString(),
+    userId: input.account.userId,
+    userUsername: input.account.username,
     customer: input.customer,
     notes: input.notes,
   };

@@ -12,8 +12,24 @@ import { OrderProgressTracker } from "../orders/OrderProgressTracker";
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
 
 export const OrderDetailView = ({ orderId }: { orderId: string }) => {
-  const { findOrderById } = useUserAccount();
+  const { error, findOrderById, loading } = useUserAccount();
   const order = findOrderById(orderId);
+
+  if (loading) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-sepia">Cargando detalle del pedido...</p>
+      </article>
+    );
+  }
+
+  if (error) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-rojo-quemado">{error}</p>
+      </article>
+    );
+  }
 
   if (!order) {
     return (

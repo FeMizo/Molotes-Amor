@@ -37,6 +37,8 @@ interface OrderRow {
   total: number;
   status: OrderStatus;
   created_at: Date | string;
+  user_id: string | null;
+  user_username: string | null;
   customer_name: string;
   customer_phone: string;
   customer_address: string | null;
@@ -96,6 +98,8 @@ const mapOrderRow = (row: OrderRow, items: OrderItem[]): Order => ({
   total: Number(row.total),
   status: row.status,
   createdAt: new Date(row.created_at).toISOString(),
+  userId: row.user_id ?? undefined,
+  userUsername: row.user_username ?? undefined,
   customer: {
     name: row.customer_name,
     phone: row.customer_phone,
@@ -336,7 +340,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const ordersResult = await client.query<OrderRow>(
         `
-          SELECT id, subtotal, total, status, created_at, customer_name, customer_phone, customer_address, notes
+          SELECT id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_address, notes
           FROM orders
           ORDER BY created_at DESC
         `,
@@ -352,7 +356,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const orderResult = await client.query<OrderRow>(
         `
-          SELECT id, subtotal, total, status, created_at, customer_name, customer_phone, customer_address, notes
+          SELECT id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_address, notes
           FROM orders
           WHERE id = $1
         `,
@@ -381,12 +385,14 @@ export const postgresOrderRepository: OrderRepository = {
               total,
               status,
               created_at,
+              user_id,
+              user_username,
               customer_name,
               customer_phone,
               customer_address,
               notes
             ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
             )
           `,
           [
@@ -395,6 +401,8 @@ export const postgresOrderRepository: OrderRepository = {
             order.total,
             order.status,
             order.createdAt,
+            order.userId ?? null,
+            order.userUsername ?? null,
             order.customer.name,
             order.customer.phone,
             order.customer.address ?? null,
@@ -435,7 +443,7 @@ export const postgresOrderRepository: OrderRepository = {
         UPDATE orders
         SET status = $2
         WHERE id = $1
-        RETURNING id, subtotal, total, status, created_at, customer_name, customer_phone, customer_address, notes
+        RETURNING id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_address, notes
       `,
       [id, status],
     );

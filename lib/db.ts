@@ -78,11 +78,23 @@ const createSchema = async (client: PoolClient): Promise<void> => {
       total INTEGER NOT NULL,
       status TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL,
+      user_id TEXT,
+      user_username TEXT,
       customer_name TEXT NOT NULL,
       customer_phone TEXT NOT NULL,
       customer_address TEXT,
       notes TEXT
     );
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS user_id TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS user_username TEXT;
   `);
 
   await client.query(`
@@ -167,6 +179,76 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
           record.allowBackorder,
         ],
       );
+    }
+  }
+
+  const existingOrders = await client.query<{ count: string }>(
+    "SELECT COUNT(*)::text AS count FROM orders",
+  );
+
+  if (Number(existingOrders.rows[0]?.count ?? "0") === 0) {
+    for (const order of seed.orders) {
+      await client.query(
+        `
+          INSERT INTO orders (
+            id,
+            subtotal,
+            total,
+            status,
+            created_at,
+            user_id,
+            user_username,
+            customer_name,
+            customer_phone,
+            customer_address,
+            notes
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+          )
+          ON CONFLICT (id) DO NOTHING
+        `,
+        [
+          order.id,
+          order.subtotal,
+          order.total,
+          order.status,
+          order.createdAt,
+          order.userId ?? null,
+          order.userUsername ?? null,
+          order.customer.name,
+          order.customer.phone,
+          order.customer.address ?? null,
+          order.notes ?? null,
+        ],
+      );
+
+      for (const [index, item] of order.items.entries()) {
+        await client.query(
+          `
+            INSERT INTO order_items (
+              order_id,
+              position,
+              product_id,
+              product_name,
+              unit_price,
+              quantity,
+              line_total
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7
+            )
+            ON CONFLICT (order_id, position) DO NOTHING
+          `,
+          [
+            order.id,
+            index,
+            item.productId,
+            item.productName,
+            item.unitPrice,
+            item.quantity,
+            item.lineTotal,
+          ],
+        );
+      }
     }
   }
 

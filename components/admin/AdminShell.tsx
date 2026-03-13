@@ -81,7 +81,7 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-          <aside className="space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <div className="rounded-[2rem] border border-beige-tostado/30 bg-white p-4 shadow-sm">
               <nav className="space-y-2">
                 {links.map((link) => {

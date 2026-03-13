@@ -14,16 +14,24 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
+      account?: { userId: string; username: string };
       customer: { name: string; phone: string; address?: string };
       notes?: string;
       items: { productId: string; quantity: number }[];
     };
 
-    if (!body.customer?.name || !body.customer?.phone || !Array.isArray(body.items)) {
+    if (
+      !body.account?.userId ||
+      !body.account?.username ||
+      !body.customer?.name ||
+      !body.customer?.phone ||
+      !Array.isArray(body.items)
+    ) {
       return fail("Datos invalidos para crear pedido.");
     }
 
     const order = await createOrder({
+      account: body.account,
       customer: body.customer,
       notes: body.notes,
       items: body.items.map((item) => ({

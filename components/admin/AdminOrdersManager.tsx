@@ -22,7 +22,7 @@ export const AdminOrdersManager = () => {
 
     return orders.filter((order) => {
       const target =
-        `${order.id} ${order.customer.name} ${order.customer.phone} ${order.status} ${order.items
+        `${order.id} ${order.userUsername ?? ""} ${order.customer.name} ${order.customer.phone} ${order.status} ${order.items
           .map((item) => item.productName)
           .join(" ")}`.toLowerCase();
       const matchesQuery =
@@ -69,7 +69,11 @@ export const AdminOrdersManager = () => {
               Filtra por estado, busca por cliente y actualiza el flujo sin saturar una sola vista.
             </p>
           </div>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="rounded-2xl bg-crema px-4 py-3">
+              <p className="text-sm text-sepia/55">Total pedidos</p>
+              <p className="mt-1 text-2xl font-serif font-bold text-sepia">{orders.length}</p>
+            </div>
             <div className="rounded-2xl bg-crema px-4 py-3">
               <p className="text-sm text-sepia/55">Pendientes</p>
               <p className="mt-1 text-2xl font-serif font-bold text-sepia">{pendingOrders}</p>
@@ -147,6 +151,9 @@ export const AdminOrdersManager = () => {
                   <div>
                     <p className="font-bold text-sepia">{order.id}</p>
                     <p className="mt-1 text-sm text-sepia/60">{order.customer.name}</p>
+                    <p className="text-xs text-sepia/50">
+                      {order.userUsername ? `Usuario: ${order.userUsername}` : "Sin usuario"}
+                    </p>
                   </div>
                   <OrderStatusBadge status={order.status} compact />
                 </div>
@@ -178,6 +185,9 @@ export const AdminOrdersManager = () => {
                   </h2>
                   <p className="mt-2 text-sepia/65">
                     Cliente: {selectedOrder.customer.name}
+                  </p>
+                  <p className="text-sm text-sepia/55">
+                    Usuario: {selectedOrder.userUsername ?? "Sin usuario vinculado"}
                   </p>
                   <p className="text-sm text-sepia/55">
                     {formatDateTime(selectedOrder.createdAt)}

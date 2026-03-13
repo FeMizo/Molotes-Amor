@@ -15,13 +15,15 @@ import { useAdminInventory } from "@/hooks/use-admin-inventory";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import { useAdminProducts } from "@/hooks/use-admin-products";
 import { formatCurrency } from "@/lib/format";
+import { useAuthStore } from "@/store/auth-store";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 
 export const AdminDashboard = () => {
   const { products } = useAdminProducts();
   const { rows } = useAdminInventory();
   const { orders } = useAdminOrders();
-  const users = listAdminUsers();
+  const usersSeed = useAuthStore((state) => state.users);
+  const users = listAdminUsers(usersSeed, orders);
 
   const lowStock = rows.filter((row) => row.status === "poco-stock" || row.status === "agotado").length;
   const pendingOrders = orders.filter((order) => order.status === "pendiente").length;

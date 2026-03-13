@@ -27,6 +27,8 @@ export interface Order {
   total: number;
   status: OrderStatus;
   createdAt: string;
+  userId?: string;
+  userUsername?: string;
   customer: CustomerInfo;
   notes?: string;
 }
@@ -37,6 +39,10 @@ export interface CreateOrderItemInput {
 }
 
 export interface CreateOrderInput {
+  account: {
+    userId: string;
+    username: string;
+  };
   customer: CustomerInfo;
   notes?: string;
   items: CreateOrderItemInput[];

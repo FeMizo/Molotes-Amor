@@ -1,35 +1,45 @@
-import {
-  accountDirectorySeed,
-  adminUserSummarySeed,
-  primaryAccountOrders,
-  primaryAccountProfile,
-} from "@/data/account";
+import type { AppUser } from "@/types/auth";
 import type {
   AdminUserSummary,
-  UserAccountProfile,
   UserDashboardStats,
   UserPanelOrder,
 } from "@/types/account";
+import type { Order } from "@/types/order";
 
 const sortOrdersByDate = (orders: UserPanelOrder[]): UserPanelOrder[] =>
   [...orders].sort(
-    (left, right) =>
-      +new Date(right.createdAt) - +new Date(left.createdAt),
+    (left, right) => +new Date(right.createdAt) - +new Date(left.createdAt),
   );
 
-export const mergeUserOrders = (
-  baseOrders: UserPanelOrder[],
-  trackedOrders: UserPanelOrder[],
-): UserPanelOrder[] => {
-  const seen = new Map<string, UserPanelOrder>();
+export const toUserPanelOrder = (order: Order): UserPanelOrder => {
+  const delivery = Boolean(order.customer.address);
+  const etaLabel =
+    order.status === "entregado" || order.status === "cancelado"
+      ? undefined
+      : delivery
+        ? "20 a 30 min"
+        : "12 a 18 min";
 
-  for (const order of [...trackedOrders, ...baseOrders]) {
-    if (!seen.has(order.id)) {
-      seen.set(order.id, order);
-    }
-  }
-
-  return sortOrdersByDate([...seen.values()]);
+  return {
+    ...order,
+    source: order.id.startsWith("ord-juan") || order.id.startsWith("ord-vita")
+      ? "mock"
+      : "checkout",
+    channel: delivery ? "delivery" : "pickup",
+    etaLabel,
+    trackingNote:
+      order.status === "pendiente"
+        ? "Recibimos tu pedido y estamos confirmando el flujo en cocina."
+        : order.status === "confirmado"
+          ? "Tu pedido ya fue confirmado. Pronto avanzara a preparacion."
+          : order.status === "preparando"
+            ? "La cocina ya esta trabajando en tu orden."
+            : order.status === "en-camino"
+              ? "Tu pedido va saliendo hacia entrega o punto de encuentro."
+              : order.status === "entregado"
+                ? "Pedido finalizado correctamente."
+                : "Este pedido fue cancelado.",
+  };
 };
 
 export const buildUserDashboardStats = (
@@ -48,21 +58,48 @@ export const buildUserDashboardStats = (
 export const findUserOrderById = (
   orders: UserPanelOrder[],
   orderId: string,
-): UserPanelOrder | undefined =>
-  orders.find((order) => order.id === orderId);
+): UserPanelOrder | undefined => orders.find((order) => order.id === orderId);
 
-export const getPrimaryAccountSeed = (): {
-  profile: UserAccountProfile;
-  orders: UserPanelOrder[];
-} => ({
-  profile: primaryAccountProfile,
-  orders: sortOrdersByDate(primaryAccountOrders),
-});
-
-export const listAdminUsers = (): AdminUserSummary[] =>
-  [...adminUserSummarySeed].sort(
-    (left, right) =>
-      +new Date(right.lastOrderAt ?? 0) - +new Date(left.lastOrderAt ?? 0),
+export const buildUserOrders = (
+  orders: Order[],
+  userId: string | undefined,
+): UserPanelOrder[] =>
+  sortOrdersByDate(
+    orders
+      .filter((order) => Boolean(userId) && order.userId === userId)
+      .map(toUserPanelOrder),
   );
 
-export const listAccountDirectory = () => accountDirectorySeed;
+export const listAdminUsers = (
+  users: AppUser[],
+  orders: Order[],
+): AdminUserSummary[] =>
+  [...users]
+    .map((user) => {
+      const userOrders = orders.filter((order) => order.userId === user.id);
+      const totalSpent = userOrders.reduce((sum, order) => sum + order.total, 0);
+      const activeOrderCount = userOrders.filter(
+        (order) => order.status !== "entregado" && order.status !== "cancelado",
+      ).length;
+
+      return {
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        email: user.email,
+        phone: user.phone,
+        preferredContact: user.preferredContact,
+        totalOrders: userOrders.length,
+        totalSpent,
+        activeOrderCount,
+        hasAddress: user.addresses.length > 0,
+        lastOrderAt: userOrders
+          .sort((left, right) => +new Date(right.createdAt) - +new Date(left.createdAt))[0]
+          ?.createdAt,
+        tags: [
+          "usuario-prueba",
+          user.username,
+          activeOrderCount > 0 ? "activo" : "sin flujo",
+        ],
+      } satisfies AdminUserSummary;
+    })
+    .sort((left, right) => +new Date(right.lastOrderAt ?? 0) - +new Date(left.lastOrderAt ?? 0));

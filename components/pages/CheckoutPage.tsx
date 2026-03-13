@@ -1,17 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { adminClient } from "@/services/client/admin-client";
-import { useAccountStore } from "@/store/account-store";
+import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
 
 export const CheckoutPage = () => {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const rememberOrder = useAccountStore((state) => state.rememberOrder);
-  const updateProfile = useAccountStore((state) => state.updateProfile);
+  const currentUser = useAuthStore(selectCurrentUser);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -23,10 +23,27 @@ export const CheckoutPage = () => {
   const subtotal = useMemo(() => cartSubtotal(items), [items]);
   const normalizedPhone = phone.replace(/\D/g, "");
 
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+
+    const defaultAddress = currentUser.addresses.find((candidate) => candidate.isDefault);
+    setName(`${currentUser.firstName} ${currentUser.lastName}`.trim());
+    setPhone(currentUser.phone);
+    setAddress(defaultAddress?.line1 ?? "");
+  }, [currentUser]);
+
   const submitOrder = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    if (!currentUser) {
+      setErrorMessage("Necesitas iniciar sesion antes de confirmar tu pedido.");
+      openAuthModal("Inicia sesion para finalizar tu compra.");
+      return;
+    }
 
     if (normalizedPhone.length < 10 || normalizedPhone.length > 15) {
       setErrorMessage("Ingresa un telefono valido de 10 a 15 digitos.");
@@ -37,6 +54,10 @@ export const CheckoutPage = () => {
 
     try {
       const order = await adminClient.createOrder({
+        account: {
+          userId: currentUser.id,
+          username: currentUser.username,
+        },
         customer: {
           name,
           phone: normalizedPhone,
@@ -49,24 +70,8 @@ export const CheckoutPage = () => {
         })),
       });
 
-      const [firstName, ...lastNameParts] = name.trim().split(/\s+/);
-      updateProfile({
-        firstName: firstName || name,
-        lastName: lastNameParts.join(" "),
-        phone: normalizedPhone,
-      });
-      rememberOrder({
-        ...order,
-        source: "checkout",
-        channel: address ? "delivery" : "pickup",
-        etaLabel: address ? "20 a 30 min" : "12 a 18 min",
-        trackingNote: "Pedido recien creado. Lo veras reflejado en tu centro de pedidos.",
-      });
       clearCart();
       setSuccessMessage(`Pedido ${order.id} creado correctamente.`);
-      setName("");
-      setPhone("");
-      setAddress("");
       setNotes("");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo crear el pedido.");
@@ -111,6 +116,21 @@ export const CheckoutPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8">
         <article className="bg-white rounded-2xl p-8 border border-beige-tostado/30 shadow-sm">
           <h1 className="text-4xl font-serif font-bold text-sepia mb-6">Finalizar pedido</h1>
+          {!currentUser ? (
+            <div className="mb-5 rounded-2xl border border-mostaza/30 bg-mostaza/10 px-5 py-4">
+              <p className="font-semibold text-sepia">Necesitas iniciar sesion para comprar.</p>
+              <p className="mt-1 text-sm text-sepia/70">
+                El pedido quedara vinculado a tu usuario y aparecera en Mis pedidos.
+              </p>
+              <button
+                type="button"
+                onClick={() => openAuthModal("Inicia sesion para continuar con tu compra.")}
+                className="mt-4 rounded-xl bg-terracota px-4 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
+              >
+                Iniciar sesion
+              </button>
+            </div>
+          ) : null}
           <form className="space-y-5" onSubmit={submitOrder}>
             <div className="space-y-2">
               <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Nombre</label>
@@ -155,10 +175,10 @@ export const CheckoutPage = () => {
             {successMessage ? <p className="text-olivo font-semibold">{successMessage}</p> : null}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !currentUser}
               className="w-full py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-50"
             >
-              {loading ? "Procesando..." : "Confirmar pedido"}
+              {loading ? "Procesando..." : currentUser ? "Confirmar pedido" : "Inicia sesion para comprar"}
             </button>
           </form>
         </article>

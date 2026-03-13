@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, ShoppingBasket, UserRound } from "lucide-react";
+import { LogOut, Menu, Search, ShoppingBasket, UserRound } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
+import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartItemCount, useCartStore } from "@/store/cart-store";
 
 export const Header = () => {
   const pathname = usePathname();
   const items = useCartStore((state) => state.items);
   const openCart = useCartStore((state) => state.openCart);
+  const currentUser = useAuthStore(selectCurrentUser);
+  const logout = useAuthStore((state) => state.logout);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const count = cartItemCount(items);
 
   return (
@@ -52,13 +56,38 @@ export const Header = () => {
             <Link href="/menu" className="p-2 text-sepia hover:text-terracota transition-colors hidden sm:block">
               <Search size={20} />
             </Link>
-            <Link
-              href="/mi-cuenta"
-              className="p-2 text-sepia hover:text-terracota transition-colors"
-              aria-label="Mi cuenta"
-            >
-              <UserRound size={22} />
-            </Link>
+            {currentUser ? (
+              <>
+                <Link
+                  href="/mi-cuenta"
+                  className="inline-flex items-center gap-2 rounded-xl border border-beige-tostado/25 px-3 py-2 text-sepia transition-colors hover:border-terracota hover:text-terracota"
+                  aria-label="Mi cuenta"
+                >
+                  <UserRound size={18} />
+                  <span className="hidden text-sm font-semibold sm:inline">
+                    {currentUser.username}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="p-2 text-sepia hover:text-terracota transition-colors"
+                  aria-label="Cerrar sesion"
+                >
+                  <LogOut size={20} />
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal("Inicia sesion para comprar y consultar tus pedidos.")}
+                className="inline-flex items-center gap-2 rounded-xl border border-beige-tostado/25 px-3 py-2 text-sepia transition-colors hover:border-terracota hover:text-terracota"
+                aria-label="Iniciar sesion"
+              >
+                <UserRound size={18} />
+                <span className="hidden text-sm font-semibold sm:inline">Entrar</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={openCart}

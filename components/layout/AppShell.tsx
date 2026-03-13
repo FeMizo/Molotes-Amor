@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 
@@ -20,6 +21,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
       <main className="flex-grow">{children}</main>
       <Footer />
       <CartDrawer />
+      <AuthModal />
     </>
   );
 };

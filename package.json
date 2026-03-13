@@ -1,6 +1,6 @@
 {
   "name": "molotes-amor",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 4200",
@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
-    "db:logs": "docker compose logs -f db"
+    "db:logs": "docker compose logs -f db",
+    "db:migrate:orders-user": "node scripts/migrate-order-user-columns.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",

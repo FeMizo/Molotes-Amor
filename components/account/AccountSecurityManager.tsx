@@ -6,12 +6,16 @@ import { formatDateTime } from "@/lib/format";
 import { useUserAccount } from "@/hooks/use-user-account";
 
 export const AccountSecurityManager = () => {
-  const { markPasswordChanged, profile } = useUserAccount();
+  const { changePassword, profile } = useUserAccount();
   const [currentPassword, setCurrentPassword] = useState("");
   const [nextPassword, setNextPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  if (!profile) {
+    return null;
+  }
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,11 +42,19 @@ export const AccountSecurityManager = () => {
       return;
     }
 
-    markPasswordChanged();
-    setCurrentPassword("");
-    setNextPassword("");
-    setConfirmPassword("");
-    setSuccess("Contrasena actualizada. El flujo queda listo para backend real.");
+    try {
+      changePassword(currentPassword, nextPassword);
+      setCurrentPassword("");
+      setNextPassword("");
+      setConfirmPassword("");
+      setSuccess("Contrasena actualizada. El flujo queda listo para backend real.");
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "No se pudo actualizar la contrasena.",
+      );
+    }
   };
 
   return (

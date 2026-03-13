@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LockKeyhole, MapPinned, Package, Settings2, UserRound } from "lucide-react";
+import { LockKeyhole, MapPinned, Package, UserRound } from "lucide-react";
+
+import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 
 const items = [
   {
@@ -37,6 +39,9 @@ export const AccountShell = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
+  const currentUser = useAuthStore(selectCurrentUser);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <section className="bg-crema min-h-screen py-12 md:py-16">
@@ -54,12 +59,49 @@ export const AccountShell = ({
                 Revisa pedidos, mantente al tanto del estado actual y administra tus datos sin salir del flujo de compra.
               </p>
             </div>
-            <div className="rounded-2xl border border-crema/10 bg-crema/10 px-4 py-3 text-sm text-crema/80">
-              <p className="font-semibold text-crema">Panel listo para escalar</p>
-              <p>La estructura ya soporta conexion futura con autenticacion y pedidos reales.</p>
-            </div>
+            {currentUser ? (
+              <div className="rounded-2xl border border-crema/10 bg-crema/10 px-4 py-3 text-sm text-crema/80">
+                <p className="font-semibold text-crema">
+                  {currentUser.firstName || currentUser.username}
+                </p>
+                <p>{currentUser.email}</p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-crema/10 bg-crema/10 px-4 py-3 text-sm text-crema/80">
+                <p className="font-semibold text-crema">Acceso simple</p>
+                <p>Entra para ver tus pedidos y repetir compra.</p>
+              </div>
+            )}
           </div>
         </header>
+
+        {!currentUser ? (
+          <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+            <h2 className="text-3xl font-serif font-bold text-sepia">
+              Inicia sesion para ver tu centro de pedidos
+            </h2>
+            <p className="mt-3 max-w-2xl text-sepia/65">
+              Este panel muestra solamente pedidos vinculados al usuario autenticado.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  openAuthModal("Inicia sesion para abrir tu centro de pedidos.")
+                }
+                className="rounded-xl bg-terracota px-5 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
+              >
+                Iniciar sesion
+              </button>
+              <Link
+                href="/menu"
+                className="rounded-xl border border-beige-tostado/35 px-5 py-3 font-bold text-sepia transition-colors hover:border-terracota"
+              >
+                Ir al menu
+              </Link>
+            </div>
+          </article>
+        ) : null}
 
         <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
           <aside className="space-y-4">
@@ -115,10 +157,21 @@ export const AccountShell = ({
                   </p>
                 </div>
               </div>
+              {currentUser ? (
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="mt-4 w-full rounded-xl border border-beige-tostado/35 px-4 py-3 text-left font-semibold text-sepia transition-colors hover:border-terracota"
+                >
+                  Cerrar sesion
+                </button>
+              ) : null}
             </div>
           </aside>
 
-          <div className="space-y-6">{children}</div>
+          <div className="space-y-6 opacity-100">
+            {currentUser ? children : null}
+          </div>
         </div>
       </div>
     </section>

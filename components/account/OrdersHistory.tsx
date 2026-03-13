@@ -12,9 +12,29 @@ import { AccountEmptyState } from "./AccountEmptyState";
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
 
 export const OrdersHistory = () => {
-  const { orders } = useUserAccount();
+  const { error, loading, orders } = useUserAccount();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
+
+  if (loading) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-sepia">Cargando pedidos...</p>
+      </article>
+    );
+  }
+
+  if (error) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-rojo-quemado">{error}</p>
+      </article>
+    );
+  }
+
+  if (!orders) {
+    return null;
+  }
 
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

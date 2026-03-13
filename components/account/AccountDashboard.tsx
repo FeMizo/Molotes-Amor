@@ -13,8 +13,28 @@ import { OrderStatusBadge } from "../orders/OrderStatusBadge";
 import { ProductCard } from "../products/ProductCard";
 
 export const AccountDashboard = () => {
-  const { activeOrder, favoriteProducts, profile, recentOrders, stats } =
+  const { activeOrder, error, favoriteProducts, loading, profile, recentOrders, stats } =
     useUserAccount();
+
+  if (loading) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-sepia">Cargando tu centro de pedidos...</p>
+      </article>
+    );
+  }
+
+  if (error) {
+    return (
+      <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
+        <p className="font-semibold text-rojo-quemado">{error}</p>
+      </article>
+    );
+  }
+
+  if (!profile) {
+    return null;
+  }
 
   if (recentOrders.length === 0) {
     return (
