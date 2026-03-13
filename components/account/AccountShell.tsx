@@ -103,7 +103,8 @@ export const AccountShell = ({
           </article>
         ) : null}
 
-        <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
+        {!currentUser ? null : (
+          <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
           <aside className="space-y-4">
             <div className="rounded-2xl border border-beige-tostado/30 bg-white p-4 shadow-sm">
               <nav className="space-y-2">
@@ -170,9 +171,10 @@ export const AccountShell = ({
           </aside>
 
           <div className="space-y-6 opacity-100">
-            {currentUser ? children : null}
+            {children}
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

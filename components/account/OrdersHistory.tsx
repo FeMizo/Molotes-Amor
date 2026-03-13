@@ -16,6 +16,22 @@ export const OrdersHistory = () => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
 
+  const filteredOrders = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return orders.filter((order) => {
+      const matchesQuery =
+        normalizedQuery.length === 0 ||
+        `${order.id} ${order.items.map((item) => item.productName).join(" ")} ${order.status}`
+          .toLowerCase()
+          .includes(normalizedQuery);
+      const matchesStatus =
+        statusFilter === "todos" || order.status === statusFilter;
+
+      return matchesQuery && matchesStatus;
+    });
+  }, [orders, query, statusFilter]);
+
   if (loading) {
     return (
       <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
@@ -35,22 +51,6 @@ export const OrdersHistory = () => {
   if (!orders) {
     return null;
   }
-
-  const filteredOrders = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return orders.filter((order) => {
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        `${order.id} ${order.items.map((item) => item.productName).join(" ")} ${order.status}`
-          .toLowerCase()
-          .includes(normalizedQuery);
-      const matchesStatus =
-        statusFilter === "todos" || order.status === statusFilter;
-
-      return matchesQuery && matchesStatus;
-    });
-  }, [orders, query, statusFilter]);
 
   if (orders.length === 0) {
     return (
