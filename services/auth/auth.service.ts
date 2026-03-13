@@ -33,5 +33,6 @@ export const authenticateUser = (
 export const createSession = (user: AppUser): UserSession => ({
   userId: user.id,
   username: user.username,
+  role: user.role,
   startedAt: new Date().toISOString(),
 });

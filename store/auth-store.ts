@@ -27,6 +27,11 @@ interface AuthStoreState {
 
 const defaultUsers = getAuthUsersSeed();
 
+const normalizeUserRole = (user: AppUser): AppUser => ({
+  ...user,
+  role: user.role ?? (user.username === "adminmolotes" ? "admin" : "user"),
+});
+
 export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set) => ({
@@ -67,7 +72,17 @@ export const useAuthStore = create<AuthStoreState>()(
           ...currentState,
           ...merged,
           users:
-            merged?.users && merged.users.length > 0 ? merged.users : currentState.users,
+            merged?.users && merged.users.length > 0
+              ? merged.users.map((user) => normalizeUserRole(user as AppUser))
+              : currentState.users,
+          session: merged?.session
+            ? {
+                ...merged.session,
+                role:
+                  merged.session.role ??
+                  (merged.session.username === "adminmolotes" ? "admin" : "user"),
+              }
+            : currentState.session,
           authModalOpen: false,
           authModalReason: undefined,
         };
@@ -80,6 +95,12 @@ export const selectCurrentUser = (state: AuthStoreState): AppUser | null =>
   state.session
     ? state.users.find((user) => user.id === state.session?.userId) ?? null
     : null;
+
+export const selectIsAdmin = (state: AuthStoreState): boolean =>
+  Boolean(
+    state.session &&
+      state.users.find((user) => user.id === state.session?.userId)?.role === "admin",
+  );
 
 export const upsertUserAddress = (addresses: UserAddress[], address: UserAddress): UserAddress[] => {
   const exists = addresses.some((item) => item.id === address.id);

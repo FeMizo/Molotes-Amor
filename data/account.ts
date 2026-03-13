@@ -27,6 +27,7 @@ const createUser = (input: {
   id: string;
   username: string;
   password: string;
+  role: AppUser["role"];
   firstName: string;
   lastName: string;
   email: string;
@@ -42,9 +43,22 @@ const createUser = (input: {
 
 export const authUserSeed: AppUser[] = [
   createUser({
+    id: "usr-admin-molotes",
+    username: "adminmolotes",
+    password: "molotesamor",
+    role: "admin",
+    firstName: "Admin",
+    lastName: "Molotes",
+    email: "admin@molotesamor.mx",
+    phone: "2220000000",
+    preferredContact: "email",
+    addresses: [],
+  }),
+  createUser({
     id: "usr-juan-perez",
     username: "juantest1",
     password: "juantest1",
+    role: "user",
     firstName: "Juan",
     lastName: "Perez",
     email: "juan@molotesamor.mx",
@@ -67,6 +81,7 @@ export const authUserSeed: AppUser[] = [
     id: "usr-vita",
     username: "vitaprueba1",
     password: "vitaprueba1",
+    role: "user",
     firstName: "Vita",
     lastName: "",
     email: "vita@molotesamor.mx",
@@ -161,7 +176,9 @@ export const seedUserOrders: Order[] = [
   }),
 ];
 
-export const adminUserSummarySeed: AdminUserSummary[] = authUserSeed.map((user) => {
+export const adminUserSummarySeed: AdminUserSummary[] = authUserSeed
+  .filter((user) => user.role === "user")
+  .map((user) => {
   const orders = seedUserOrders.filter((order) => order.userId === user.id);
   const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
   const activeOrderCount = orders.filter(

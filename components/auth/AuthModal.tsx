@@ -18,7 +18,12 @@ export const AuthModal = () => {
 
   const credentialsHint = useMemo(
     () =>
-      users.map((user) => `${user.username} / ${user.password}`).join("   "),
+      users
+        .map(
+          (user) =>
+            `${user.username} / ${user.password}${user.role === "admin" ? " [admin]" : ""}`,
+        )
+        .join("   "),
     [users],
   );
 
@@ -75,7 +80,7 @@ export const AuthModal = () => {
         <div className="rounded-2xl bg-crema p-4 text-sm text-sepia/70">
           <p className="font-semibold text-sepia">Usuarios de prueba</p>
           <p className="mt-1">
-            Para este login simple, la contrasena coincide con el username.
+            Admin: `adminmolotes / molotesamor`. Los usuarios cliente mantienen su acceso simple.
           </p>
           <p className="mt-2 font-medium text-sepia">{credentialsHint}</p>
         </div>

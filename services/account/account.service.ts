@@ -75,6 +75,7 @@ export const listAdminUsers = (
   orders: Order[],
 ): AdminUserSummary[] =>
   [...users]
+    .filter((user) => user.role === "user")
     .map((user) => {
       const userOrders = orders.filter((order) => order.userId === user.id);
       const totalSpent = userOrders.reduce((sum, order) => sum + order.total, 0);
