@@ -1,6 +1,16 @@
 import type { Order } from "@/types/order";
 
 export type PreferredContact = "whatsapp" | "telefono" | "email";
+export type LoyaltyTier = "Base" | "Bronce" | "Plata" | "Oro";
+
+export interface LoyaltyProfile {
+  isFrequentCustomer: boolean;
+  tier: LoyaltyTier;
+  points: number;
+  availableCredit: number;
+  benefits: string[];
+  note?: string;
+}
 
 export interface UserAddress {
   id: string;
@@ -25,6 +35,7 @@ export interface UserAccountProfile {
   marketingOptIn: boolean;
   passwordUpdatedAt: string;
   addresses: UserAddress[];
+  loyalty: LoyaltyProfile;
 }
 
 export interface UserPanelOrder extends Order {
@@ -58,6 +69,8 @@ export interface AdminUserSummary {
   activeOrderCount: number;
   hasAddress: boolean;
   lastOrderAt?: string;
+  loyalty: LoyaltyProfile;
+  benefitsCount: number;
   tags: string[];
 }
 

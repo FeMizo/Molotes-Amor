@@ -3,6 +3,13 @@
 import { PRODUCT_CATEGORIES } from "@/types/product";
 import type { ProductAdminFormState } from "@/types/admin";
 
+const badgeOptions: Array<ProductAdminFormState["badge"]> = [
+  "",
+  "Popular",
+  "Nuevo",
+  "Mas pedido",
+];
+
 interface AdminProductFormProps {
   form: ProductAdminFormState;
   setForm: React.Dispatch<React.SetStateAction<ProductAdminFormState>>;
@@ -83,8 +90,7 @@ export const AdminProductForm = ({
           </option>
         ))}
       </select>
-      <input
-        placeholder="Badge"
+      <select
         value={form.badge}
         onChange={(event) =>
           setForm((prev) => ({
@@ -93,7 +99,13 @@ export const AdminProductForm = ({
           }))
         }
         className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
-      />
+      >
+        {badgeOptions.map((badge) => (
+          <option key={badge || "none"} value={badge}>
+            {badge || "Sin badge"}
+          </option>
+        ))}
+      </select>
     </div>
     <input
       placeholder="URL imagen"
@@ -155,6 +167,19 @@ export const AdminProductForm = ({
           }
         />
         Destacado
+      </label>
+      <label className="flex items-center gap-2 text-sm font-semibold text-sepia">
+        <input
+          type="checkbox"
+          checked={form.badge === "Nuevo"}
+          onChange={(event) =>
+            setForm((prev) => ({
+              ...prev,
+              badge: event.target.checked ? "Nuevo" : prev.badge === "Nuevo" ? "" : prev.badge,
+            }))
+          }
+        />
+        Marcar como nuevo
       </label>
     </div>
 

@@ -1,5 +1,6 @@
 import { authUserSeed } from "@/data/account";
 import { assertValidEmail, assertValidPhone, normalizeEmail } from "@/lib/contact";
+import { defaultLoyaltyProfile } from "@/lib/loyalty";
 import type { AppUser, UserSession } from "@/types/auth";
 
 export const getAuthUsersSeed = (): AppUser[] => authUserSeed;
@@ -69,6 +70,7 @@ export const createAppUser = (input: {
     memberSince: now,
     passwordUpdatedAt: now,
     addresses: [],
+    loyalty: defaultLoyaltyProfile(),
   };
 };
 

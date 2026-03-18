@@ -102,11 +102,14 @@ export const listAdminUsers = (
         lastOrderAt: userOrders
           .sort((left, right) => +new Date(right.createdAt) - +new Date(left.createdAt))[0]
           ?.createdAt,
+        loyalty: user.loyalty,
+        benefitsCount: user.loyalty.benefits.length,
         tags: [
           "usuario-prueba",
           user.username,
           user.role,
           user.isActive ? "habilitado" : "inactivo",
+          user.loyalty.isFrequentCustomer ? "cliente-frecuente" : "sin-fidelidad",
           activeOrderCount > 0 ? "activo" : "sin flujo",
         ],
       } satisfies AdminUserSummary;

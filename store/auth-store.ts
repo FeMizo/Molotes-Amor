@@ -11,6 +11,7 @@ import {
   findUserByUsernameOrEmail,
   getAuthUsersSeed,
 } from "@/services/auth/auth.service";
+import { normalizeLoyaltyProfile } from "@/lib/loyalty";
 import type { AppUser, UserSession } from "@/types/auth";
 import type { UserAddress } from "@/types/account";
 
@@ -43,6 +44,7 @@ const normalizeUserRole = (user: AppUser): AppUser => ({
   ...user,
   role: user.role ?? (user.username === "adminmolotes" ? "admin" : "user"),
   isActive: user.isActive ?? true,
+  loyalty: normalizeLoyaltyProfile(user.loyalty),
 });
 
 const mergeUsersWithDefaults = (persistedUsers: AppUser[] | undefined): AppUser[] => {

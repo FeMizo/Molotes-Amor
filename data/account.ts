@@ -1,4 +1,5 @@
 import { PRODUCT_SEED } from "@/data/products";
+import { normalizeLoyaltyProfile } from "@/lib/loyalty";
 import type { AppUser } from "@/types/auth";
 import type { AdminUserSummary } from "@/types/account";
 import type { Order, OrderItem, OrderStatus } from "@/types/order";
@@ -35,12 +36,14 @@ const createUser = (input: {
   phone: string;
   preferredContact: AppUser["preferredContact"];
   addresses: AppUser["addresses"];
+  loyalty?: Partial<AppUser["loyalty"]>;
 }): AppUser => ({
   ...input,
   memberSince: "2026-01-08T13:00:00.000Z",
   marketingOptIn: true,
   passwordUpdatedAt: "2026-03-10T09:00:00.000Z",
   isActive: input.isActive ?? true,
+  loyalty: normalizeLoyaltyProfile(input.loyalty),
 });
 
 export const authUserSeed: AppUser[] = [
@@ -66,6 +69,14 @@ export const authUserSeed: AppUser[] = [
     email: "juan@molotesamor.mx",
     phone: "2221234588",
     preferredContact: "whatsapp",
+    loyalty: {
+      isFrequentCustomer: true,
+      tier: "Plata",
+      points: 180,
+      availableCredit: 35,
+      benefits: ["10% en combos", "Bebida de cortesia", "Acceso anticipado"],
+      note: "Mantiene beneficio especial en pedidos de martes y jueves.",
+    },
     addresses: [
       {
         id: "usr-juan-perez-addr-1",
@@ -89,6 +100,13 @@ export const authUserSeed: AppUser[] = [
     email: "vita@molotesamor.mx",
     phone: "2217654321",
     preferredContact: "email",
+    loyalty: {
+      isFrequentCustomer: true,
+      tier: "Bronce",
+      points: 80,
+      availableCredit: 15,
+      benefits: ["Upgrade de salsa", "Prioridad en promociones"],
+    },
     addresses: [
       {
         id: "usr-vita-addr-1",
@@ -220,8 +238,11 @@ export const adminUserSummarySeed: AdminUserSummary[] = authUserSeed
     activeOrderCount,
     hasAddress: user.addresses.length > 0,
     lastOrderAt: orders[0]?.createdAt,
+    loyalty: user.loyalty,
+    benefitsCount: user.loyalty.benefits.length,
     tags: [
       "usuario-prueba",
+      user.loyalty.isFrequentCustomer ? "cliente-frecuente" : "sin-fidelidad",
       activeOrderCount > 0 ? "activo" : "sin flujo",
     ],
   };

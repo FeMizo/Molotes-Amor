@@ -5,10 +5,12 @@ import { useMemo, useState } from "react";
 import { useAdminUsers } from "@/hooks/use-admin-users";
 import { assertValidEmail, assertValidPhone } from "@/lib/contact";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { loyaltyTierOptions } from "@/lib/loyalty";
 import type { AppUserRole } from "@/types/auth";
-import type { PreferredContact } from "@/types/account";
+import type { LoyaltyTier, PreferredContact } from "@/types/account";
 
 import { ModalShell } from "../shared/ModalShell";
+import { LoyaltyBenefitsPanel } from "../shared/LoyaltyBenefitsPanel";
 
 interface UserFormState {
   firstName: string;
@@ -19,6 +21,12 @@ interface UserFormState {
   preferredContact: PreferredContact;
   role: AppUserRole;
   isActive: boolean;
+  isFrequentCustomer: boolean;
+  loyaltyTier: LoyaltyTier;
+  loyaltyPoints: string;
+  loyaltyCredit: string;
+  loyaltyBenefits: string;
+  loyaltyNote: string;
 }
 
 const emptyForm: UserFormState = {
@@ -30,6 +38,12 @@ const emptyForm: UserFormState = {
   preferredContact: "whatsapp",
   role: "user",
   isActive: true,
+  isFrequentCustomer: false,
+  loyaltyTier: "Base",
+  loyaltyPoints: "0",
+  loyaltyCredit: "0",
+  loyaltyBenefits: "",
+  loyaltyNote: "",
 };
 
 export const AdminUsersManager = () => {
@@ -65,6 +79,7 @@ export const AdminUsersManager = () => {
       active: filteredUsers.filter((user) => user.isActive).length,
       admins: filteredUsers.filter((user) => user.role === "admin").length,
       withOrders: filteredUsers.filter((user) => user.totalOrders > 0).length,
+      frequent: filteredUsers.filter((user) => user.loyalty.isFrequentCustomer).length,
     }),
     [filteredUsers],
   );
@@ -87,6 +102,12 @@ export const AdminUsersManager = () => {
       preferredContact: user.preferredContact,
       role: user.role,
       isActive: user.isActive,
+      isFrequentCustomer: user.loyalty.isFrequentCustomer,
+      loyaltyTier: user.loyalty.tier,
+      loyaltyPoints: String(user.loyalty.points),
+      loyaltyCredit: String(user.loyalty.availableCredit),
+      loyaltyBenefits: user.loyalty.benefits.join(", "),
+      loyaltyNote: user.loyalty.note ?? "",
     });
   };
 
@@ -116,6 +137,17 @@ export const AdminUsersManager = () => {
         preferredContact: form.preferredContact,
         role: form.role,
         isActive: form.isActive,
+        loyalty: {
+          isFrequentCustomer: form.isFrequentCustomer,
+          tier: form.loyaltyTier,
+          points: Number(form.loyaltyPoints || 0),
+          availableCredit: Number(form.loyaltyCredit || 0),
+          benefits: form.loyaltyBenefits
+            .split(",")
+            .map((benefit) => benefit.trim())
+            .filter(Boolean),
+          note: form.loyaltyNote || undefined,
+        },
       });
       setFeedback("Usuario actualizado correctamente.");
       closeEditor();
@@ -136,7 +168,7 @@ export const AdminUsersManager = () => {
               Base de cuentas y clientes
             </h2>
             <p className="mt-2 text-sepia/65">
-              Edita usuarios mock persistidos, roles y estado de acceso sin salir del dashboard.
+              Edita usuarios mock persistidos, roles, estado de acceso y beneficios de fidelidad sin salir del dashboard.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
@@ -168,7 +200,7 @@ export const AdminUsersManager = () => {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-4">
+        <div className="mt-6 grid gap-3 md:grid-cols-5">
           <div className="rounded-2xl bg-crema px-4 py-3">
             <p className="text-sm text-sepia/55">Usuarios visibles</p>
             <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.total}</p>
@@ -184,6 +216,10 @@ export const AdminUsersManager = () => {
           <div className="rounded-2xl bg-crema px-4 py-3">
             <p className="text-sm text-sepia/55">Con pedidos</p>
             <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.withOrders}</p>
+          </div>
+          <div className="rounded-2xl bg-crema px-4 py-3">
+            <p className="text-sm text-sepia/55">Frecuentes</p>
+            <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.frequent}</p>
           </div>
         </div>
       </article>
@@ -239,7 +275,7 @@ export const AdminUsersManager = () => {
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <div className="rounded-2xl bg-crema p-4">
                     <p className="text-sm text-sepia/55">Correo</p>
-                    <p className="mt-1 font-semibold text-sepia break-all">{user.email}</p>
+                    <p className="mt-1 break-all font-semibold text-sepia">{user.email}</p>
                   </div>
                   <div className="rounded-2xl bg-crema p-4">
                     <p className="text-sm text-sepia/55">Telefono</p>
@@ -259,6 +295,15 @@ export const AdminUsersManager = () => {
                   <span className="rounded-full border border-beige-tostado/30 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70">
                     {user.hasAddress ? "con direccion" : "sin direccion"}
                   </span>
+                </div>
+
+                <div className="mt-5">
+                  <LoyaltyBenefitsPanel
+                    loyalty={user.loyalty}
+                    title={user.loyalty.isFrequentCustomer ? "Cliente frecuente" : "Fidelidad sin activar"}
+                    description="Vista rapida de puntos, credito y ventajas asignadas desde admin."
+                    className="bg-crema/50"
+                  />
                 </div>
 
                 <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -316,7 +361,7 @@ export const AdminUsersManager = () => {
         open={Boolean(editingId)}
         onClose={closeEditor}
         title="Editar usuario"
-        description="Actualiza nombre, username, rol y estado sin romper el store actual."
+        description="Actualiza nombre, username, rol, estado y fidelidad sin romper el store actual."
       >
         <form className="space-y-4" onSubmit={submit}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -388,6 +433,65 @@ export const AdminUsersManager = () => {
             />
             Cuenta activa
           </label>
+
+          <div className="space-y-4 rounded-2xl bg-crema p-4">
+            <label className="inline-flex items-center gap-2 font-semibold text-sepia">
+              <input
+                type="checkbox"
+                checked={form.isFrequentCustomer}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, isFrequentCustomer: event.target.checked }))
+                }
+              />
+              Marcar como cliente frecuente
+            </label>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <select
+                value={form.loyaltyTier}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, loyaltyTier: event.target.value as LoyaltyTier }))
+                }
+                className="rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+              >
+                {loyaltyTierOptions.map((tier) => (
+                  <option key={tier} value={tier}>
+                    {tier}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                min="0"
+                value={form.loyaltyPoints}
+                onChange={(event) => setForm((prev) => ({ ...prev, loyaltyPoints: event.target.value }))}
+                placeholder="Puntos"
+                className="rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+              />
+              <input
+                type="number"
+                min="0"
+                value={form.loyaltyCredit}
+                onChange={(event) => setForm((prev) => ({ ...prev, loyaltyCredit: event.target.value }))}
+                placeholder="Credito"
+                className="rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+              />
+            </div>
+
+            <input
+              value={form.loyaltyBenefits}
+              onChange={(event) => setForm((prev) => ({ ...prev, loyaltyBenefits: event.target.value }))}
+              placeholder="Beneficios separados por coma"
+              className="w-full rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+            />
+
+            <textarea
+              value={form.loyaltyNote}
+              onChange={(event) => setForm((prev) => ({ ...prev, loyaltyNote: event.target.value }))}
+              placeholder="Nota o beneficio especial"
+              className="min-h-24 w-full rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+            />
+          </div>
 
           <div className="flex flex-wrap gap-3">
             <button

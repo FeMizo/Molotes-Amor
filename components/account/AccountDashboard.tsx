@@ -11,12 +11,12 @@ import { AccountEmptyState } from "./AccountEmptyState";
 import { RepeatOrderButton } from "./RepeatOrderButton";
 import { OrderProgressTracker } from "../orders/OrderProgressTracker";
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
+import { LoyaltyBenefitsPanel } from "../shared/LoyaltyBenefitsPanel";
 
 export const AccountDashboard = () => {
   const {
     activeOrder,
     error,
-    favoriteProducts,
     loading,
     profile,
     recentOrders,
@@ -43,15 +43,6 @@ export const AccountDashboard = () => {
 
   if (!profile) {
     return null;
-  }
-
-  if (recentOrders.length === 0) {
-    return (
-      <AccountEmptyState
-        title="Tu centro de pedidos esta listo"
-        description="En cuanto hagas tu primer pedido, aqui podras seguir estados, repetir ordenes y guardar favoritos para comprar mas rapido."
-      />
-    );
   }
 
   return (
@@ -218,6 +209,15 @@ export const AccountDashboard = () => {
             </div>
           </div>
 
+          <div className="mt-5">
+            <LoyaltyBenefitsPanel
+              loyalty={profile.loyalty}
+              title={profile.loyalty.isFrequentCustomer ? "Cliente frecuente" : "Beneficios de fidelidad"}
+              description="Tus puntos, credito y ventajas activas viven en la misma cuenta para que veas rapidamente que beneficios tienes disponibles."
+              className="bg-crema/45"
+            />
+          </div>
+
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               href="/mi-cuenta/perfil"
@@ -254,34 +254,41 @@ export const AccountDashboard = () => {
             </Link>
           </div>
           <div className="mt-5 space-y-3">
-            {recentOrders.map((order) => (
-              <Link
-                key={order.id}
-                href={`/mi-cuenta/pedidos/${order.id}`}
-                className="block rounded-2xl border border-beige-tostado/25 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/40 hover:bg-crema hover:shadow-sm"
-              >
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="font-bold text-sepia">
-                      Ref. {getOrderPaymentRef(order)}
-                    </p>
-                    <p className="mt-1 text-sm text-sepia/60">
-                      {formatDate(order.createdAt)} · {order.items.length}{" "}
-                      productos
-                    </p>
+            {recentOrders.length > 0 ? (
+              recentOrders.map((order) => (
+                <Link
+                  key={order.id}
+                  href={`/mi-cuenta/pedidos/${order.id}`}
+                  className="block rounded-2xl border border-beige-tostado/25 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/40 hover:bg-crema hover:shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="font-bold text-sepia">
+                        Ref. {getOrderPaymentRef(order)}
+                      </p>
+                      <p className="mt-1 text-sm text-sepia/60">
+                        {formatDate(order.createdAt)} · {order.items.length}{" "}
+                        productos
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <OrderStatusBadge status={order.status} compact />
+                      <span className="font-bold text-terracota">
+                        {formatCurrency(order.total)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <OrderStatusBadge status={order.status} compact />
-                    <span className="font-bold text-terracota">
-                      {formatCurrency(order.total)}
-                    </span>
-                  </div>
-                </div>
-                <p className="mt-3 text-sm text-sepia/70">
-                  {order.items.map((item) => item.productName).join(", ")}
-                </p>
-              </Link>
-            ))}
+                  <p className="mt-3 text-sm text-sepia/70">
+                    {order.items.map((item) => item.productName).join(", ")}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <AccountEmptyState
+                title="Tu centro de pedidos esta listo"
+                description="En cuanto hagas tu primer pedido, aqui podras seguir estados, repetir ordenes y aprovechar tus beneficios de fidelidad."
+              />
+            )}
           </div>
         </article>
       </section>
