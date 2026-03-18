@@ -5,6 +5,7 @@ import type {
   UserPanelOrder,
 } from "@/types/account";
 import type { Order } from "@/types/order";
+import { getOrderPayment } from "@/lib/payment";
 
 const sortOrdersByDate = (orders: UserPanelOrder[]): UserPanelOrder[] =>
   [...orders].sort(
@@ -22,6 +23,7 @@ export const toUserPanelOrder = (order: Order): UserPanelOrder => {
 
   return {
     ...order,
+    payment: getOrderPayment(order),
     source: order.id.startsWith("ord-juan") || order.id.startsWith("ord-vita")
       ? "mock"
       : "checkout",

@@ -119,12 +119,14 @@ export const OrdersHistory = () => {
         {filteredOrders.map((order) => (
           <article
             key={order.id}
-            className="rounded-[2rem] border border-beige-tostado/30 bg-white p-5 shadow-sm"
+            className="group rounded-[2rem] border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/25 hover:bg-crema/40 hover:shadow-lg"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-xl font-serif font-bold text-sepia">{order.id}</h3>
+                  <h3 className="text-xl font-serif font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
+                    {order.id}
+                  </h3>
                   <OrderStatusBadge status={order.status} compact />
                 </div>
                 <p className="text-sm text-sepia/60">
@@ -139,7 +141,7 @@ export const OrdersHistory = () => {
                 <p className="max-w-sm text-sm text-sepia/65">{order.trackingNote}</p>
                 <Link
                   href={`/mi-cuenta/pedidos/${order.id}`}
-                  className="inline-flex rounded-xl border border-beige-tostado/35 px-4 py-3 font-bold text-sepia transition-colors hover:border-terracota"
+                  className="inline-flex rounded-xl border border-beige-tostado/35 px-4 py-3 font-bold text-sepia transition-all duration-300 hover:border-terracota hover:bg-white hover:text-terracota"
                 >
                   Ver detalle
                 </Link>

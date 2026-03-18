@@ -47,7 +47,7 @@ export const AccountDashboard = () => {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <ReceiptText size={18} />
@@ -58,7 +58,7 @@ export const AccountDashboard = () => {
             </div>
           </div>
         </article>
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <Clock3 size={18} />
@@ -69,7 +69,7 @@ export const AccountDashboard = () => {
             </div>
           </div>
         </article>
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <Package size={18} />
@@ -82,7 +82,7 @@ export const AccountDashboard = () => {
             </div>
           </div>
         </article>
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <Heart size={18} />
@@ -117,19 +117,19 @@ export const AccountDashboard = () => {
           {activeOrder ? (
             <div className="mt-6 space-y-5">
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl bg-crema p-4">
+                <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
                   <p className="text-sm font-semibold text-sepia/60">Hora estimada</p>
                   <p className="mt-1 text-lg font-bold text-sepia">
                     {activeOrder.etaLabel ?? "En actualizacion"}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-crema p-4">
+                <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
                   <p className="text-sm font-semibold text-sepia/60">Canal</p>
                   <p className="mt-1 text-lg font-bold capitalize text-sepia">
                     {activeOrder.channel === "delivery" ? "Entrega" : "Recoger en tienda"}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-crema p-4">
+                <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
                   <p className="text-sm font-semibold text-sepia/60">Contacto</p>
                   <p className="mt-1 text-lg font-bold text-sepia">{profile.phone}</p>
                 </div>
@@ -223,7 +223,7 @@ export const AccountDashboard = () => {
               <Link
                 key={order.id}
                 href={`/mi-cuenta/pedidos/${order.id}`}
-                className="block rounded-2xl border border-beige-tostado/25 p-4 transition-colors hover:border-terracota/40 hover:bg-crema"
+                className="block rounded-2xl border border-beige-tostado/25 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/40 hover:bg-crema hover:shadow-sm"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>

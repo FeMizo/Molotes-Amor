@@ -60,7 +60,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
     ),
     "home.favorites": (
       <section className="pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="rounded-[2rem] border border-beige-tostado/25 bg-white p-8 shadow-sm">
+        <div className="rounded-[2rem] border border-beige-tostado/25 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:shadow-lg">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
@@ -83,7 +83,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
               ))}
             </div>
           ) : (
-            <div className="rounded-[1.5rem] border border-dashed border-beige-tostado/35 bg-crema px-6 py-10 text-center">
+            <div className="rounded-[1.5rem] border border-dashed border-beige-tostado/35 bg-crema px-6 py-10 text-center transition-all duration-300 hover:border-terracota/25 hover:bg-white">
               <p className="text-xl font-serif font-bold text-sepia">
                 {content.home.favoritesEmptyTitle}
               </p>
@@ -104,13 +104,13 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                className="relative"
+                className="relative transition-transform duration-500 hover:-translate-y-1"
               >
                 <div className="rounded-[3rem] overflow-hidden shadow-2xl">
                   <img
                     src={content.home.storyImage}
                     alt="Proceso artesanal"
-                    className="w-full h-full object-cover aspect-square"
+                    className="aspect-square w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -128,12 +128,12 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
               </h3>
               <p className="text-lg text-sepia/70 leading-relaxed">{content.home.storyDescription}</p>
               <div className="grid grid-cols-2 gap-8">
-                <div>
+                <div className="rounded-2xl p-2 transition-all duration-300 hover:bg-white/55">
                   <span className="block text-3xl font-serif font-bold text-terracota mb-1">01.</span>
                   <h4 className="font-bold text-sepia mb-2">{content.home.storyItemOneTitle}</h4>
                   <p className="text-sm text-sepia/60">{content.home.storyItemOneDescription}</p>
                 </div>
-                <div>
+                <div className="rounded-2xl p-2 transition-all duration-300 hover:bg-white/55">
                   <span className="block text-3xl font-serif font-bold text-terracota mb-1">02.</span>
                   <h4 className="font-bold text-sepia mb-2">{content.home.storyItemTwoTitle}</h4>
                   <p className="text-sm text-sepia/60">{content.home.storyItemTwoDescription}</p>
@@ -183,7 +183,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white p-8 rounded-2xl border border-beige-tostado/20 shadow-sm italic text-sepia/80"
+                className="rounded-2xl border border-beige-tostado/20 bg-white p-8 italic text-sepia/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/40 hover:shadow-lg"
               >
                 <p className="mb-6">&quot;{testimonial.text}&quot;</p>
                 <div className="flex items-center space-x-3 not-italic">
@@ -203,7 +203,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
     ),
     "home.promotions": (
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2.5rem] border border-beige-tostado/20 bg-sepia px-8 py-10 text-crema shadow-sm lg:px-10">
+        <div className="mx-auto max-w-7xl rounded-[2.5rem] border border-beige-tostado/20 bg-sepia px-8 py-10 text-crema shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-mostaza">
@@ -219,7 +219,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
                   (benefit) => (
                     <span
                       key={benefit}
-                      className="rounded-full border border-crema/20 bg-crema/10 px-4 py-2 text-sm font-semibold"
+                      className="rounded-full border border-crema/20 bg-crema/10 px-4 py-2 text-sm font-semibold transition-all duration-300 hover:border-crema/35 hover:bg-crema/20"
                     >
                       {benefit}
                     </span>
@@ -235,7 +235,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
                 </Link>
               ) : null}
             </div>
-            <div className="rounded-[2rem] border border-crema/15 bg-crema/10 p-6">
+            <div className="rounded-[2rem] border border-crema/15 bg-crema/10 p-6 transition-all duration-300 hover:border-crema/25 hover:bg-crema/15">
               <p className="text-sm uppercase tracking-[0.25em] text-mostaza">Uso sugerido</p>
               <p className="mt-4 text-lg font-serif font-bold">{content.promotions.secondaryText}</p>
               <p className="mt-4 text-sm text-crema/70">

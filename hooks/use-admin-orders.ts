@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { adminClient } from "@/services/client/admin-client";
+import { getOrderPayment } from "@/lib/payment";
 import type { Order, OrderStatus } from "@/types/order";
+
+const normalizeOrder = (order: Order): Order => ({
+  ...order,
+  payment: getOrderPayment(order),
+});
 
 export const useAdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -14,7 +20,7 @@ export const useAdminOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      setOrders(await adminClient.listOrders());
+      setOrders((await adminClient.listOrders()).map(normalizeOrder));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar pedidos.");
     } finally {
@@ -27,7 +33,7 @@ export const useAdminOrders = () => {
   }, [load]);
 
   const updateStatus = async (id: string, status: OrderStatus) => {
-    const updated = await adminClient.updateOrderStatus(id, status);
+    const updated = normalizeOrder(await adminClient.updateOrderStatus(id, status));
     setOrders((prev) => prev.map((order) => (order.id === id ? updated : order)));
   };
 

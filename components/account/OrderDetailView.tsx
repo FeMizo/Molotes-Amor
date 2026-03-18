@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { orderStatusMeta } from "@/lib/order-status";
+import { getOrderPayment, paymentMethodLabel } from "@/lib/payment";
 import { useUserAccount } from "@/hooks/use-user-account";
 
 import { AccountEmptyState } from "./AccountEmptyState";
@@ -43,6 +44,7 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
   }
 
   const statusMeta = orderStatusMeta[order.status];
+  const payment = getOrderPayment(order);
 
   return (
     <div className="space-y-6">
@@ -80,6 +82,15 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
             <p className="text-sm font-semibold text-sepia/55">Total</p>
             <p className="mt-1 font-bold text-sepia">{formatCurrency(order.total)}</p>
           </div>
+          <div className="rounded-2xl bg-crema p-4">
+            <p className="text-sm font-semibold text-sepia/55">Pago</p>
+            <p className="mt-1 font-bold text-sepia">
+              {paymentMethodLabel[payment.method]}
+            </p>
+            {payment.transferReference ? (
+              <p className="mt-1 text-sm text-sepia/65">{payment.transferReference}</p>
+            ) : null}
+          </div>
         </div>
 
         <div className="mt-6 rounded-2xl border border-beige-tostado/25 bg-crema/50 p-5">
@@ -94,10 +105,12 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
             {order.items.map((item) => (
               <div
                 key={`${order.id}-${item.productId}`}
-                className="flex flex-col gap-2 rounded-2xl border border-beige-tostado/20 p-4 md:flex-row md:items-center md:justify-between"
+                className="group flex flex-col gap-2 rounded-2xl border border-beige-tostado/20 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/25 hover:bg-crema/55 md:flex-row md:items-center md:justify-between"
               >
                 <div>
-                  <p className="font-bold text-sepia">{item.productName}</p>
+                  <p className="font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
+                    {item.productName}
+                  </p>
                   <p className="text-sm text-sepia/60">
                     {item.quantity} x {formatCurrency(item.unitPrice)}
                   </p>
@@ -129,6 +142,10 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
                 <span className="font-semibold text-sepia">Telefono:</span> {order.customer.phone}
               </p>
               <p>
+                <span className="font-semibold text-sepia">Email:</span>{" "}
+                {order.customer.email ?? "Sin email registrado"}
+              </p>
+              <p>
                 <span className="font-semibold text-sepia">Direccion:</span>{" "}
                 {order.customer.address ?? "Sin direccion registrada"}
               </p>
@@ -139,6 +156,34 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
               ) : null}
             </div>
           </article>
+
+          {payment.method === "transferencia" ? (
+            <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+              <h3 className="text-2xl font-serif font-bold text-sepia">Datos de transferencia</h3>
+              <div className="mt-4 space-y-3 text-sepia/75">
+                <p>
+                  <span className="font-semibold text-sepia">Banco:</span>{" "}
+                  {payment.bank ?? "Sin banco"}
+                </p>
+                <p>
+                  <span className="font-semibold text-sepia">Titular:</span>{" "}
+                  {payment.accountHolder ?? "Sin titular"}
+                </p>
+                <p>
+                  <span className="font-semibold text-sepia">Cuenta:</span>{" "}
+                  {payment.accountNumber ?? "Sin cuenta"}
+                </p>
+                <p>
+                  <span className="font-semibold text-sepia">CLABE:</span>{" "}
+                  {payment.clabe ?? "Sin CLABE"}
+                </p>
+                <p>
+                  <span className="font-semibold text-sepia">Referencia:</span>{" "}
+                  {payment.transferReference ?? "Sin referencia"}
+                </p>
+              </div>
+            </article>
+          ) : null}
         </div>
       </div>
     </div>

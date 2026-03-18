@@ -104,6 +104,12 @@ export const adminContentFieldRegistry: Partial<Record<AdminContentSectionId, Co
     { path: ["operations", "bannerText"], label: "Texto corto de estado" },
     { path: ["operations", "notice"], label: "Aviso operativo", kind: "textarea" },
     { path: ["operations", "checkoutMessage"], label: "Mensaje para checkout", kind: "textarea" },
+    { path: ["operations", "transferBank"], label: "Banco transferencia" },
+    { path: ["operations", "transferAccountHolder"], label: "Titular cuenta" },
+    { path: ["operations", "transferAccountNumber"], label: "Numero de cuenta" },
+    { path: ["operations", "transferClabe"], label: "CLABE" },
+    { path: ["operations", "transferReferenceLabel"], label: "Etiqueta de referencia" },
+    { path: ["operations", "transferInstructions"], label: "Instrucciones transferencia", kind: "textarea" },
   ],
   "home.hero": [
     { path: ["home", "heroBadge"], label: "Badge hero" },

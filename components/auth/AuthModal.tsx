@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { assertValidEmail, assertValidPhone } from "@/lib/contact";
 import { useAuthStore } from "@/store/auth-store";
 
 import { ModalShell } from "../shared/ModalShell";
@@ -112,16 +113,6 @@ export const AuthModal = () => {
       return;
     }
 
-    if (!registerForm.email.includes("@")) {
-      setError("Ingresa un correo valido.");
-      return;
-    }
-
-    if (registerForm.phone.replace(/\D/g, "").length < 10) {
-      setError("Ingresa un telefono valido.");
-      return;
-    }
-
     if (registerForm.password.length < 8) {
       setError("La contrasena debe tener al menos 8 caracteres.");
       return;
@@ -133,12 +124,14 @@ export const AuthModal = () => {
     }
 
     try {
+      const email = assertValidEmail(registerForm.email);
+      const phone = assertValidPhone(registerForm.phone, "Ingresa un telefono valido.");
       const user = register({
         firstName: registerForm.firstName,
         lastName: registerForm.lastName,
         username: registerForm.username,
-        email: registerForm.email,
-        phone: registerForm.phone,
+        email,
+        phone,
         password: registerForm.password,
       });
       resetLocalForms();

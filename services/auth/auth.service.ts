@@ -1,4 +1,5 @@
 import { authUserSeed } from "@/data/account";
+import { assertValidEmail, assertValidPhone, normalizeEmail } from "@/lib/contact";
 import type { AppUser, UserSession } from "@/types/auth";
 
 export const getAuthUsersSeed = (): AppUser[] => authUserSeed;
@@ -50,14 +51,16 @@ export const createAppUser = (input: {
   password: string;
 }): AppUser => {
   const now = new Date().toISOString();
+  const email = assertValidEmail(input.email);
+  const phone = assertValidPhone(input.phone, "Ingresa un telefono valido.");
 
   return {
     id: `usr-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),
     username: input.username.trim(),
-    email: input.email.trim().toLowerCase(),
-    phone: input.phone.replace(/\D/g, ""),
+    email,
+    phone,
     password: input.password,
     role: "user",
     isActive: true,
@@ -74,7 +77,7 @@ export const assertUserCanRegister = (
   input: { username: string; email: string },
 ): void => {
   const normalizedUsername = input.username.trim().toLowerCase();
-  const normalizedEmail = input.email.trim().toLowerCase();
+  const normalizedEmail = normalizeEmail(input.email);
 
   if (users.some((user) => user.username.toLowerCase() === normalizedUsername)) {
     throw new Error("Ese username ya esta en uso.");

@@ -129,6 +129,13 @@ export const defaultSiteContent: SiteContent = {
     notice: "Pedidos habilitados. El equipo esta listo para preparar y despachar.",
     checkoutMessage:
       "Los pedidos no estan disponibles en este momento. Guarda tus productos para despues y vuelve mas tarde.",
+    transferBank: "BBVA",
+    transferAccountHolder: "Molotes Amor SA de CV",
+    transferAccountNumber: "0123456789",
+    transferClabe: "012180001234567890",
+    transferReferenceLabel: "Referencia del pedido",
+    transferInstructions:
+      "Realiza la transferencia y conserva tu comprobante. Usa la referencia del pedido para identificar el pago.",
   },
   pageSections: defaultFrontendSections,
 };

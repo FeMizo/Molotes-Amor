@@ -69,7 +69,7 @@ export const ProductCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-beige-tostado/20"
+      className="group relative overflow-hidden rounded-2xl border border-beige-tostado/20 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/25 hover:shadow-xl"
     >
       {product.badge ? (
         <div className="absolute top-4 left-4 z-10">
@@ -93,10 +93,14 @@ export const ProductCard = ({
         />
       </div>
 
-      <div className="p-6">
+      <div className="p-6 transition-colors duration-300 group-hover:bg-crema/35">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-serif font-bold text-sepia leading-tight">{product.name}</h3>
-          <span className="text-lg font-bold text-terracota">${product.price}</span>
+          <h3 className="text-xl font-serif font-bold text-sepia leading-tight transition-colors duration-300 group-hover:text-terracota">
+            {product.name}
+          </h3>
+          <span className="text-lg font-bold text-terracota transition-transform duration-300 group-hover:scale-[1.03]">
+            ${product.price}
+          </span>
         </div>
 
         <p className="text-sm text-sepia/70 mb-6 line-clamp-2 min-h-[2.5rem]">{product.description}</p>

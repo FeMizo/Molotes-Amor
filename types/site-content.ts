@@ -113,6 +113,12 @@ export interface OperationsContent {
   bannerText: string;
   notice: string;
   checkoutMessage: string;
+  transferBank: string;
+  transferAccountHolder: string;
+  transferAccountNumber: string;
+  transferClabe: string;
+  transferReferenceLabel: string;
+  transferInstructions: string;
 }
 
 export type PageSectionKey =

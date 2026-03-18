@@ -159,10 +159,10 @@ export const AdminContentManager = () => {
                     key={section.id}
                     type="button"
                     onClick={() => setSelectedSection(section.id)}
-                    className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    className={`w-full rounded-2xl border px-4 py-3 text-left transition-all duration-300 ${
                       active
-                        ? "border-terracota/35 bg-terracota/10"
-                        : "border-transparent hover:border-beige-tostado/30 hover:bg-white"
+                        ? "border-terracota/35 bg-terracota/10 shadow-sm"
+                        : "border-transparent hover:-translate-y-0.5 hover:border-beige-tostado/30 hover:bg-white hover:shadow-sm"
                     }`}
                   >
                     <span className="block font-semibold text-sepia">{section.name}</span>
@@ -190,7 +190,7 @@ export const AdminContentManager = () => {
                   return (
                     <article
                       key={definition.key}
-                      className="rounded-[1.5rem] border border-beige-tostado/20 p-5"
+                      className="rounded-[1.5rem] border border-beige-tostado/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-sm"
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
@@ -236,7 +236,7 @@ export const AdminContentManager = () => {
             ) : (
               <>
                 {sectionConfig ? (
-                  <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5">
+                  <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-sm">
                     <div className="grid gap-4 md:grid-cols-[1fr_220px] md:items-end">
                       <div>
                         <h4 className="text-lg font-serif font-bold text-sepia">Configuracion de seccion</h4>
@@ -280,7 +280,7 @@ export const AdminContentManager = () => {
                   </article>
                 ) : null}
 
-                <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5">
+                <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-sm">
                   <div className="grid gap-4 lg:grid-cols-2">
                     {sectionFields.map((field) => (
                       <label key={`${field.path[0]}.${field.path[1]}`} className="block">

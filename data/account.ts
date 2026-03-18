@@ -112,6 +112,7 @@ const createOrder = ({
   status,
   createdAt,
   customer,
+  payment,
   lines,
   notes,
 }: {
@@ -120,7 +121,8 @@ const createOrder = ({
   userUsername: string;
   status: OrderStatus;
   createdAt: string;
-  customer: { name: string; phone: string; address?: string };
+  customer: { name: string; phone: string; email?: string; address?: string };
+  payment?: Order["payment"];
   lines: Array<{ productId: string; quantity: number }>;
   notes?: string;
 }): Order => {
@@ -137,6 +139,7 @@ const createOrder = ({
     status,
     createdAt,
     customer,
+    payment: payment ?? { method: "efectivo" },
     notes,
   };
 };
@@ -151,7 +154,11 @@ export const seedUserOrders: Order[] = [
     customer: {
       name: "Juan Perez",
       phone: "2221234588",
+      email: "juan@molotesamor.mx",
       address: "Av. Reforma 123, Centro Historico",
+    },
+    payment: {
+      method: "efectivo",
     },
     lines: [
       { productId: "1", quantity: 2 },
@@ -168,7 +175,16 @@ export const seedUserOrders: Order[] = [
     customer: {
       name: "Vita",
       phone: "2217654321",
+      email: "vita@molotesamor.mx",
       address: "11 Sur 204, Col. El Carmen",
+    },
+    payment: {
+      method: "transferencia",
+      transferReference: "ORD-VITA-001",
+      bank: "BBVA",
+      accountHolder: "Molotes Amor SA de CV",
+      accountNumber: "0123456789",
+      clabe: "012180001234567890",
     },
     lines: [
       { productId: "4", quantity: 2 },

@@ -76,19 +76,24 @@ export const CartDrawer = ({
                 </div>
               ) : (
                 items.map((item) => (
-                  <div key={item.id} className="flex space-x-4 group">
+                  <div
+                    key={item.id}
+                    className="group flex space-x-4 rounded-2xl border border-beige-tostado/20 bg-white/70 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/25 hover:bg-white hover:shadow-md"
+                  >
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-beige-tostado/10">
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         referrerPolicy="no-referrer"
                       />
                     </div>
                     <div className="flex-1 flex flex-col justify-between">
                       <div className="flex justify-between">
                         <div>
-                          <h4 className="font-bold text-sepia">{item.name}</h4>
+                          <h4 className="font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
+                            {item.name}
+                          </h4>
                           {item.maxQuantity ? (
                             <p className="text-xs text-sepia/55">
                               Maximo disponible: {item.maxQuantity}

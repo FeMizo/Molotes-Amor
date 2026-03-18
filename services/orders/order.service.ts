@@ -1,5 +1,7 @@
 import { getRepositories } from "@/repositories/local-repositories";
 import { getSiteContent } from "@/services/content/site-content.service";
+import { assertValidEmail, assertValidPhone } from "@/lib/contact";
+import { buildTransferReference, isTransferConfigReady } from "@/lib/payment";
 import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
 
 const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -8,6 +10,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
   const repos = getRepositories();
   const siteContent = await getSiteContent();
   const [products, inventory] = await Promise.all([repos.products.list(), repos.inventory.list()]);
+  const orderId = toOrderId();
 
   if (input.items.length === 0) {
     throw new Error("El pedido no tiene productos.");
@@ -15,6 +18,21 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
 
   if (!siteContent.operations.isOrderingEnabled) {
     throw new Error(siteContent.operations.checkoutMessage);
+  }
+
+  const paymentMethod = input.payment?.method ?? "efectivo";
+
+  const customerEmail = assertValidEmail(
+    input.customer.email,
+    "Ingresa un correo valido para tu pedido.",
+  );
+  const customerPhone = assertValidPhone(
+    input.customer.phone,
+    "Ingresa un telefono valido de 10 a 15 digitos.",
+  );
+
+  if (paymentMethod === "transferencia" && !isTransferConfigReady(siteContent.operations)) {
+    throw new Error("La configuracion de transferencia no esta completa en admin.");
   }
 
   const orderItems = input.items.map((item) => {
@@ -50,7 +68,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
   const order: Order = {
-    id: toOrderId(),
+    id: orderId,
     items: orderItems.map(({ stockInfo: _stockInfo, ...item }) => item),
     subtotal,
     total: subtotal,
@@ -58,7 +76,24 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     createdAt: new Date().toISOString(),
     userId: input.account.userId,
     userUsername: input.account.username,
-    customer: input.customer,
+    customer: {
+      ...input.customer,
+      email: customerEmail,
+      phone: customerPhone,
+    },
+    payment:
+      paymentMethod === "transferencia"
+        ? {
+            method: "transferencia",
+            transferReference: buildTransferReference(orderId),
+            bank: siteContent.operations.transferBank,
+            accountHolder: siteContent.operations.transferAccountHolder,
+            accountNumber: siteContent.operations.transferAccountNumber,
+            clabe: siteContent.operations.transferClabe,
+          }
+        : {
+            method: "efectivo",
+          },
     notes: input.notes,
   };
 

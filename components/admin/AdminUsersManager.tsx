@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { useAdminUsers } from "@/hooks/use-admin-users";
+import { assertValidEmail, assertValidPhone } from "@/lib/contact";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { AppUserRole } from "@/types/auth";
 import type { PreferredContact } from "@/types/account";
@@ -58,6 +59,16 @@ export const AdminUsersManager = () => {
     });
   }, [contactFilter, query, statusFilter, users]);
 
+  const summary = useMemo(
+    () => ({
+      total: filteredUsers.length,
+      active: filteredUsers.filter((user) => user.isActive).length,
+      admins: filteredUsers.filter((user) => user.role === "admin").length,
+      withOrders: filteredUsers.filter((user) => user.totalOrders > 0).length,
+    }),
+    [filteredUsers],
+  );
+
   const openEditor = (userId: string) => {
     const user = users.find((candidate) => candidate.id === userId);
     if (!user) {
@@ -93,12 +104,15 @@ export const AdminUsersManager = () => {
     setSubmitError(null);
 
     try {
+      const email = assertValidEmail(form.email);
+      const phone = assertValidPhone(form.phone, "Ingresa un telefono valido.");
+
       saveUser(editingId, {
         firstName: form.firstName,
         lastName: form.lastName,
         username: form.username,
-        email: form.email,
-        phone: form.phone,
+        email,
+        phone,
         preferredContact: form.preferredContact,
         role: form.role,
         isActive: form.isActive,
@@ -153,14 +167,33 @@ export const AdminUsersManager = () => {
             </select>
           </div>
         </div>
+
+        <div className="mt-6 grid gap-3 md:grid-cols-4">
+          <div className="rounded-2xl bg-crema px-4 py-3">
+            <p className="text-sm text-sepia/55">Usuarios visibles</p>
+            <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.total}</p>
+          </div>
+          <div className="rounded-2xl bg-crema px-4 py-3">
+            <p className="text-sm text-sepia/55">Activos</p>
+            <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.active}</p>
+          </div>
+          <div className="rounded-2xl bg-crema px-4 py-3">
+            <p className="text-sm text-sepia/55">Admins</p>
+            <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.admins}</p>
+          </div>
+          <div className="rounded-2xl bg-crema px-4 py-3">
+            <p className="text-sm text-sepia/55">Con pedidos</p>
+            <p className="mt-1 text-2xl font-serif font-bold text-sepia">{summary.withOrders}</p>
+          </div>
+        </div>
       </article>
 
       {feedback ? <p className="font-semibold text-olivo">{feedback}</p> : null}
       {submitError ? <p className="font-semibold text-rojo-quemado">{submitError}</p> : null}
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4">
         {error ? (
-          <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm xl:col-span-2">
+          <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
             <p className="font-semibold text-rojo-quemado">{error}</p>
           </article>
         ) : null}
@@ -170,78 +203,110 @@ export const AdminUsersManager = () => {
             key={user.id}
             className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm"
           >
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-2xl font-serif font-bold text-sepia">{user.name}</h3>
-                  <span className="rounded-full bg-crema px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70">
-                    @{user.username}
+            <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+              <section className="rounded-[1.5rem] border border-beige-tostado/20 bg-white p-5">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+                      Usuario
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <h3 className="text-2xl font-serif font-bold text-sepia">{user.name}</h3>
+                      <span className="rounded-full bg-crema px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70">
+                        @{user.username}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-crema px-3 py-2 text-sm font-semibold text-sepia">
+                      {user.preferredContact}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-2 text-sm font-semibold ${
+                        user.isActive
+                          ? "bg-olivo/10 text-olivo"
+                          : "bg-rojo-quemado/10 text-rojo-quemado"
+                      }`}
+                    >
+                      {user.isActive ? "activo" : "inactivo"}
+                    </span>
+                    <span className="rounded-full bg-beige-tostado/20 px-3 py-2 text-sm font-semibold text-sepia">
+                      {user.role}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl bg-crema p-4">
+                    <p className="text-sm text-sepia/55">Correo</p>
+                    <p className="mt-1 font-semibold text-sepia break-all">{user.email}</p>
+                  </div>
+                  <div className="rounded-2xl bg-crema p-4">
+                    <p className="text-sm text-sepia/55">Telefono</p>
+                    <p className="mt-1 font-semibold text-sepia">{user.phone}</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {user.tags.map((tag) => (
+                    <span
+                      key={`${user.id}-${tag}`}
+                      className="rounded-full border border-beige-tostado/30 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  <span className="rounded-full border border-beige-tostado/30 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70">
+                    {user.hasAddress ? "con direccion" : "sin direccion"}
                   </span>
                 </div>
-                <p className="mt-1 text-sepia/60">{user.email}</p>
-                <p className="text-sm text-sepia/55">{user.phone}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-crema px-3 py-2 text-sm font-semibold text-sepia">
-                  {user.preferredContact}
-                </span>
-                <span
-                  className={`rounded-full px-3 py-2 text-sm font-semibold ${
-                    user.isActive
-                      ? "bg-olivo/10 text-olivo"
-                      : "bg-rojo-quemado/10 text-rojo-quemado"
-                  }`}
-                >
-                  {user.isActive ? "activo" : "inactivo"}
-                </span>
-                <span className="rounded-full bg-beige-tostado/20 px-3 py-2 text-sm font-semibold text-sepia">
-                  {user.role}
-                </span>
-              </div>
-            </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl bg-crema p-4">
-                <p className="text-sm text-sepia/55">Pedidos</p>
-                <p className="mt-1 text-xl font-bold text-sepia">{user.totalOrders}</p>
-              </div>
-              <div className="rounded-2xl bg-crema p-4">
-                <p className="text-sm text-sepia/55">Ventas</p>
-                <p className="mt-1 text-xl font-bold text-sepia">{formatCurrency(user.totalSpent)}</p>
-              </div>
-              <div className="rounded-2xl bg-crema p-4">
-                <p className="text-sm text-sepia/55">Activos</p>
-                <p className="mt-1 text-xl font-bold text-sepia">{user.activeOrderCount}</p>
-              </div>
-            </div>
+                <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <p className="text-sm text-sepia/60">
+                    {loading
+                      ? "Cargando actividad..."
+                      : `Ultima actividad: ${user.lastOrderAt ? formatDate(user.lastOrderAt) : "sin pedidos"}`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openEditor(user.id)}
+                    className="rounded-xl border border-beige-tostado/35 px-4 py-2 font-semibold text-sepia transition-colors hover:border-terracota"
+                  >
+                    Editar usuario
+                  </button>
+                </div>
+              </section>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {user.tags.map((tag) => (
-                <span
-                  key={`${user.id}-${tag}`}
-                  className="rounded-full border border-beige-tostado/30 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70"
-                >
-                  {tag}
-                </span>
-              ))}
-              <span className="rounded-full border border-beige-tostado/30 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sepia/70">
-                {user.hasAddress ? "con direccion" : "sin direccion"}
-              </span>
-            </div>
+              <section className="rounded-[1.5rem] border border-beige-tostado/20 bg-crema/60 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+                      Pedidos
+                    </p>
+                    <h4 className="mt-2 text-xl font-serif font-bold text-sepia">
+                      Resumen comercial
+                    </h4>
+                  </div>
+                  <span className="rounded-full border border-beige-tostado/25 bg-white px-3 py-2 text-sm font-semibold text-sepia">
+                    {user.totalOrders > 0 ? "con historial" : "sin historial"}
+                  </span>
+                </div>
 
-            <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm text-sepia/60">
-                {loading
-                  ? "Cargando actividad..."
-                  : `Ultima actividad: ${user.lastOrderAt ? formatDate(user.lastOrderAt) : "sin pedidos"}`}
-              </p>
-              <button
-                type="button"
-                onClick={() => openEditor(user.id)}
-                className="rounded-xl border border-beige-tostado/35 px-4 py-2 font-semibold text-sepia transition-colors hover:border-terracota"
-              >
-                Editar usuario
-              </button>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                    <p className="text-sm text-sepia/55">Pedidos</p>
+                    <p className="mt-1 text-xl font-bold text-sepia">{user.totalOrders}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                    <p className="text-sm text-sepia/55">Ventas</p>
+                    <p className="mt-1 text-xl font-bold text-sepia">{formatCurrency(user.totalSpent)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                    <p className="text-sm text-sepia/55">Pedidos activos</p>
+                    <p className="mt-1 text-xl font-bold text-sepia">{user.activeOrderCount}</p>
+                  </div>
+                </div>
+              </section>
             </div>
           </article>
         ))}

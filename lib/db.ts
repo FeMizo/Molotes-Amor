@@ -82,7 +82,14 @@ const createSchema = async (client: PoolClient): Promise<void> => {
       user_username TEXT,
       customer_name TEXT NOT NULL,
       customer_phone TEXT NOT NULL,
+      customer_email TEXT,
       customer_address TEXT,
+      payment_method TEXT NOT NULL DEFAULT 'efectivo',
+      payment_transfer_reference TEXT,
+      payment_bank TEXT,
+      payment_account_holder TEXT,
+      payment_account_number TEXT,
+      payment_clabe TEXT,
       notes TEXT
     );
   `);
@@ -95,6 +102,47 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   await client.query(`
     ALTER TABLE orders
     ADD COLUMN IF NOT EXISTS user_username TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS customer_email TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'efectivo';
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_transfer_reference TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_bank TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_account_holder TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_account_number TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_clabe TEXT;
+  `);
+
+  await client.query(`
+    UPDATE orders
+    SET payment_method = 'efectivo'
+    WHERE payment_method IS NULL OR BTRIM(payment_method) = '';
   `);
 
   await client.query(`
@@ -200,10 +248,17 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
             user_username,
             customer_name,
             customer_phone,
+            customer_email,
             customer_address,
+            payment_method,
+            payment_transfer_reference,
+            payment_bank,
+            payment_account_holder,
+            payment_account_number,
+            payment_clabe,
             notes
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
           )
           ON CONFLICT (id) DO NOTHING
         `,
@@ -217,7 +272,14 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
           order.userUsername ?? null,
           order.customer.name,
           order.customer.phone,
+          order.customer.email ?? null,
           order.customer.address ?? null,
+          order.payment?.method ?? "efectivo",
+          order.payment?.transferReference ?? null,
+          order.payment?.bank ?? null,
+          order.payment?.accountHolder ?? null,
+          order.payment?.accountNumber ?? null,
+          order.payment?.clabe ?? null,
           order.notes ?? null,
         ],
       );

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { assertValidEmail, assertValidPhone, normalizePhone } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { useUserAccount } from "@/hooks/use-user-account";
 import type { UserAccountProfile, UserAddress } from "@/types/account";
@@ -53,21 +54,18 @@ const AccountProfileContent = ({
     setAccountError(null);
     setAccountMessage(null);
 
-    if (!accountForm.email.includes("@")) {
-      setAccountError("Ingresa un correo valido.");
-      return;
+    try {
+      updateProfile({
+        ...accountForm,
+        email: assertValidEmail(accountForm.email),
+        phone: assertValidPhone(accountForm.phone, "Ingresa un telefono valido."),
+      });
+      setAccountMessage("Datos de cuenta actualizados.");
+    } catch (error) {
+      setAccountError(
+        error instanceof Error ? error.message : "No se pudieron validar los datos de contacto.",
+      );
     }
-
-    if (accountForm.phone.replace(/\D/g, "").length < 10) {
-      setAccountError("Ingresa un telefono valido.");
-      return;
-    }
-
-    updateProfile({
-      ...accountForm,
-      phone: accountForm.phone.replace(/\D/g, ""),
-    });
-    setAccountMessage("Datos de cuenta actualizados.");
   };
 
   const editAddress = (address: UserAddress) => {
@@ -87,17 +85,25 @@ const AccountProfileContent = ({
       return;
     }
 
-    const normalizedAddress = {
-      ...addressDraft,
-      phone: addressDraft.phone.replace(/\D/g, ""),
-      id: editingAddressId ?? addressDraft.id,
-      isDefault: addressDraft.isDefault || profile.addresses.length === 0,
-    };
+    try {
+      const normalizedAddress = {
+        ...addressDraft,
+        phone: addressDraft.phone
+          ? assertValidPhone(addressDraft.phone, "Ingresa un telefono valido para la direccion.")
+          : normalizePhone(addressDraft.phone),
+        id: editingAddressId ?? addressDraft.id,
+        isDefault: addressDraft.isDefault || profile.addresses.length === 0,
+      };
 
-    saveAddress(normalizedAddress);
-    setAddressMessage(editingAddressId ? "Direccion actualizada." : "Direccion guardada.");
-    setEditingAddressId(null);
-    setAddressDraft(createAddressDraft());
+      saveAddress(normalizedAddress);
+      setAddressMessage(editingAddressId ? "Direccion actualizada." : "Direccion guardada.");
+      setEditingAddressId(null);
+      setAddressDraft(createAddressDraft());
+    } catch (error) {
+      setAddressError(
+        error instanceof Error ? error.message : "No se pudo validar el telefono de la direccion.",
+      );
+    }
   };
 
   return (

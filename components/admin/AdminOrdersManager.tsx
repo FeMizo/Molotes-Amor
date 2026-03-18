@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { adminOrderStatuses } from "@/lib/order-status";
+import { getOrderPayment, getOrderPaymentMethod, paymentMethodLabel } from "@/lib/payment";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import type { OrderStatus } from "@/types/order";
 
@@ -22,7 +23,7 @@ export const AdminOrdersManager = () => {
 
     return orders.filter((order) => {
       const target =
-        `${order.id} ${order.userUsername ?? ""} ${order.customer.name} ${order.customer.phone} ${order.status} ${order.items
+        `${order.id} ${order.userUsername ?? ""} ${order.customer.name} ${order.customer.phone} ${order.customer.email ?? ""} ${getOrderPaymentMethod(order)} ${order.status} ${order.items
           .map((item) => item.productName)
           .join(" ")}`.toLowerCase();
       const matchesQuery =
@@ -36,6 +37,7 @@ export const AdminOrdersManager = () => {
 
   const selectedOrder =
     filteredOrders.find((order) => order.id === selectedOrderId) ?? filteredOrders[0];
+  const selectedPayment = selectedOrder ? getOrderPayment(selectedOrder) : null;
   const pendingOrders = orders.filter((order) => order.status === "pendiente").length;
   const inKitchenOrders = orders.filter(
     (order) => order.status === "confirmado" || order.status === "preparando",
@@ -93,7 +95,7 @@ export const AdminOrdersManager = () => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por id, cliente, telefono o producto"
+            placeholder="Buscar por id, cliente, telefono, email o producto"
             className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
           />
           <div className="flex flex-wrap gap-2">
@@ -141,15 +143,17 @@ export const AdminOrdersManager = () => {
                 key={order.id}
                 type="button"
                 onClick={() => setSelectedOrderId(order.id)}
-                className={`w-full rounded-2xl border p-4 text-left transition-colors ${
+                className={`group w-full rounded-2xl border p-4 text-left transition-all duration-300 ${
                   selectedOrder?.id === order.id
-                    ? "border-terracota bg-crema"
-                    : "border-beige-tostado/25 hover:border-beige-tostado/60"
+                    ? "border-terracota bg-crema shadow-sm"
+                    : "border-beige-tostado/25 hover:-translate-y-0.5 hover:border-terracota/30 hover:bg-crema/40 hover:shadow-sm"
                 }`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-bold text-sepia">{order.id}</p>
+                    <p className="font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
+                      {order.id}
+                    </p>
                     <p className="mt-1 text-sm text-sepia/60">{order.customer.name}</p>
                     <p className="text-xs text-sepia/50">
                       {order.userUsername ? `Usuario: ${order.userUsername}` : "Sin usuario"}
@@ -217,22 +221,57 @@ export const AdminOrdersManager = () => {
               {feedback ? <p className="font-semibold text-olivo">{feedback}</p> : null}
               {feedbackError ? <p className="font-semibold text-rojo-quemado">{feedbackError}</p> : null}
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl bg-crema p-4">
-                  <h3 className="font-bold text-sepia">Cliente</h3>
-                  <p className="mt-2 text-sepia/80">{selectedOrder.customer.name}</p>
-                  <p className="text-sm text-sepia/70">{selectedOrder.customer.phone}</p>
-                  <p className="mt-1 text-sm text-sepia/70">
-                    {selectedOrder.customer.address ?? "Sin direccion"}
-                  </p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl bg-crema p-4">
+                    <h3 className="font-bold text-sepia">Cliente</h3>
+                    <p className="mt-2 text-sepia/80">{selectedOrder.customer.name}</p>
+                    <p className="text-sm text-sepia/70">{selectedOrder.customer.phone}</p>
+                    <p className="text-sm text-sepia/70">
+                      {selectedOrder.customer.email ?? "Sin email registrado"}
+                    </p>
+                    <p className="mt-1 text-sm text-sepia/70">
+                      {selectedOrder.customer.address ?? "Sin direccion"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-crema p-4">
+                    <h3 className="font-bold text-sepia">Resumen</h3>
+                    <p className="mt-2 text-sepia/80">Subtotal: {formatCurrency(selectedOrder.subtotal)}</p>
+                    <p className="text-sepia/80">Total: {formatCurrency(selectedOrder.total)}</p>
+                    <p className="text-sepia/80">Items: {selectedOrder.items.length}</p>
+                    <p className="text-sepia/80">
+                      Pago: {paymentMethodLabel[selectedPayment?.method ?? "efectivo"]}
+                    </p>
+                    {selectedPayment?.transferReference ? (
+                      <p className="text-sepia/80">
+                        Referencia: {selectedPayment.transferReference}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
+
+              {selectedPayment?.method === "transferencia" ? (
                 <div className="rounded-2xl bg-crema p-4">
-                  <h3 className="font-bold text-sepia">Resumen</h3>
-                  <p className="mt-2 text-sepia/80">Subtotal: {formatCurrency(selectedOrder.subtotal)}</p>
-                  <p className="text-sepia/80">Total: {formatCurrency(selectedOrder.total)}</p>
-                  <p className="text-sepia/80">Items: {selectedOrder.items.length}</p>
+                  <h3 className="font-bold text-sepia">Transferencia</h3>
+                  <div className="mt-2 grid gap-3 md:grid-cols-2">
+                    <p className="text-sm text-sepia/80">
+                      <span className="font-semibold text-sepia">Banco:</span>{" "}
+                      {selectedPayment.bank ?? "Sin banco"}
+                    </p>
+                    <p className="text-sm text-sepia/80">
+                      <span className="font-semibold text-sepia">Titular:</span>{" "}
+                      {selectedPayment.accountHolder ?? "Sin titular"}
+                    </p>
+                    <p className="text-sm text-sepia/80">
+                      <span className="font-semibold text-sepia">Cuenta:</span>{" "}
+                      {selectedPayment.accountNumber ?? "Sin cuenta"}
+                    </p>
+                    <p className="text-sm text-sepia/80">
+                      <span className="font-semibold text-sepia">CLABE:</span>{" "}
+                      {selectedPayment.clabe ?? "Sin CLABE"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               {selectedOrder.notes ? (
                 <div className="rounded-2xl bg-crema p-4">
@@ -247,7 +286,7 @@ export const AdminOrdersManager = () => {
                   {selectedOrder.items.map((item) => (
                     <div
                       key={`${selectedOrder.id}-${item.productId}`}
-                      className="flex justify-between border-b border-beige-tostado/20 pb-2"
+                      className="flex justify-between rounded-xl border border-transparent px-3 py-2 transition-all duration-300 hover:border-beige-tostado/20 hover:bg-crema"
                     >
                       <p className="text-sepia">
                         {item.quantity} x {item.productName}

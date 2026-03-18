@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import { assertValidEmail, assertValidPhone } from "@/lib/contact";
 import { listAdminUsers } from "@/services/account/account.service";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import { useAuthStore } from "@/store/auth-store";
@@ -15,13 +16,23 @@ export const useAdminUsers = () => {
   const users = useMemo(() => listAdminUsers(usersSeed, orders), [orders, usersSeed]);
 
   const saveUser = (userId: string, patch: Partial<AppUser>) => {
+    const nextPatch = { ...patch };
+
+    if (patch.email !== undefined) {
+      nextPatch.email = assertValidEmail(patch.email);
+    }
+
+    if (patch.phone !== undefined) {
+      nextPatch.phone = assertValidPhone(patch.phone, "Ingresa un telefono valido.");
+    }
+
     updateUser(userId, (user) => ({
       ...user,
-      ...patch,
-      addresses: patch.addresses ?? user.addresses,
-      password: patch.password ?? user.password,
-      memberSince: patch.memberSince ?? user.memberSince,
-      passwordUpdatedAt: patch.passwordUpdatedAt ?? user.passwordUpdatedAt,
+      ...nextPatch,
+      addresses: nextPatch.addresses ?? user.addresses,
+      password: nextPatch.password ?? user.password,
+      memberSince: nextPatch.memberSince ?? user.memberSince,
+      passwordUpdatedAt: nextPatch.passwordUpdatedAt ?? user.passwordUpdatedAt,
     }));
   };
 

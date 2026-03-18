@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       account?: { userId: string; username: string };
-      customer: { name: string; phone: string; address?: string };
+      customer: { name: string; phone: string; email?: string; address?: string };
+      payment?: { method?: "efectivo" | "transferencia" };
       notes?: string;
       items: { productId: string; quantity: number }[];
     };
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
       !body.account?.username ||
       !body.customer?.name ||
       !body.customer?.phone ||
+      !body.customer?.email ||
       !Array.isArray(body.items)
     ) {
       return fail("Datos invalidos para crear pedido.");
@@ -32,7 +34,15 @@ export async function POST(request: Request) {
 
     const order = await createOrder({
       account: body.account,
-      customer: body.customer,
+      customer: {
+        name: body.customer.name,
+        phone: body.customer.phone,
+        email: body.customer.email,
+        address: body.customer.address,
+      },
+      payment: {
+        method: body.payment?.method ?? "efectivo",
+      },
       notes: body.notes,
       items: body.items.map((item) => ({
         productId: item.productId,

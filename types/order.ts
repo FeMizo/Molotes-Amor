@@ -6,6 +6,8 @@ export type OrderStatus =
   | "entregado"
   | "cancelado";
 
+export type OrderPaymentMethod = "efectivo" | "transferencia";
+
 export interface OrderItem {
   productId: string;
   productName: string;
@@ -17,7 +19,17 @@ export interface OrderItem {
 export interface CustomerInfo {
   name: string;
   phone: string;
+  email?: string;
   address?: string;
+}
+
+export interface OrderPayment {
+  method: OrderPaymentMethod;
+  transferReference?: string;
+  bank?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  clabe?: string;
 }
 
 export interface Order {
@@ -30,6 +42,7 @@ export interface Order {
   userId?: string;
   userUsername?: string;
   customer: CustomerInfo;
+  payment?: OrderPayment;
   notes?: string;
 }
 
@@ -43,7 +56,12 @@ export interface CreateOrderInput {
     userId: string;
     username: string;
   };
-  customer: CustomerInfo;
+  customer: CustomerInfo & {
+    email: string;
+  };
+  payment?: {
+    method: OrderPaymentMethod;
+  };
   notes?: string;
   items: CreateOrderItemInput[];
 }
