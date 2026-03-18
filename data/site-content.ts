@@ -1,3 +1,5 @@
+import { defaultFrontendSections } from "@/config/site-sections";
+import { normalizeFrontendSections } from "@/lib/site-sections";
 import type { DeepPartial, SiteContent } from "@/types/site-content";
 
 export const defaultSiteContent: SiteContent = {
@@ -16,6 +18,14 @@ export const defaultSiteContent: SiteContent = {
     featuredDescription:
       "Una seleccion de nuestros molotes mas pedidos, preparados con el sazon tradicional que nos distingue.",
     featuredCtaLabel: "Ver menu completo",
+    favoritesEyebrow: "Guardados y favoritos",
+    favoritesTitle: "Lo que siempre te antoja",
+    favoritesDescription:
+      "Recupera tus molotes favoritos y arma tu siguiente pedido en menos pasos.",
+    favoritesCtaLabel: "Abrir mi cuenta",
+    favoritesEmptyTitle: "Todavia no tienes favoritos guardados.",
+    favoritesEmptyDescription:
+      "Marca tus antojos con el corazon y apareceran aqui para volver a ellos rapido.",
     storyTitle: "Calidad que se siente en",
     storyHighlight: "cada mordida",
     storyDescription:
@@ -44,6 +54,12 @@ export const defaultSiteContent: SiteContent = {
     description:
       "Explora nuestra variedad de molotes artesanales, preparados con ingredientes frescos y sazon tradicional poblano.",
     searchPlaceholder: "Busca tu molote favorito...",
+    savedTitle: "Guardados para despues",
+    savedDescription:
+      "Separa tus antojos del carrito activo y recuperalos cuando estes listo para pedir.",
+    savedEmptyTitle: "Aun no guardas productos para despues.",
+    savedEmptyDescription:
+      "Usa el boton de guardar en cada producto o mueve articulos desde tu carrito.",
     emptyStateTitle: "No encontramos molotes que coincidan con tu busqueda.",
     emptyStateCtaLabel: "Ver todo el menu",
   },
@@ -94,6 +110,27 @@ export const defaultSiteContent: SiteContent = {
     successDescription: "Gracias por contactarnos. Te responderemos lo mas pronto posible.",
     submitLabel: "Enviar mensaje",
   },
+  promotions: {
+    eyebrow: "Promociones",
+    title: "Activa una oferta y",
+    highlight: "haz crecer el ticket",
+    description:
+      "Usa este bloque para anunciar combos, productos de temporada o mensajes de venta cruzada sin tocar el codigo.",
+    primaryCtaLabel: "Ver menu",
+    secondaryText: "Ideal para combos, fechas especiales o empujar pedidos en horas clave.",
+    benefitOne: "Combos configurables desde admin",
+    benefitTwo: "Mensaje visible en homepage",
+    benefitThree: "CTA directo al menu",
+  },
+  operations: {
+    isOrderingEnabled: true,
+    statusLabel: "Abierto",
+    bannerText: "Estamos recibiendo pedidos con normalidad.",
+    notice: "Pedidos habilitados. El equipo esta listo para preparar y despachar.",
+    checkoutMessage:
+      "Los pedidos no estan disponibles en este momento. Guarda tus productos para despues y vuelve mas tarde.",
+  },
+  pageSections: defaultFrontendSections,
 };
 
 export const normalizeSiteContent = (input?: DeepPartial<SiteContent> | null): SiteContent => ({
@@ -113,4 +150,13 @@ export const normalizeSiteContent = (input?: DeepPartial<SiteContent> | null): S
     ...defaultSiteContent.contact,
     ...(input?.contact ?? {}),
   },
+  promotions: {
+    ...defaultSiteContent.promotions,
+    ...(input?.promotions ?? {}),
+  },
+  operations: {
+    ...defaultSiteContent.operations,
+    ...(input?.operations ?? {}),
+  },
+  pageSections: normalizeFrontendSections(input?.pageSections as SiteContent["pageSections"] | undefined),
 });

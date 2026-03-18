@@ -3,142 +3,53 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleAlert, CircleCheckBig, Save, X } from "lucide-react";
 
+import {
+  adminContentFieldRegistry,
+  adminContentSections,
+} from "@/config/admin-content-sections";
+import { frontendSectionDefinitions } from "@/config/site-sections";
 import { useAdminSiteContent } from "@/hooks/use-admin-site-content";
-import type { SiteContent } from "@/types/site-content";
+import type {
+  AdminContentSectionId,
+  FrontendSectionConfig,
+  SiteContent,
+} from "@/types/site-content";
 
-type SectionKey = keyof SiteContent;
-
-interface FieldDefinition {
-  section: SectionKey;
-  key: string;
-  label: string;
-  kind?: "input" | "textarea";
-}
-
-interface EditorSection {
-  id: string;
-  title: string;
-  description: string;
-  fields: FieldDefinition[];
-}
-
-const editorSections: EditorSection[] = [
-  {
-    id: "home",
-    title: "Home",
-    description: "Hero, destacados, historia y testimonios.",
-    fields: [
-      { section: "home", key: "heroBadge", label: "Badge hero" },
-      { section: "home", key: "heroTitle", label: "Titulo hero" },
-      { section: "home", key: "heroHighlight", label: "Resaltado hero" },
-      { section: "home", key: "heroDescription", label: "Descripcion hero", kind: "textarea" },
-      { section: "home", key: "heroPrimaryCtaLabel", label: "CTA principal" },
-      { section: "home", key: "heroSecondaryCtaLabel", label: "CTA secundaria" },
-      { section: "home", key: "heroImage", label: "Imagen hero" },
-      { section: "home", key: "heroFloatingCount", label: "Conteo flotante" },
-      { section: "home", key: "heroFloatingQuote", label: "Texto flotante", kind: "textarea" },
-      { section: "home", key: "featuredTitle", label: "Titulo destacados" },
-      { section: "home", key: "featuredDescription", label: "Descripcion destacados", kind: "textarea" },
-      { section: "home", key: "featuredCtaLabel", label: "CTA destacados" },
-      { section: "home", key: "storyTitle", label: "Titulo bloque historia" },
-      { section: "home", key: "storyHighlight", label: "Resaltado bloque historia" },
-      { section: "home", key: "storyDescription", label: "Descripcion bloque historia", kind: "textarea" },
-      { section: "home", key: "storyImage", label: "Imagen bloque historia" },
-      { section: "home", key: "storyBadge", label: "Badge bloque historia" },
-      { section: "home", key: "storyItemOneTitle", label: "Item 1 titulo" },
-      { section: "home", key: "storyItemOneDescription", label: "Item 1 descripcion" },
-      { section: "home", key: "storyItemTwoTitle", label: "Item 2 titulo" },
-      { section: "home", key: "storyItemTwoDescription", label: "Item 2 descripcion" },
-      { section: "home", key: "storyCtaLabel", label: "CTA historia" },
-      { section: "home", key: "testimonialsTitle", label: "Titulo testimonios" },
-      { section: "home", key: "testimonialOneName", label: "Testimonio 1 nombre" },
-      { section: "home", key: "testimonialOneText", label: "Testimonio 1 texto", kind: "textarea" },
-      { section: "home", key: "testimonialOneRole", label: "Testimonio 1 rol" },
-      { section: "home", key: "testimonialTwoName", label: "Testimonio 2 nombre" },
-      { section: "home", key: "testimonialTwoText", label: "Testimonio 2 texto", kind: "textarea" },
-      { section: "home", key: "testimonialTwoRole", label: "Testimonio 2 rol" },
-      { section: "home", key: "testimonialThreeName", label: "Testimonio 3 nombre" },
-      { section: "home", key: "testimonialThreeText", label: "Testimonio 3 texto", kind: "textarea" },
-      { section: "home", key: "testimonialThreeRole", label: "Testimonio 3 rol" },
-    ],
-  },
-  {
-    id: "menu",
-    title: "Menu",
-    description: "Cabecera y textos del filtro.",
-    fields: [
-      { section: "menu", key: "title", label: "Titulo" },
-      { section: "menu", key: "highlight", label: "Resaltado" },
-      { section: "menu", key: "description", label: "Descripcion", kind: "textarea" },
-      { section: "menu", key: "searchPlaceholder", label: "Placeholder buscador" },
-      { section: "menu", key: "emptyStateTitle", label: "Mensaje sin resultados", kind: "textarea" },
-      { section: "menu", key: "emptyStateCtaLabel", label: "CTA sin resultados" },
-    ],
-  },
-  {
-    id: "about",
-    title: "Nosotros",
-    description: "Historia, valores y pilares.",
-    fields: [
-      { section: "about", key: "eyebrow", label: "Eyebrow" },
-      { section: "about", key: "title", label: "Titulo" },
-      { section: "about", key: "highlight", label: "Resaltado" },
-      { section: "about", key: "introTitle", label: "Titulo introduccion" },
-      { section: "about", key: "introDescriptionOne", label: "Parrafo 1", kind: "textarea" },
-      { section: "about", key: "introDescriptionTwo", label: "Parrafo 2", kind: "textarea" },
-      { section: "about", key: "image", label: "Imagen principal" },
-      { section: "about", key: "valueOneTitle", label: "Valor 1 titulo" },
-      { section: "about", key: "valueOneDescription", label: "Valor 1 descripcion" },
-      { section: "about", key: "valueTwoTitle", label: "Valor 2 titulo" },
-      { section: "about", key: "valueTwoDescription", label: "Valor 2 descripcion" },
-      { section: "about", key: "pillarsTitle", label: "Titulo pilares" },
-      { section: "about", key: "pillarsSubtitle", label: "Subtitulo pilares" },
-      { section: "about", key: "pillarOneTitle", label: "Pilar 1 titulo" },
-      { section: "about", key: "pillarOneDescription", label: "Pilar 1 descripcion", kind: "textarea" },
-      { section: "about", key: "pillarTwoTitle", label: "Pilar 2 titulo" },
-      { section: "about", key: "pillarTwoDescription", label: "Pilar 2 descripcion", kind: "textarea" },
-      { section: "about", key: "pillarThreeTitle", label: "Pilar 3 titulo" },
-      { section: "about", key: "pillarThreeDescription", label: "Pilar 3 descripcion", kind: "textarea" },
-    ],
-  },
-  {
-    id: "contact",
-    title: "Contacto",
-    description: "Encabezado, datos y mensajes del formulario.",
-    fields: [
-      { section: "contact", key: "title", label: "Titulo" },
-      { section: "contact", key: "highlight", label: "Resaltado" },
-      { section: "contact", key: "description", label: "Descripcion", kind: "textarea" },
-      { section: "contact", key: "infoTitle", label: "Titulo informacion" },
-      { section: "contact", key: "addressLabel", label: "Etiqueta direccion" },
-      { section: "contact", key: "addressValue", label: "Direccion", kind: "textarea" },
-      { section: "contact", key: "phoneLabel", label: "Etiqueta telefono" },
-      { section: "contact", key: "phoneValue", label: "Telefono" },
-      { section: "contact", key: "emailLabel", label: "Etiqueta email" },
-      { section: "contact", key: "emailValue", label: "Email" },
-      { section: "contact", key: "hoursLabel", label: "Etiqueta horario" },
-      { section: "contact", key: "hoursValue", label: "Horario" },
-      { section: "contact", key: "mapTitle", label: "Titulo mapa" },
-      { section: "contact", key: "mapCtaLabel", label: "CTA mapa" },
-      { section: "contact", key: "formTitle", label: "Titulo formulario" },
-      { section: "contact", key: "successTitle", label: "Titulo exito" },
-      { section: "contact", key: "successDescription", label: "Descripcion exito", kind: "textarea" },
-      { section: "contact", key: "submitLabel", label: "CTA formulario" },
-    ],
-  },
-];
-
-const getFieldValue = (content: SiteContent, field: FieldDefinition): string => {
-  const section = content[field.section] as unknown as Record<string, string>;
-  return section[field.key] ?? "";
+const getFieldValue = (
+  content: SiteContent,
+  path: [Exclude<keyof SiteContent, "pageSections">, string],
+) => {
+  const [root, key] = path;
+  const target = content[root] as unknown as Record<string, string | boolean>;
+  return target[key];
 };
 
-const setFieldValue = (content: SiteContent, field: FieldDefinition, value: string): SiteContent => ({
+const setFieldValue = (
+  content: SiteContent,
+  path: [Exclude<keyof SiteContent, "pageSections">, string],
+  value: string | boolean,
+): SiteContent => {
+  const [root, key] = path;
+  const target = content[root] as unknown as Record<string, string | boolean>;
+
+  return {
+    ...content,
+    [root]: {
+      ...target,
+      [key]: value,
+    },
+  } as SiteContent;
+};
+
+const updatePageSection = (
+  content: SiteContent,
+  sectionKey: FrontendSectionConfig["key"],
+  patch: Partial<FrontendSectionConfig>,
+): SiteContent => ({
   ...content,
-  [field.section]: {
-    ...content[field.section],
-    [field.key]: value,
-  },
+  pageSections: content.pageSections.map((section) =>
+    section.key === sectionKey ? { ...section, ...patch } : section,
+  ),
 });
 
 export const AdminContentManager = () => {
@@ -147,7 +58,20 @@ export const AdminContentManager = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedNoticeVisible, setSavedNoticeVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<AdminContentSectionId>("sections");
   const savedNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const currentSection = useMemo(
+    () => adminContentSections.find((section) => section.id === selectedSection) ?? adminContentSections[0],
+    [selectedSection],
+  );
+  const sectionConfig = form?.pageSections.find(
+    (section) => section.key === currentSection.sectionKey,
+  );
+  const sectionFields =
+    currentSection.id === "sections"
+      ? []
+      : adminContentFieldRegistry[currentSection.id] ?? [];
 
   const isDirty = useMemo(() => {
     if (!form || !content) {
@@ -209,49 +133,200 @@ export const AdminContentManager = () => {
   };
 
   return (
-    <article id="site-content" className="relative bg-white rounded-2xl p-6 pb-32 border border-beige-tostado/30 shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6">
+    <article className="relative rounded-[2rem] border border-beige-tostado/30 bg-white p-6 pb-32 shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold text-sepia">Contenido del sitio</h2>
-          <p className="text-sepia/70 mt-1">Edita Home, Menu, Nosotros y Contacto en una seccion separada del flujo operativo.</p>
+          <p className="mt-1 text-sepia/70">
+            Administra secciones, textos y bloques con paneles dinamicos segun el bloque seleccionado.
+          </p>
         </div>
         <span className="text-sm font-semibold text-sepia/60">{loading ? "Cargando..." : "Listo para editar"}</span>
       </div>
 
-      {error ? <p className="text-rojo-quemado font-semibold mb-4">{error}</p> : null}
-      {!form ? <p className="text-sepia/60">Cargando contenido...</p> : null}
+      {error ? <p className="mt-4 font-semibold text-rojo-quemado">{error}</p> : null}
+      {!form ? <p className="mt-6 text-sepia/60">Cargando contenido...</p> : null}
 
       {form ? (
-        <form id="site-content-form" onSubmit={submit} className="space-y-8">
-          {editorSections.map((section) => (
-            <section key={section.id} className="border border-beige-tostado/20 rounded-2xl p-5">
-              <div className="mb-4">
-                <h3 className="text-xl font-serif font-bold text-sepia">{section.title}</h3>
-                <p className="text-sm text-sepia/60">{section.description}</p>
+        <form id="site-content-form" onSubmit={submit} className="mt-6 grid gap-6 xl:grid-cols-[280px_1fr]">
+          <aside className="rounded-[1.5rem] border border-beige-tostado/20 bg-crema p-3">
+            <nav className="space-y-2">
+              {adminContentSections.map((section) => {
+                const active = selectedSection === section.id;
+
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => setSelectedSection(section.id)}
+                    className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
+                      active
+                        ? "border-terracota/35 bg-terracota/10"
+                        : "border-transparent hover:border-beige-tostado/30 hover:bg-white"
+                    }`}
+                  >
+                    <span className="block font-semibold text-sepia">{section.name}</span>
+                    <span className="mt-1 block text-sm text-sepia/60">{section.description}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <section className="space-y-5">
+            <div className="rounded-[1.5rem] border border-beige-tostado/20 p-5">
+              <h3 className="text-2xl font-serif font-bold text-sepia">{currentSection.name}</h3>
+              <p className="mt-2 text-sepia/65">{currentSection.description}</p>
+            </div>
+
+            {currentSection.id === "sections" ? (
+              <div className="grid gap-4">
+                {frontendSectionDefinitions.map((definition) => {
+                  const current = form.pageSections.find((section) => section.key === definition.key);
+                  if (!current) {
+                    return null;
+                  }
+
+                  return (
+                    <article
+                      key={definition.key}
+                      className="rounded-[1.5rem] border border-beige-tostado/20 p-5"
+                    >
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h4 className="text-lg font-serif font-bold text-sepia">{current.name}</h4>
+                          <p className="mt-1 text-sm text-sepia/60">{definition.description}</p>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-[auto_120px]">
+                          <label className="inline-flex items-center gap-2 rounded-xl bg-crema px-4 py-3 text-sm font-semibold text-sepia">
+                            <input
+                              type="checkbox"
+                              checked={current.enabled}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev ? updatePageSection(prev, current.key, { enabled: event.target.checked }) : prev,
+                                )
+                              }
+                            />
+                            Habilitada
+                          </label>
+                          <label className="block">
+                            <span className="mb-2 block text-sm font-semibold text-sepia">Orden</span>
+                            <input
+                              type="number"
+                              value={current.order}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev
+                                    ? updatePageSection(prev, current.key, {
+                                        order: Number(event.target.value) || 0,
+                                      })
+                                    : prev,
+                                )
+                              }
+                              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {section.fields.map((field) => (
-                  <label key={`${field.section}.${field.key}`} className="block">
-                    <span className="block text-sm font-semibold text-sepia mb-2">{field.label}</span>
-                    {field.kind === "textarea" ? (
-                      <textarea
-                        value={getFieldValue(form, field)}
-                        onChange={(event) => setForm((prev) => (prev ? setFieldValue(prev, field, event.target.value) : prev))}
-                        className="w-full min-h-28 px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota resize-y"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={getFieldValue(form, field)}
-                        onChange={(event) => setForm((prev) => (prev ? setFieldValue(prev, field, event.target.value) : prev))}
-                        className="w-full px-4 py-3 bg-crema border border-beige-tostado/30 rounded-xl focus:outline-none focus:border-terracota"
-                      />
-                    )}
-                  </label>
-                ))}
-              </div>
-            </section>
-          ))}
+            ) : (
+              <>
+                {sectionConfig ? (
+                  <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5">
+                    <div className="grid gap-4 md:grid-cols-[1fr_220px] md:items-end">
+                      <div>
+                        <h4 className="text-lg font-serif font-bold text-sepia">Configuracion de seccion</h4>
+                        <p className="mt-1 text-sm text-sepia/60">
+                          Controla visibilidad y prioridad de render del frontend desde este mismo panel.
+                        </p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-[auto_110px]">
+                        <label className="inline-flex items-center gap-2 rounded-xl bg-crema px-4 py-3 text-sm font-semibold text-sepia">
+                          <input
+                            type="checkbox"
+                            checked={sectionConfig.enabled}
+                            onChange={(event) =>
+                              setForm((prev) =>
+                                prev
+                                  ? updatePageSection(prev, sectionConfig.key, {
+                                      enabled: event.target.checked,
+                                    })
+                                  : prev,
+                              )
+                            }
+                          />
+                          Visible
+                        </label>
+                        <input
+                          type="number"
+                          value={sectionConfig.order}
+                          onChange={(event) =>
+                            setForm((prev) =>
+                              prev
+                                ? updatePageSection(prev, sectionConfig.key, {
+                                    order: Number(event.target.value) || 0,
+                                  })
+                                : prev,
+                            )
+                          }
+                          className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </article>
+                ) : null}
+
+                <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5">
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {sectionFields.map((field) => (
+                      <label key={`${field.path[0]}.${field.path[1]}`} className="block">
+                        <span className="mb-2 block text-sm font-semibold text-sepia">{field.label}</span>
+                        {field.kind === "textarea" ? (
+                          <textarea
+                            value={String(getFieldValue(form, field.path) ?? "")}
+                            onChange={(event) =>
+                              setForm((prev) =>
+                                prev ? setFieldValue(prev, field.path, event.target.value) : prev,
+                              )
+                            }
+                            className="min-h-28 w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                          />
+                        ) : field.kind === "switch" ? (
+                          <label className="inline-flex w-full items-center gap-3 rounded-xl bg-crema px-4 py-3 font-semibold text-sepia">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(getFieldValue(form, field.path))}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev ? setFieldValue(prev, field.path, event.target.checked) : prev,
+                                )
+                              }
+                            />
+                            {Boolean(getFieldValue(form, field.path)) ? "Activo" : "Inactivo"}
+                          </label>
+                        ) : (
+                          <input
+                            type="text"
+                            value={String(getFieldValue(form, field.path) ?? "")}
+                            onChange={(event) =>
+                              setForm((prev) =>
+                                prev ? setFieldValue(prev, field.path, event.target.value) : prev,
+                              )
+                            }
+                            className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                          />
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                </article>
+              </>
+            )}
+          </section>
         </form>
       ) : null}
 
@@ -261,7 +336,7 @@ export const AdminContentManager = () => {
             <CircleCheckBig size={20} className="mt-0.5 text-olivo" />
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-sepia">Guardado listo</p>
-              <p className="text-sm text-sepia/70">Los cambios del contenido ya quedaron aplicados.</p>
+              <p className="text-sm text-sepia/70">Los cambios ya quedaron aplicados.</p>
             </div>
             <button
               type="button"
@@ -276,7 +351,7 @@ export const AdminContentManager = () => {
       ) : null}
 
       <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-2xl border border-beige-tostado/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border border-beige-tostado/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-md">
           <div className="min-w-0">
             {submitError ? (
               <div className="flex items-center gap-2 text-rojo-quemado">
@@ -293,7 +368,7 @@ export const AdminContentManager = () => {
             ) : (
               <p className="font-semibold text-sepia/70">Sin cambios pendientes.</p>
             )}
-            <p className="mt-1 text-sm text-sepia/60">El boton de guardar queda siempre visible en esta barra.</p>
+            <p className="mt-1 text-sm text-sepia/60">La barra de guardado queda visible mientras editas.</p>
           </div>
 
           <button

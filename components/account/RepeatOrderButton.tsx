@@ -39,9 +39,7 @@ export const RepeatOrderButton = ({
     let addedCount = 0;
 
     for (const entry of availableProducts) {
-      for (let index = 0; index < entry.item.quantity; index += 1) {
-        addItem(entry.product);
-      }
+      addItem(entry.product, entry.item.quantity);
       addedCount += entry.item.quantity;
     }
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { formatDate } from "@/lib/format";
 import { useUserAccount } from "@/hooks/use-user-account";
-import type { UserAddress } from "@/types/account";
+import type { UserAccountProfile, UserAddress } from "@/types/account";
 
 const createAddressDraft = (): UserAddress => ({
   id: `addr-${Date.now()}`,
@@ -17,27 +17,24 @@ const createAddressDraft = (): UserAddress => ({
   isDefault: false,
 });
 
-export const AccountProfileManager = () => {
-  const { profile, removeAddress, saveAddress, updateProfile } = useUserAccount();
-  const resolvedProfile = profile ?? {
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    preferredContact: "whatsapp" as const,
-    marketingOptIn: false,
-    addresses: [],
-    memberSince: "",
-    passwordUpdatedAt: "",
-    id: "",
-  };
+const AccountProfileContent = ({
+  profile,
+  removeAddress,
+  saveAddress,
+  updateProfile,
+}: {
+  profile: UserAccountProfile;
+  removeAddress: (addressId: string) => void;
+  saveAddress: (address: UserAddress) => void;
+  updateProfile: (patch: Partial<UserAccountProfile>) => void;
+}) => {
   const [accountForm, setAccountForm] = useState({
-    firstName: resolvedProfile.firstName,
-    lastName: resolvedProfile.lastName,
-    email: resolvedProfile.email,
-    phone: resolvedProfile.phone,
-    preferredContact: resolvedProfile.preferredContact,
-    marketingOptIn: resolvedProfile.marketingOptIn,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    phone: profile.phone,
+    preferredContact: profile.preferredContact,
+    marketingOptIn: profile.marketingOptIn,
   });
   const [addressDraft, setAddressDraft] = useState<UserAddress>(createAddressDraft());
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
@@ -47,24 +44,9 @@ export const AccountProfileManager = () => {
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const defaultAddress = useMemo(
-    () => resolvedProfile.addresses.find((address) => address.isDefault),
-    [resolvedProfile.addresses],
+    () => profile.addresses.find((address) => address.isDefault),
+    [profile.addresses],
   );
-
-  useEffect(() => {
-    setAccountForm({
-      firstName: resolvedProfile.firstName,
-      lastName: resolvedProfile.lastName,
-      email: resolvedProfile.email,
-      phone: resolvedProfile.phone,
-      preferredContact: resolvedProfile.preferredContact,
-      marketingOptIn: resolvedProfile.marketingOptIn,
-    });
-  }, [profile, resolvedProfile.email, resolvedProfile.firstName, resolvedProfile.lastName, resolvedProfile.marketingOptIn, resolvedProfile.phone, resolvedProfile.preferredContact]);
-
-  if (!profile) {
-    return null;
-  }
 
   const submitAccount = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -109,13 +91,11 @@ export const AccountProfileManager = () => {
       ...addressDraft,
       phone: addressDraft.phone.replace(/\D/g, ""),
       id: editingAddressId ?? addressDraft.id,
-      isDefault: addressDraft.isDefault || resolvedProfile.addresses.length === 0,
+      isDefault: addressDraft.isDefault || profile.addresses.length === 0,
     };
 
     saveAddress(normalizedAddress);
-    setAddressMessage(
-      editingAddressId ? "Direccion actualizada." : "Direccion guardada.",
-    );
+    setAddressMessage(editingAddressId ? "Direccion actualizada." : "Direccion guardada.");
     setEditingAddressId(null);
     setAddressDraft(createAddressDraft());
   };
@@ -233,12 +213,12 @@ export const AccountProfileManager = () => {
               </p>
             </div>
             <span className="rounded-full bg-crema px-3 py-2 text-sm font-semibold text-sepia">
-              {resolvedProfile.addresses.length} guardadas
+              {profile.addresses.length} guardadas
             </span>
           </div>
 
           <div className="mt-5 space-y-3">
-            {resolvedProfile.addresses.map((address) => (
+            {profile.addresses.map((address) => (
               <div
                 key={address.id}
                 className="rounded-2xl border border-beige-tostado/20 p-4"
@@ -412,10 +392,38 @@ export const AccountProfileManager = () => {
       <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
         <h2 className="text-2xl font-serif font-bold text-sepia">Resumen de cuenta</h2>
         <p className="mt-3 text-sepia/65">
-          Miembro desde {formatDate(resolvedProfile.memberSince)}. Ultima actualizacion de contrasena:{" "}
-          {formatDate(resolvedProfile.passwordUpdatedAt)}.
+          Miembro desde {formatDate(profile.memberSince)}. Ultima actualizacion de contrasena:{" "}
+          {formatDate(profile.passwordUpdatedAt)}.
         </p>
       </article>
     </div>
+  );
+};
+
+export const AccountProfileManager = () => {
+  const { profile, removeAddress, saveAddress, updateProfile } = useUserAccount();
+
+  if (!profile) {
+    return null;
+  }
+
+  const profileKey = JSON.stringify({
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    phone: profile.phone,
+    preferredContact: profile.preferredContact,
+    marketingOptIn: profile.marketingOptIn,
+    addresses: profile.addresses,
+  });
+
+  return (
+    <AccountProfileContent
+      key={profileKey}
+      profile={profile}
+      removeAddress={removeAddress}
+      saveAddress={saveAddress}
+      updateProfile={updateProfile}
+    />
   );
 };

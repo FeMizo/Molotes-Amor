@@ -83,7 +83,7 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
                 <ShieldAlert size={22} />
               </span>
               <div className="space-y-3">
-                <h2 className="text-3xl font-serif font-bold text-sepia">
+                <h2 className="text-2xl font-serif font-bold text-sepia">
                   {currentUser ? "Tu cuenta no tiene permisos de admin" : "Inicia sesion como admin"}
                 </h2>
                 <p className="max-w-2xl text-sepia/65">
@@ -125,7 +125,7 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-crema">
-      <div className="max-w-7xl mx-auto px-4 py-8 lg:py-10">
+      <div className="mx-auto max-w-[1440px] px-4 py-8 lg:py-10">
         <div className="mb-8 rounded-[2rem] border border-beige-tostado/20 bg-sepia px-6 py-8 text-crema shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">

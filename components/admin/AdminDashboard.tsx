@@ -31,11 +31,38 @@ export const AdminDashboard = () => {
   const salesThisWeek = orders
     .filter((order) => order.status !== "cancelado")
     .reduce((sum, order) => sum + order.total, 0);
+  const averageTicket = orders.length > 0 ? Math.round(salesThisWeek / orders.length) : 0;
   const highlightedProducts = products.filter((product) => product.featured).length;
   const topAlerts = rows
     .filter((row) => row.status !== "disponible")
     .slice(0, 4);
   const latestOrders = orders.slice(0, 4);
+  const deliveryOrders = orders.filter((order) => Boolean(order.customer.address)).length;
+  const pickupOrders = Math.max(0, orders.length - deliveryOrders);
+  const topProducts = Object.values(
+    orders.reduce<
+      Record<string, { productId: string; name: string; quantity: number; total: number }>
+    >((acc, order) => {
+      for (const item of order.items) {
+        const current = acc[item.productId] ?? {
+          productId: item.productId,
+          name: item.productName,
+          quantity: 0,
+          total: 0,
+        };
+
+        acc[item.productId] = {
+          ...current,
+          quantity: current.quantity + item.quantity,
+          total: current.total + item.lineTotal,
+        };
+      }
+
+      return acc;
+    }, {}),
+  )
+    .sort((left, right) => right.quantity - left.quantity)
+    .slice(0, 5);
 
   return (
     <div className="space-y-8">
@@ -43,7 +70,7 @@ export const AdminDashboard = () => {
         <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
           Vista operativa
         </p>
-        <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
+        <h2 className="mt-2 text-2xl font-serif font-bold text-sepia">
           Dashboard principal
         </h2>
         <p className="mt-2 text-sepia/65">
@@ -85,6 +112,74 @@ export const AdminDashboard = () => {
             {formatCurrency(salesThisWeek)}
           </p>
           <p className="mt-2 text-sm text-sepia/60">{users.length} perfiles mock listos para evolucionar</p>
+        </article>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-2xl font-serif font-bold text-sepia">Top productos</h3>
+              <p className="mt-2 text-sepia/65">
+                Lectura rapida para detectar los productos que mejor empujan ventas.
+              </p>
+            </div>
+            <Boxes size={20} className="text-terracota" />
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {topProducts.length > 0 ? (
+              topProducts.map((product, index) => (
+                <div
+                  key={product.productId}
+                  className="flex items-center justify-between rounded-2xl border border-beige-tostado/20 p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-sepia">
+                      {index + 1}. {product.name}
+                    </p>
+                    <p className="text-sm text-sepia/60">{product.quantity} piezas vendidas</p>
+                  </div>
+                  <span className="font-bold text-terracota">{formatCurrency(product.total)}</span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-2xl bg-crema px-4 py-5 text-sepia/65">
+                Aun no hay ventas suficientes para construir el ranking.
+              </p>
+            )}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-2xl font-serif font-bold text-sepia">Mix operativo</h3>
+              <p className="mt-2 text-sepia/65">
+                Indicadores utiles para ajustar conversion, entrega y ticket promedio.
+              </p>
+            </div>
+            <ShoppingCart size={20} className="text-terracota" />
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            <div className="rounded-2xl bg-crema p-4">
+              <p className="text-sm text-sepia/55">Ticket promedio</p>
+              <p className="mt-1 text-2xl font-serif font-bold text-sepia">
+                {formatCurrency(averageTicket)}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-crema p-4">
+                <p className="text-sm text-sepia/55">Delivery</p>
+                <p className="mt-1 text-xl font-bold text-sepia">{deliveryOrders}</p>
+              </div>
+              <div className="rounded-2xl bg-crema p-4">
+                <p className="text-sm text-sepia/55">Pickup</p>
+                <p className="mt-1 text-xl font-bold text-sepia">{pickupOrders}</p>
+              </div>
+            </div>
+          </div>
         </article>
       </div>
 

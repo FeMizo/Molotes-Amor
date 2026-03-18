@@ -1,14 +1,20 @@
 import { getRepositories } from "@/repositories/local-repositories";
+import { getSiteContent } from "@/services/content/site-content.service";
 import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
 
 const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
 export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
   const repos = getRepositories();
+  const siteContent = await getSiteContent();
   const [products, inventory] = await Promise.all([repos.products.list(), repos.inventory.list()]);
 
   if (input.items.length === 0) {
     throw new Error("El pedido no tiene productos.");
+  }
+
+  if (!siteContent.operations.isOrderingEnabled) {
+    throw new Error(siteContent.operations.checkoutMessage);
   }
 
   const orderItems = input.items.map((item) => {

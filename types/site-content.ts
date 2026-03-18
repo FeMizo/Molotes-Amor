@@ -11,6 +11,12 @@ export interface HomeContent {
   featuredTitle: string;
   featuredDescription: string;
   featuredCtaLabel: string;
+  favoritesEyebrow: string;
+  favoritesTitle: string;
+  favoritesDescription: string;
+  favoritesCtaLabel: string;
+  favoritesEmptyTitle: string;
+  favoritesEmptyDescription: string;
   storyTitle: string;
   storyHighlight: string;
   storyDescription: string;
@@ -38,6 +44,10 @@ export interface MenuContent {
   highlight: string;
   description: string;
   searchPlaceholder: string;
+  savedTitle: string;
+  savedDescription: string;
+  savedEmptyTitle: string;
+  savedEmptyDescription: string;
   emptyStateTitle: string;
   emptyStateCtaLabel: string;
 }
@@ -85,11 +95,64 @@ export interface ContactContent {
   submitLabel: string;
 }
 
+export interface PromotionsContent {
+  eyebrow: string;
+  title: string;
+  highlight: string;
+  description: string;
+  primaryCtaLabel: string;
+  secondaryText: string;
+  benefitOne: string;
+  benefitTwo: string;
+  benefitThree: string;
+}
+
+export interface OperationsContent {
+  isOrderingEnabled: boolean;
+  statusLabel: string;
+  bannerText: string;
+  notice: string;
+  checkoutMessage: string;
+}
+
+export type PageSectionKey =
+  | "home.hero"
+  | "home.featured"
+  | "home.favorites"
+  | "home.story"
+  | "home.testimonials"
+  | "home.promotions"
+  | "menu.header"
+  | "menu.products"
+  | "about.page"
+  | "contact.page";
+
+export interface FrontendSectionConfig {
+  key: PageSectionKey;
+  name: string;
+  enabled: boolean;
+  order: number;
+  config?: Record<string, string | number | boolean | null>;
+}
+
+export type AdminContentSectionId = "sections" | "operations" | PageSectionKey;
+
+export interface AdminContentSection {
+  id: AdminContentSectionId;
+  name: string;
+  description: string;
+  group: "system" | "home" | "menu" | "page" | "growth";
+  sectionKey?: PageSectionKey;
+}
+
 export interface SiteContent {
   home: HomeContent;
   menu: MenuContent;
   about: AboutContent;
   contact: ContactContent;
+  promotions: PromotionsContent;
+  operations: OperationsContent;
+  pageSections: FrontendSectionConfig[];
 }
 
 export type DeepPartial<T> = {

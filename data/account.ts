@@ -28,6 +28,7 @@ const createUser = (input: {
   username: string;
   password: string;
   role: AppUser["role"];
+  isActive?: boolean;
   firstName: string;
   lastName: string;
   email: string;
@@ -39,6 +40,7 @@ const createUser = (input: {
   memberSince: "2026-01-08T13:00:00.000Z",
   marketingOptIn: true,
   passwordUpdatedAt: "2026-03-10T09:00:00.000Z",
+  isActive: input.isActive ?? true,
 });
 
 export const authUserSeed: AppUser[] = [
@@ -187,10 +189,15 @@ export const adminUserSummarySeed: AdminUserSummary[] = authUserSeed
 
   return {
     id: user.id,
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
     name: `${user.firstName} ${user.lastName}`.trim(),
     email: user.email,
     phone: user.phone,
     preferredContact: user.preferredContact,
+    role: user.role,
+    isActive: user.isActive,
     totalOrders: orders.length,
     totalSpent,
     activeOrderCount,

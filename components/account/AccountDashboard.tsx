@@ -10,7 +10,6 @@ import { AccountEmptyState } from "./AccountEmptyState";
 import { RepeatOrderButton } from "./RepeatOrderButton";
 import { OrderProgressTracker } from "../orders/OrderProgressTracker";
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
-import { ProductCard } from "../products/ProductCard";
 
 export const AccountDashboard = () => {
   const { activeOrder, error, favoriteProducts, loading, profile, recentOrders, stats } =
@@ -204,7 +203,7 @@ export const AccountDashboard = () => {
         </article>
       </div>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section>
         <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -246,40 +245,6 @@ export const AccountDashboard = () => {
               </Link>
             ))}
           </div>
-        </article>
-
-        <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-serif font-bold text-sepia">
-                Guardados para despues
-              </h2>
-              <p className="mt-1 text-sepia/65">
-                Tus antojos favoritos listos para volver al carrito.
-              </p>
-            </div>
-          </div>
-
-          {favoriteProducts.length > 0 ? (
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              {favoriteProducts.slice(0, 2).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-5 rounded-2xl bg-crema px-5 py-8">
-              <p className="font-semibold text-sepia">Aun no guardas favoritos.</p>
-              <p className="mt-2 text-sm text-sepia/65">
-                Marca molotes en el menu para tenerlos a un toque dentro de tu panel.
-              </p>
-              <Link
-                href="/menu"
-                className="mt-4 inline-flex rounded-xl border border-beige-tostado/35 px-4 py-3 font-bold text-sepia transition-colors hover:border-terracota"
-              >
-                Ir al menu
-              </Link>
-            </div>
-          )}
         </article>
       </section>
     </div>

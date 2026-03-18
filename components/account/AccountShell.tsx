@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LockKeyhole, MapPinned, Package, UserRound } from "lucide-react";
+import { Bookmark, LockKeyhole, MapPinned, Package, UserRound } from "lucide-react";
 
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 
@@ -18,6 +18,12 @@ const items = [
     label: "Pedidos",
     description: "Historial, estados y detalle",
     icon: Package,
+  },
+  {
+    href: "/mi-cuenta/guardados",
+    label: "Guardados",
+    description: "Productos listos para volver al carrito",
+    icon: Bookmark,
   },
   {
     href: "/mi-cuenta/perfil",

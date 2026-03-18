@@ -75,7 +75,6 @@ export const listAdminUsers = (
   orders: Order[],
 ): AdminUserSummary[] =>
   [...users]
-    .filter((user) => user.role === "user")
     .map((user) => {
       const userOrders = orders.filter((order) => order.userId === user.id);
       const totalSpent = userOrders.reduce((sum, order) => sum + order.total, 0);
@@ -85,10 +84,15 @@ export const listAdminUsers = (
 
       return {
         id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: `${user.firstName} ${user.lastName}`.trim(),
         email: user.email,
         phone: user.phone,
         preferredContact: user.preferredContact,
+        role: user.role,
+        isActive: user.isActive,
         totalOrders: userOrders.length,
         totalSpent,
         activeOrderCount,
@@ -99,6 +103,8 @@ export const listAdminUsers = (
         tags: [
           "usuario-prueba",
           user.username,
+          user.role,
+          user.isActive ? "habilitado" : "inactivo",
           activeOrderCount > 0 ? "activo" : "sin flujo",
         ],
       } satisfies AdminUserSummary;

@@ -5,10 +5,13 @@ import { usePathname } from "next/navigation";
 import { LogOut, Menu, Search, ShoppingBasket, UserRound } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
+import { routeSectionMap } from "@/config/site-sections";
+import { isFrontendSectionEnabled } from "@/lib/site-sections";
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartItemCount, useCartStore } from "@/store/cart-store";
+import type { SiteContent } from "@/types/site-content";
 
-export const Header = () => {
+export const Header = ({ siteContent }: { siteContent?: SiteContent | null }) => {
   const pathname = usePathname();
   const items = useCartStore((state) => state.items);
   const openCart = useCartStore((state) => state.openCart);
@@ -16,6 +19,15 @@ export const Header = () => {
   const logout = useAuthStore((state) => state.logout);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const count = cartItemCount(items);
+  const menuEnabled = siteContent
+    ? isFrontendSectionEnabled(siteContent.pageSections, "menu.products")
+    : true;
+  const visibleNav = siteContent
+    ? siteConfig.nav.filter((link) => {
+        const sectionKey = routeSectionMap[link.href];
+        return sectionKey ? isFrontendSectionEnabled(siteContent.pageSections, sectionKey) : true;
+      })
+    : siteConfig.nav;
 
   return (
     <header className="sticky top-0 z-40 w-full bg-crema/80 backdrop-blur-md border-b border-beige-tostado/30">
@@ -34,7 +46,7 @@ export const Header = () => {
           </Link>
 
           <nav className="hidden md:flex space-x-8">
-            {siteConfig.nav.map((link) => (
+            {visibleNav.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -53,9 +65,11 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <Link href="/menu" className="p-2 text-sepia hover:text-terracota transition-colors hidden sm:block">
-              <Search size={20} />
-            </Link>
+            {menuEnabled ? (
+              <Link href="/menu" className="p-2 text-sepia hover:text-terracota transition-colors hidden sm:block">
+                <Search size={20} />
+              </Link>
+            ) : null}
             {currentUser ? (
               <>
                 <Link

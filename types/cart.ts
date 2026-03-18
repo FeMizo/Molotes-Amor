@@ -6,3 +6,7 @@ export interface CartItem {
   quantity: number;
   maxQuantity?: number;
 }
+
+export interface SavedForLaterItem extends CartItem {
+  savedAt: string;
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { getSiteContent } from "@/services/content/site-content.service";
 
 import "./globals.css";
 
@@ -22,11 +23,19 @@ export const metadata: Metadata = {
   description: "Sabor artesanal con un toque moderno.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  let siteContent = null;
+
+  try {
+    siteContent = await getSiteContent();
+  } catch {
+    siteContent = null;
+  }
+
   return (
     <html lang="es">
       <body className={`${serif.variable} ${sans.variable} min-h-screen flex flex-col`}>
-        <AppShell>{children}</AppShell>
+        <AppShell siteContent={siteContent}>{children}</AppShell>
       </body>
     </html>
   );

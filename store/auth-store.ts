@@ -5,7 +5,10 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import {
   authenticateUser,
+  assertUserCanRegister,
+  createAppUser,
   createSession,
+  findUserByUsernameOrEmail,
   getAuthUsersSeed,
 } from "@/services/auth/auth.service";
 import type { AppUser, UserSession } from "@/types/auth";
@@ -17,6 +20,15 @@ interface AuthStoreState {
   authModalOpen: boolean;
   authModalReason?: string;
   login: (credentials: { username: string; password: string }) => AppUser;
+  register: (input: {
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phone: string;
+    password: string;
+  }) => AppUser;
+  resetPassword: (input: { identity: string; nextPassword: string }) => AppUser;
   setUsers: (users: AppUser[]) => void;
   setSession: (session: UserSession | null) => void;
   openAuthModal: (reason?: string) => void;
@@ -30,6 +42,7 @@ const defaultUsers = getAuthUsersSeed();
 const normalizeUserRole = (user: AppUser): AppUser => ({
   ...user,
   role: user.role ?? (user.username === "adminmolotes" ? "admin" : "user"),
+  isActive: user.isActive ?? true,
 });
 
 const mergeUsersWithDefaults = (persistedUsers: AppUser[] | undefined): AppUser[] => {
@@ -70,15 +83,76 @@ export const useAuthStore = create<AuthStoreState>()(
 
         return user;
       },
+      register: (input) => {
+        const users = get().users;
+        assertUserCanRegister(users, {
+          username: input.username,
+          email: input.email,
+        });
+
+        const user = normalizeUserRole(createAppUser(input));
+
+        set({
+          users: [...users, user],
+          session: createSession(user),
+          authModalOpen: false,
+          authModalReason: undefined,
+        });
+
+        return user;
+      },
+      resetPassword: ({ identity, nextPassword }) => {
+        const user = findUserByUsernameOrEmail(get().users, identity);
+        if (!user) {
+          throw new Error("No encontramos una cuenta con ese usuario o correo.");
+        }
+
+        const updatedUser = {
+          ...user,
+          password: nextPassword,
+          passwordUpdatedAt: new Date().toISOString(),
+        } satisfies AppUser;
+
+        set((state) => ({
+          users: state.users.map((candidate) =>
+            candidate.id === updatedUser.id ? updatedUser : candidate,
+          ),
+        }));
+
+        return updatedUser;
+      },
       setUsers: (users) => set({ users }),
       setSession: (session) => set({ session, authModalOpen: false, authModalReason: undefined }),
       openAuthModal: (reason) => set({ authModalOpen: true, authModalReason: reason }),
       closeAuthModal: () => set({ authModalOpen: false, authModalReason: undefined }),
       logout: () => set({ session: null, authModalOpen: false, authModalReason: undefined }),
       updateUser: (userId, updater) =>
-        set((state) => ({
-          users: state.users.map((user) => (user.id === userId ? updater(user) : user)),
-        })),
+        set((state) => {
+          const users = state.users.map((user) => {
+            if (user.id !== userId) {
+              return user;
+            }
+
+            return normalizeUserRole(updater(user));
+          });
+          const updatedUser = users.find((user) => user.id === userId);
+
+          const session =
+            state.session && state.session.userId === userId
+              ? updatedUser && updatedUser.isActive
+                ? {
+                    ...state.session,
+                    username: updatedUser.username,
+                    role: updatedUser.role,
+                  }
+                : null
+              : state.session;
+
+          return {
+            users,
+            session,
+          };
+        }),
     }),
     {
       name: "molotes-auth",

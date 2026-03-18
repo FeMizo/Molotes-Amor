@@ -6,7 +6,10 @@ export interface AppUser extends UserAccountProfile {
   username: string;
   password: string;
   role: AppUserRole;
+  isActive: boolean;
 }
+
+export type User = AppUser;
 
 export interface UserSession {
   userId: string;

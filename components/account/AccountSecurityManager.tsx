@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { formatDateTime } from "@/lib/format";
 import { useUserAccount } from "@/hooks/use-user-account";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 export const AccountSecurityManager = () => {
   const { changePassword, profile } = useUserAccount();
@@ -73,29 +74,26 @@ export const AccountSecurityManager = () => {
         <form className="mt-6 max-w-2xl space-y-4" onSubmit={submit}>
           <label className="space-y-2">
             <span className="text-sm font-semibold text-sepia">Contrasena actual</span>
-            <input
-              type="password"
+            <PasswordInput
               value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              onChange={setCurrentPassword}
+              autoComplete="current-password"
             />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-semibold text-sepia">Nueva contrasena</span>
-            <input
-              type="password"
+            <PasswordInput
               value={nextPassword}
-              onChange={(event) => setNextPassword(event.target.value)}
-              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              onChange={setNextPassword}
+              autoComplete="new-password"
             />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-semibold text-sepia">Confirmar nueva contrasena</span>
-            <input
-              type="password"
+            <PasswordInput
               value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
             />
           </label>
 

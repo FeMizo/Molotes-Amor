@@ -44,10 +44,15 @@ export interface UserDashboardStats {
 
 export interface AdminUserSummary {
   id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   phone: string;
   preferredContact: PreferredContact;
+  role: "admin" | "user";
+  isActive: boolean;
   totalOrders: number;
   totalSpent: number;
   activeOrderCount: number;

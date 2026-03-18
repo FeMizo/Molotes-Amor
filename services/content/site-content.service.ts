@@ -29,6 +29,15 @@ export const updateSiteContent = async (input: DeepPartial<SiteContent>): Promis
       ...current.contact,
       ...(input.contact ?? {}),
     },
+    promotions: {
+      ...current.promotions,
+      ...(input.promotions ?? {}),
+    },
+    operations: {
+      ...current.operations,
+      ...(input.operations ?? {}),
+    },
+    pageSections: (input.pageSections as SiteContent["pageSections"] | undefined) ?? current.pageSections,
   });
 
   return repos.siteContent.update(nextContent);

@@ -7,12 +7,21 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useLockBodyScroll } from "@/hooks/use-lock-body-scroll";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
 
-export const CartDrawer = () => {
+export const CartDrawer = ({
+  orderingEnabled = true,
+  checkoutMessage,
+}: {
+  orderingEnabled?: boolean;
+  checkoutMessage?: string;
+}) => {
   const isOpen = useCartStore((state) => state.isOpen);
   const items = useCartStore((state) => state.items);
   const closeCart = useCartStore((state) => state.closeCart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const saveCartItemForLater = useCartStore(
+    (state) => state.saveCartItemForLater,
+  );
   const subtotal = cartSubtotal(items);
 
   useLockBodyScroll(isOpen);
@@ -39,7 +48,9 @@ export const CartDrawer = () => {
             <div className="p-6 border-b border-beige-tostado/30 flex justify-between items-center bg-crema">
               <div className="flex items-center space-x-3">
                 <ShoppingBag className="text-terracota" />
-                <h2 className="text-2xl font-serif font-bold text-sepia">Tu Carrito</h2>
+                <h2 className="text-2xl font-serif font-bold text-sepia">
+                  Tu Carrito
+                </h2>
               </div>
               <button
                 type="button"
@@ -79,7 +90,9 @@ export const CartDrawer = () => {
                         <div>
                           <h4 className="font-bold text-sepia">{item.name}</h4>
                           {item.maxQuantity ? (
-                            <p className="text-xs text-sepia/55">Maximo disponible: {item.maxQuantity}</p>
+                            <p className="text-xs text-sepia/55">
+                              Maximo disponible: {item.maxQuantity}
+                            </p>
                           ) : null}
                         </div>
                         <button
@@ -91,25 +104,41 @@ export const CartDrawer = () => {
                         </button>
                       </div>
                       <div className="flex justify-between items-end">
-                        <div className="flex items-center border border-beige-tostado rounded-lg overflow-hidden">
+                        <div className="space-y-2">
+                          <div className="flex items-center border border-beige-tostado rounded-lg overflow-hidden w-fit">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, -1)}
+                              className="p-1 hover:bg-beige-tostado/20 transition-colors"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="px-3 text-sm font-medium">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, 1)}
+                              disabled={
+                                item.maxQuantity !== undefined &&
+                                item.quantity >= item.maxQuantity
+                              }
+                              className="p-1 hover:bg-beige-tostado/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="p-1 hover:bg-beige-tostado/20 transition-colors"
+                            onClick={() => saveCartItemForLater(item.id)}
+                            className="text-left text-xs font-semibold text-terracota transition-colors hover:text-rojo-quemado"
                           >
-                            <Minus size={14} />
-                          </button>
-                          <span className="px-3 text-sm font-medium">{item.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, 1)}
-                            disabled={item.maxQuantity !== undefined && item.quantity >= item.maxQuantity}
-                            className="p-1 hover:bg-beige-tostado/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            <Plus size={14} />
+                            Guardar para despues
                           </button>
                         </div>
-                        <span className="font-bold text-terracota">${item.price * item.quantity}</span>
+                        <span className="font-bold text-terracota">
+                          ${item.price * item.quantity}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -121,18 +150,32 @@ export const CartDrawer = () => {
               <div className="p-6 bg-white border-t border-beige-tostado/30 space-y-4">
                 <div className="flex justify-between items-center text-lg">
                   <span className="text-sepia/70">Subtotal</span>
-                  <span className="font-bold text-2xl text-sepia">${subtotal}</span>
+                  <span className="font-bold text-2xl text-sepia">
+                    ${subtotal}
+                  </span>
                 </div>
-                <p className="text-xs text-sepia/50 text-center italic">
-                  * Impuestos y envio calculados al finalizar la compra
-                </p>
-                <Link
-                  href="/checkout"
-                  onClick={closeCart}
-                  className="block w-full text-center py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-lg shadow-terracota/20 transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  Finalizar pedido
-                </Link>
+                {orderingEnabled ? (
+                  <>
+                    <p className="text-xs text-sepia/50 text-center italic">
+                      * Impuestos y envio calculados al finalizar la compra
+                    </p>
+                    <Link
+                      href="/checkout"
+                      onClick={closeCart}
+                      className="block w-full text-center py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-lg shadow-terracota/20 transition-all duration-300 transform hover:-translate-y-1"
+                    >
+                      Finalizar pedido
+                    </Link>
+                  </>
+                ) : (
+                  <div className="rounded-2xl border border-mostaza/30 bg-mostaza/10 px-4 py-4 text-sm text-sepia">
+                    <p className="font-semibold">Pedidos pausados</p>
+                    <p className="mt-1 text-sepia/70">
+                      {checkoutMessage ??
+                        "Por ahora no estamos tomando pedidos desde el checkout."}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : null}
           </motion.div>

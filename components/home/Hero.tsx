@@ -6,7 +6,15 @@ import { ArrowRight } from "lucide-react";
 
 import type { HomeContent } from "@/types/site-content";
 
-export const Hero = ({ content }: { content: HomeContent }) => {
+export const Hero = ({
+  content,
+  showPrimaryCta,
+  showSecondaryCta,
+}: {
+  content: HomeContent;
+  showPrimaryCta: boolean;
+  showSecondaryCta: boolean;
+}) => {
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-crema py-20">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
@@ -29,21 +37,27 @@ export const Hero = ({ content }: { content: HomeContent }) => {
               <span className="text-terracota italic">{content.heroHighlight}</span>
             </h2>
             <p className="text-xl text-sepia/80 mb-10 max-w-lg leading-relaxed">{content.heroDescription}</p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/menu"
-                className="px-8 py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-xl shadow-terracota/20 transition-all duration-300 flex items-center justify-center group"
-              >
-                {content.heroPrimaryCtaLabel}
-                <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/nosotros"
-                className="px-8 py-4 bg-white border-2 border-beige-tostado text-sepia font-bold rounded-xl hover:bg-beige-tostado/10 transition-all duration-300 text-center"
-              >
-                {content.heroSecondaryCtaLabel}
-              </Link>
-            </div>
+            {showPrimaryCta || showSecondaryCta ? (
+              <div className="flex flex-col sm:flex-row gap-4">
+                {showPrimaryCta ? (
+                  <Link
+                    href="/menu"
+                    className="px-8 py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl shadow-xl shadow-terracota/20 transition-all duration-300 flex items-center justify-center group"
+                  >
+                    {content.heroPrimaryCtaLabel}
+                    <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : null}
+                {showSecondaryCta ? (
+                  <Link
+                    href="/nosotros"
+                    className="px-8 py-4 bg-white border-2 border-beige-tostado text-sepia font-bold rounded-xl hover:bg-beige-tostado/10 transition-all duration-300 text-center"
+                  >
+                    {content.heroSecondaryCtaLabel}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
           </motion.div>
 
           <motion.div

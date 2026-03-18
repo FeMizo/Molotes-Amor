@@ -211,7 +211,7 @@ export const AdminProductsManager = () => {
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
               Productos
             </p>
-            <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
+            <h2 className="mt-2 text-2xl font-serif font-bold text-sepia">
               Catalogo y administracion
             </h2>
             <p className="mt-2 text-sepia/65">

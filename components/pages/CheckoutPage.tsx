@@ -6,8 +6,9 @@ import Link from "next/link";
 import { adminClient } from "@/services/client/admin-client";
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
+import type { OperationsContent } from "@/types/site-content";
 
-export const CheckoutPage = () => {
+export const CheckoutPage = ({ operations }: { operations: OperationsContent }) => {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
   const currentUser = useAuthStore(selectCurrentUser);
@@ -42,6 +43,11 @@ export const CheckoutPage = () => {
     if (!currentUser) {
       setErrorMessage("Necesitas iniciar sesion antes de confirmar tu pedido.");
       openAuthModal("Inicia sesion para finalizar tu compra.");
+      return;
+    }
+
+    if (!operations.isOrderingEnabled) {
+      setErrorMessage(operations.checkoutMessage);
       return;
     }
 
@@ -131,6 +137,12 @@ export const CheckoutPage = () => {
               </button>
             </div>
           ) : null}
+          {!operations.isOrderingEnabled ? (
+            <div className="mb-5 rounded-2xl border border-mostaza/30 bg-mostaza/10 px-5 py-4">
+              <p className="font-semibold text-sepia">{operations.statusLabel}</p>
+              <p className="mt-1 text-sm text-sepia/70">{operations.checkoutMessage}</p>
+            </div>
+          ) : null}
           <form className="space-y-5" onSubmit={submitOrder}>
             <div className="space-y-2">
               <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">Nombre</label>
@@ -175,10 +187,16 @@ export const CheckoutPage = () => {
             {successMessage ? <p className="text-olivo font-semibold">{successMessage}</p> : null}
             <button
               type="submit"
-              disabled={loading || !currentUser}
+              disabled={loading || !currentUser || !operations.isOrderingEnabled}
               className="w-full py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-50"
             >
-              {loading ? "Procesando..." : currentUser ? "Confirmar pedido" : "Inicia sesion para comprar"}
+              {loading
+                ? "Procesando..."
+                : !operations.isOrderingEnabled
+                  ? "Pedidos pausados"
+                  : currentUser
+                    ? "Confirmar pedido"
+                    : "Inicia sesion para comprar"}
             </button>
           </form>
         </article>

@@ -62,7 +62,7 @@ export const AdminOrdersManager = () => {
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
               Pedidos
             </p>
-            <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
+            <h2 className="mt-2 text-2xl font-serif font-bold text-sepia">
               Flujo operativo de pedidos
             </h2>
             <p className="mt-2 text-sepia/65">
@@ -180,7 +180,7 @@ export const AdminOrdersManager = () => {
             <div className="space-y-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <h2 className="text-3xl font-serif font-bold text-sepia">
+                  <h2 className="text-2xl font-serif font-bold text-sepia">
                     {selectedOrder.id}
                   </h2>
                   <p className="mt-2 text-sepia/65">

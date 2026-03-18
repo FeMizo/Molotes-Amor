@@ -5,5 +5,5 @@ export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const content = await getSiteContent();
-  return <ContactPage content={content.contact} />;
+  return <ContactPage content={content} />;
 }
