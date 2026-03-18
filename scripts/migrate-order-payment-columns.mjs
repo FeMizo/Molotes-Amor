@@ -67,6 +67,11 @@ try {
 
   await client.query(`
     ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_ref TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
     ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'efectivo';
   `);
 
@@ -101,9 +106,27 @@ try {
     WHERE payment_method IS NULL OR BTRIM(payment_method) = '';
   `);
 
+  const paymentRefResult = await client.query(`
+    UPDATE orders
+    SET payment_ref = LPAD(
+      RIGHT(
+        REGEXP_REPLACE(
+          COALESCE(NULLIF(payment_transfer_reference, ''), id),
+          '\\D',
+          '',
+          'g'
+        ),
+        3
+      ),
+      3,
+      '0'
+    )
+    WHERE payment_ref IS NULL OR BTRIM(payment_ref) = '';
+  `);
+
   await client.query("COMMIT");
   console.log(
-    `Migracion aplicada: columnas de pago listas y ${result.rowCount ?? 0} pedidos rellenados con 'efectivo'.`,
+    `Migracion aplicada: columnas de pago listas, ${result.rowCount ?? 0} pedidos rellenados con 'efectivo' y ${paymentRefResult.rowCount ?? 0} referencias cortas generadas.`,
   );
 } catch (error) {
   await client.query("ROLLBACK").catch(() => undefined);

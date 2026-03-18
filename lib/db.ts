@@ -5,6 +5,7 @@ import {
   type QueryResultRow,
 } from "pg";
 
+import { ensureOrdersHavePaymentRefs } from "@/lib/payment";
 import { seedStore } from "@/data/seed-store";
 
 const globalForDb = globalThis as typeof globalThis & {
@@ -43,6 +44,14 @@ const getPool = (): Pool => {
   return pool;
 };
 
+interface OrderRefRow {
+  id: string;
+  created_at: Date | string;
+  payment_ref: string | null;
+  payment_method: string | null;
+  payment_transfer_reference: string | null;
+}
+
 const createSchema = async (client: PoolClient): Promise<void> => {
   await client.query(`
     CREATE TABLE IF NOT EXISTS products (
@@ -74,6 +83,7 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   await client.query(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
+      payment_ref TEXT,
       subtotal INTEGER NOT NULL,
       total INTEGER NOT NULL,
       status TEXT NOT NULL,
@@ -102,6 +112,11 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   await client.query(`
     ALTER TABLE orders
     ADD COLUMN IF NOT EXISTS user_username TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS payment_ref TEXT;
   `);
 
   await client.query(`
@@ -164,6 +179,55 @@ const createSchema = async (client: PoolClient): Promise<void> => {
       payload JSONB NOT NULL
     );
   `);
+};
+
+const backfillOrderPaymentRefs = async (client: PoolClient): Promise<void> => {
+  const { rows } = await client.query<OrderRefRow>(`
+    SELECT id, created_at, payment_ref, payment_method, payment_transfer_reference
+    FROM orders
+    ORDER BY created_at ASC, id ASC
+  `);
+
+  if (rows.length === 0) {
+    return;
+  }
+
+  const normalized = ensureOrdersHavePaymentRefs(
+    rows.map((row) => ({
+      id: row.id,
+      createdAt: new Date(row.created_at).toISOString(),
+      paymentRef: row.payment_ref ?? "",
+      payment: {
+        method: row.payment_method === "transferencia" ? "transferencia" : "efectivo",
+        transferReference: row.payment_transfer_reference ?? undefined,
+      },
+    })),
+  );
+
+  for (const order of normalized.orders) {
+    const source = rows.find((row) => row.id === order.id);
+    if (!source) {
+      continue;
+    }
+
+    if (
+      source.payment_ref === order.paymentRef &&
+      (source.payment_transfer_reference ?? null) ===
+        (order.payment?.transferReference ?? null)
+    ) {
+      continue;
+    }
+
+    await client.query(
+      `
+        UPDATE orders
+        SET payment_ref = $2,
+            payment_transfer_reference = $3
+        WHERE id = $1
+      `,
+      [order.id, order.paymentRef, order.payment?.transferReference ?? null],
+    );
+  }
 };
 
 const seedDatabase = async (client: PoolClient): Promise<void> => {
@@ -240,6 +304,7 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
         `
           INSERT INTO orders (
             id,
+            payment_ref,
             subtotal,
             total,
             status,
@@ -258,12 +323,13 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
             payment_clabe,
             notes
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
           )
           ON CONFLICT (id) DO NOTHING
         `,
         [
           order.id,
+          order.paymentRef,
           order.subtotal,
           order.total,
           order.status,
@@ -332,6 +398,7 @@ export const ensureDatabaseReady = async (): Promise<void> => {
         await client.query("BEGIN");
         await createSchema(client);
         await seedDatabase(client);
+        await backfillOrderPaymentRefs(client);
         await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");

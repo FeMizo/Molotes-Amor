@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { formatCurrency, formatDate } from "@/lib/format";
 import { adminOrderStatuses } from "@/lib/order-status";
+import { getOrderPaymentRef } from "@/lib/payment";
 import { useUserAccount } from "@/hooks/use-user-account";
 import type { OrderStatus } from "@/types/order";
 
@@ -22,7 +23,9 @@ export const OrdersHistory = () => {
     return orders.filter((order) => {
       const matchesQuery =
         normalizedQuery.length === 0 ||
-        `${order.id} ${order.items.map((item) => item.productName).join(" ")} ${order.status}`
+        `${order.id} ${getOrderPaymentRef(order)} ${order.items
+          .map((item) => item.productName)
+          .join(" ")} ${order.status}`
           .toLowerCase()
           .includes(normalizedQuery);
       const matchesStatus =
@@ -56,7 +59,7 @@ export const OrdersHistory = () => {
     return (
       <AccountEmptyState
         title="Todavia no hay historial"
-        description="Cuando completes pedidos, aqui veras numero de orden, fecha, total, estado y acceso al detalle."
+        description="Cuando completes pedidos, aqui veras referencia de pago, fecha, total, estado y acceso al detalle."
       />
     );
   }
@@ -73,14 +76,14 @@ export const OrdersHistory = () => {
               Todos tus pedidos
             </h2>
             <p className="mt-2 text-sepia/65">
-              Busca por numero de pedido, producto o estado.
+              Busca por referencia, producto o estado.
             </p>
           </div>
           <div className="w-full lg:max-w-sm">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por pedido, producto o estado"
+              placeholder="Buscar por referencia, producto o estado"
               className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
             />
           </div>
@@ -125,12 +128,15 @@ export const OrdersHistory = () => {
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
                   <h3 className="text-xl font-serif font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
-                    {order.id}
+                    Ref. {getOrderPaymentRef(order)}
                   </h3>
                   <OrderStatusBadge status={order.status} compact />
                 </div>
                 <p className="text-sm text-sepia/60">
                   {formatDate(order.createdAt)} · {formatCurrency(order.total)}
+                </p>
+                <p className="text-sm font-semibold text-terracota/85">
+                  Referencia de pago: {getOrderPaymentRef(order)}
                 </p>
                 <p className="text-sm text-sepia/75">
                   {order.items.map((item) => `${item.quantity}x ${item.productName}`).join(" · ")}
@@ -154,7 +160,7 @@ export const OrdersHistory = () => {
       {filteredOrders.length === 0 ? (
         <AccountEmptyState
           title="No encontramos pedidos con ese filtro"
-          description="Prueba con otro estado o limpia el texto de busqueda para volver a ver tu historial completo."
+          description="Prueba con otra referencia o limpia el texto de busqueda para volver a ver tu historial completo."
           ctaHref="/mi-cuenta/pedidos"
           ctaLabel="Limpiar filtro"
         />

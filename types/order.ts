@@ -34,6 +34,7 @@ export interface OrderPayment {
 
 export interface Order {
   id: string;
+  paymentRef: string;
   items: OrderItem[];
   subtotal: number;
   total: number;

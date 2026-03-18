@@ -15,6 +15,7 @@ import { useAdminInventory } from "@/hooks/use-admin-inventory";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import { useAdminProducts } from "@/hooks/use-admin-products";
 import { formatCurrency } from "@/lib/format";
+import { getOrderPaymentRef } from "@/lib/payment";
 import { useAuthStore } from "@/store/auth-store";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 
@@ -268,7 +269,7 @@ export const AdminDashboard = () => {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-sepia">{order.id}</p>
+                      <p className="font-semibold text-sepia">Ref. {getOrderPaymentRef(order)}</p>
                       <p className="text-sm text-sepia/60">{order.customer.name}</p>
                     </div>
                     <OrderStatusBadge status={order.status} compact />

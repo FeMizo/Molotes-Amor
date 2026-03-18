@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { adminOrderStatuses } from "@/lib/order-status";
-import { getOrderPayment, getOrderPaymentMethod, paymentMethodLabel } from "@/lib/payment";
+import {
+  getOrderPayment,
+  getOrderPaymentMethod,
+  getOrderPaymentRef,
+  paymentMethodLabel,
+} from "@/lib/payment";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import type { OrderStatus } from "@/types/order";
 
@@ -23,7 +28,7 @@ export const AdminOrdersManager = () => {
 
     return orders.filter((order) => {
       const target =
-        `${order.id} ${order.userUsername ?? ""} ${order.customer.name} ${order.customer.phone} ${order.customer.email ?? ""} ${getOrderPaymentMethod(order)} ${order.status} ${order.items
+        `${order.id} ${getOrderPaymentRef(order)} ${order.userUsername ?? ""} ${order.customer.name} ${order.customer.phone} ${order.customer.email ?? ""} ${getOrderPaymentMethod(order)} ${order.status} ${order.items
           .map((item) => item.productName)
           .join(" ")}`.toLowerCase();
       const matchesQuery =
@@ -95,7 +100,7 @@ export const AdminOrdersManager = () => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por id, cliente, telefono, email o producto"
+            placeholder="Buscar por referencia, cliente, telefono, email o producto"
             className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
           />
           <div className="flex flex-wrap gap-2">
@@ -152,7 +157,7 @@ export const AdminOrdersManager = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
-                      {order.id}
+                      Ref. {getOrderPaymentRef(order)}
                     </p>
                     <p className="mt-1 text-sm text-sepia/60">{order.customer.name}</p>
                     <p className="text-xs text-sepia/50">
@@ -185,7 +190,7 @@ export const AdminOrdersManager = () => {
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                   <h2 className="text-2xl font-serif font-bold text-sepia">
-                    {selectedOrder.id}
+                    Referencia {getOrderPaymentRef(selectedOrder)}
                   </h2>
                   <p className="mt-2 text-sepia/65">
                     Cliente: {selectedOrder.customer.name}
@@ -241,9 +246,12 @@ export const AdminOrdersManager = () => {
                     <p className="text-sepia/80">
                       Pago: {paymentMethodLabel[selectedPayment?.method ?? "efectivo"]}
                     </p>
-                    {selectedPayment?.transferReference ? (
+                    <p className="text-sepia/80">
+                      Referencia: {getOrderPaymentRef(selectedOrder)}
+                    </p>
+                    {selectedPayment?.method === "transferencia" ? (
                       <p className="text-sepia/80">
-                        Referencia: {selectedPayment.transferReference}
+                        Uso en transferencia: {getOrderPaymentRef(selectedOrder)}
                       </p>
                     ) : null}
                   </div>

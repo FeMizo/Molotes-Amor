@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Clock3, Heart, Package, PhoneCall, ReceiptText } from "lucide-react";
 
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
+import { getOrderPaymentRef } from "@/lib/payment";
 import { useUserAccount } from "@/hooks/use-user-account";
 
 import { AccountEmptyState } from "./AccountEmptyState";
@@ -103,7 +104,7 @@ export const AccountDashboard = () => {
                 Pedido actual
               </p>
               <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
-                {activeOrder ? activeOrder.id : "Sin pedido activo"}
+                {activeOrder ? `Ref. ${getOrderPaymentRef(activeOrder)}` : "Sin pedido activo"}
               </h2>
               <p className="mt-2 max-w-2xl text-sepia/65">
                 {activeOrder
@@ -227,7 +228,7 @@ export const AccountDashboard = () => {
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="font-bold text-sepia">{order.id}</p>
+                    <p className="font-bold text-sepia">Ref. {getOrderPaymentRef(order)}</p>
                     <p className="mt-1 text-sm text-sepia/60">
                       {formatDate(order.createdAt)} · {order.items.length} productos
                     </p>

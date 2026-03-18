@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { ensureOrdersHavePaymentRefs } from "@/lib/payment";
 import { adminClient } from "@/services/client/admin-client";
 import { useCatalogProducts } from "@/hooks/use-catalog-products";
 import {
@@ -40,7 +41,7 @@ export const useUserAccount = () => {
     setError(null);
 
     try {
-      setOrdersFeed(await adminClient.listOrders());
+      setOrdersFeed(ensureOrdersHavePaymentRefs(await adminClient.listOrders()).orders);
     } catch (loadError) {
       setError(
         loadError instanceof Error ? loadError.message : "No se pudieron cargar tus pedidos.",

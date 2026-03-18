@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { assertValidEmail, assertValidPhone } from "@/lib/contact";
-import { isTransferConfigReady, paymentMethodLabel } from "@/lib/payment";
+import { getOrderPaymentRef, isTransferConfigReady, paymentMethodLabel } from "@/lib/payment";
 import { adminClient } from "@/services/client/admin-client";
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
@@ -97,7 +97,7 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
 
       clearCart();
       setSubmittedOrder(order);
-      setSuccessMessage(`Pedido ${order.id} creado correctamente.`);
+      setSuccessMessage(`Pedido confirmado. Referencia de pago: ${getOrderPaymentRef(order)}.`);
       setNotes("");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo crear el pedido.");
@@ -116,6 +116,21 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
           <p className="text-sepia/70 mb-6">
             {successMessage ?? "Tu carrito esta vacio."}
           </p>
+          {submittedOrder ? (
+            <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-terracota/20 bg-crema px-5 py-4 text-left">
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
+                Referencia de pago
+              </p>
+              <p className="mt-2 text-3xl font-serif font-bold text-sepia">
+                {getOrderPaymentRef(submittedOrder)}
+              </p>
+              <p className="mt-2 text-sm text-sepia/70">
+                {submittedOrder.payment?.method === "transferencia"
+                  ? `Usa esta referencia en tu transferencia: ${getOrderPaymentRef(submittedOrder)}`
+                  : "Conserva esta referencia para identificar tu pedido rapidamente."}
+              </p>
+            </div>
+          ) : null}
           {submittedOrder?.payment?.method === "transferencia" ? (
             <div className="mx-auto mb-6 max-w-2xl rounded-2xl border border-beige-tostado/30 bg-crema p-6 text-left">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-terracota">
@@ -144,7 +159,7 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
                   {operations.transferReferenceLabel}
                 </p>
                 <p className="mt-1 text-lg font-bold text-terracota">
-                  {submittedOrder.payment.transferReference}
+                  {getOrderPaymentRef(submittedOrder)}
                 </p>
               </div>
               <p className="mt-4 text-sm text-sepia/70">{operations.transferInstructions}</p>

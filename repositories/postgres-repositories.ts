@@ -33,6 +33,7 @@ interface InventoryRow {
 
 interface OrderRow {
   id: string;
+  payment_ref: string;
   subtotal: number;
   total: number;
   status: OrderStatus;
@@ -100,6 +101,7 @@ const mapOrderItemRow = (row: OrderItemRow): OrderItem => ({
 
 const mapOrderRow = (row: OrderRow, items: OrderItem[]): Order => ({
   id: row.id,
+  paymentRef: row.payment_ref,
   items,
   subtotal: Number(row.subtotal),
   total: Number(row.total),
@@ -356,7 +358,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const ordersResult = await client.query<OrderRow>(
         `
-          SELECT id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
           FROM orders
           ORDER BY created_at DESC
         `,
@@ -372,7 +374,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const orderResult = await client.query<OrderRow>(
         `
-          SELECT id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
           FROM orders
           WHERE id = $1
         `,
@@ -397,6 +399,7 @@ export const postgresOrderRepository: OrderRepository = {
           `
             INSERT INTO orders (
               id,
+              payment_ref,
               subtotal,
               total,
               status,
@@ -415,11 +418,12 @@ export const postgresOrderRepository: OrderRepository = {
               payment_clabe,
               notes
             ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
             )
           `,
           [
             order.id,
+            order.paymentRef,
             order.subtotal,
             order.total,
             order.status,
@@ -473,7 +477,7 @@ export const postgresOrderRepository: OrderRepository = {
         UPDATE orders
         SET status = $2
         WHERE id = $1
-        RETURNING id, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+        RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
       `,
       [id, status],
     );

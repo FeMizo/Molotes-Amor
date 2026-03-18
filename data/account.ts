@@ -131,6 +131,7 @@ const createOrder = ({
 
   return {
     id,
+    paymentRef: id.replace(/\D/g, "").slice(-3).padStart(3, "0"),
     userId,
     userUsername,
     items,
@@ -180,7 +181,7 @@ export const seedUserOrders: Order[] = [
     },
     payment: {
       method: "transferencia",
-      transferReference: "ORD-VITA-001",
+      transferReference: "001",
       bank: "BBVA",
       accountHolder: "Molotes Amor SA de CV",
       accountNumber: "0123456789",

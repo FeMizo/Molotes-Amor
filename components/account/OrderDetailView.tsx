@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { orderStatusMeta } from "@/lib/order-status";
-import { getOrderPayment, paymentMethodLabel } from "@/lib/payment";
+import { getOrderPayment, getOrderPaymentRef, paymentMethodLabel } from "@/lib/payment";
 import { useUserAccount } from "@/hooks/use-user-account";
 
 import { AccountEmptyState } from "./AccountEmptyState";
@@ -55,7 +55,7 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
               Volver a pedidos
             </Link>
             <h2 className="mt-3 text-4xl font-serif font-bold text-sepia">
-              {order.id}
+              Ref. {getOrderPaymentRef(order)}
             </h2>
             <p className="mt-2 max-w-2xl text-sepia/65">{statusMeta.description}</p>
           </div>
@@ -87,9 +87,9 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
             <p className="mt-1 font-bold text-sepia">
               {paymentMethodLabel[payment.method]}
             </p>
-            {payment.transferReference ? (
-              <p className="mt-1 text-sm text-sepia/65">{payment.transferReference}</p>
-            ) : null}
+            <p className="mt-1 text-sm font-semibold text-terracota">
+              Referencia de pago: {getOrderPaymentRef(order)}
+            </p>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export const OrderDetailView = ({ orderId }: { orderId: string }) => {
                 </p>
                 <p>
                   <span className="font-semibold text-sepia">Referencia:</span>{" "}
-                  {payment.transferReference ?? "Sin referencia"}
+                  {getOrderPaymentRef(order)}
                 </p>
               </div>
             </article>

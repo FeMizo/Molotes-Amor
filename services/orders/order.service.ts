@@ -1,7 +1,11 @@
 import { getRepositories } from "@/repositories/local-repositories";
 import { getSiteContent } from "@/services/content/site-content.service";
 import { assertValidEmail, assertValidPhone } from "@/lib/contact";
-import { buildTransferReference, isTransferConfigReady } from "@/lib/payment";
+import {
+  ensureOrdersHavePaymentRefs,
+  generatePaymentRef,
+  isTransferConfigReady,
+} from "@/lib/payment";
 import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
 
 const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -9,8 +13,13 @@ const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 
 export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
   const repos = getRepositories();
   const siteContent = await getSiteContent();
-  const [products, inventory] = await Promise.all([repos.products.list(), repos.inventory.list()]);
+  const [products, inventory, existingOrders] = await Promise.all([
+    repos.products.list(),
+    repos.inventory.list(),
+    repos.orders.list(),
+  ]);
   const orderId = toOrderId();
+  const createdAt = new Date().toISOString();
 
   if (input.items.length === 0) {
     throw new Error("El pedido no tiene productos.");
@@ -66,14 +75,19 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     }
   }
 
+  const paymentRef = generatePaymentRef(
+    { id: orderId, createdAt },
+    ensureOrdersHavePaymentRefs(existingOrders).orders,
+  );
   const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
   const order: Order = {
     id: orderId,
+    paymentRef,
     items: orderItems.map(({ stockInfo: _stockInfo, ...item }) => item),
     subtotal,
     total: subtotal,
     status: "pendiente",
-    createdAt: new Date().toISOString(),
+    createdAt,
     userId: input.account.userId,
     userUsername: input.account.username,
     customer: {
@@ -85,7 +99,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
       paymentMethod === "transferencia"
         ? {
             method: "transferencia",
-            transferReference: buildTransferReference(orderId),
+            transferReference: paymentRef,
             bank: siteContent.operations.transferBank,
             accountHolder: siteContent.operations.transferAccountHolder,
             accountNumber: siteContent.operations.transferAccountNumber,
@@ -102,7 +116,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
 
 export const listOrders = async (): Promise<Order[]> => {
   const repos = getRepositories();
-  return repos.orders.list();
+  return ensureOrdersHavePaymentRefs(await repos.orders.list()).orders;
 };
 
 export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order> => {
@@ -112,5 +126,10 @@ export const updateOrderStatus = async (id: string, status: OrderStatus): Promis
 
 export const getOrderById = async (id: string): Promise<Order | undefined> => {
   const repos = getRepositories();
-  return repos.orders.findById(id);
+  const order = await repos.orders.findById(id);
+  if (!order) {
+    return undefined;
+  }
+
+  return ensureOrdersHavePaymentRefs([order]).orders[0];
 };

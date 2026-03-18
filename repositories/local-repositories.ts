@@ -11,6 +11,7 @@ import type {
 
 import { postgresRepositories } from "./postgres-repositories";
 import { readStore, writeStore } from "./file-store";
+import { ensureOrdersHavePaymentRefs } from "@/lib/payment";
 
 const toProductRecord = (
   current: Product,
@@ -110,13 +111,25 @@ export const localInventoryRepository: InventoryRepository = {
 export const localOrderRepository: OrderRepository = {
   async list() {
     const store = await readStore();
-    return [...store.orders].sort(
+    const normalized = ensureOrdersHavePaymentRefs(store.orders);
+    if (normalized.changed) {
+      store.orders = normalized.orders;
+      await writeStore(store);
+    }
+
+    return [...normalized.orders].sort(
       (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
     );
   },
   async findById(id) {
     const store = await readStore();
-    return store.orders.find((order) => order.id === id);
+    const normalized = ensureOrdersHavePaymentRefs(store.orders);
+    if (normalized.changed) {
+      store.orders = normalized.orders;
+      await writeStore(store);
+    }
+
+    return normalized.orders.find((order) => order.id === id);
   },
   async create(order) {
     const store = await readStore();

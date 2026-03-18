@@ -133,7 +133,7 @@ export const defaultSiteContent: SiteContent = {
     transferAccountHolder: "Molotes Amor SA de CV",
     transferAccountNumber: "0123456789",
     transferClabe: "012180001234567890",
-    transferReferenceLabel: "Referencia del pedido",
+    transferReferenceLabel: "Referencia de pago",
     transferInstructions:
       "Realiza la transferencia y conserva tu comprobante. Usa la referencia del pedido para identificar el pago.",
   },
