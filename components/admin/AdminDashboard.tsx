@@ -5,12 +5,14 @@ import {
   ArrowRight,
   Boxes,
   PackageCheck,
+  PackagePlus,
   ShoppingCart,
   TriangleAlert,
   Users,
 } from "lucide-react";
 
 import { listAdminUsers } from "@/services/account/account.service";
+import { useAdminCombos } from "@/hooks/use-admin-combos";
 import { useAdminInventory } from "@/hooks/use-admin-inventory";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
 import { useAdminProducts } from "@/hooks/use-admin-products";
@@ -21,6 +23,7 @@ import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 
 export const AdminDashboard = () => {
   const { products } = useAdminProducts();
+  const { combos } = useAdminCombos();
   const { rows } = useAdminInventory();
   const { orders } = useAdminOrders();
   const usersSeed = useAuthStore((state) => state.users);
@@ -184,7 +187,7 @@ export const AdminDashboard = () => {
         </article>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
         <Link href="/admin/products" className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
           <h3 className="text-2xl font-serif font-bold text-sepia">Productos</h3>
           <p className="text-sepia/70 mt-2">Alta, edicion, destacados y filtros internos para operar catalogo.</p>
@@ -192,6 +195,13 @@ export const AdminDashboard = () => {
         <Link href="/admin/inventory" className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
           <h3 className="text-2xl font-serif font-bold text-sepia">Inventario</h3>
           <p className="text-sepia/70 mt-2">Stock, minimo, backorder y estado disponible/poco/agotado.</p>
+        </Link>
+        <Link href="/admin/combos" className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
+          <div className="flex items-center gap-2">
+            <PackagePlus size={18} className="text-terracota" />
+            <h3 className="text-2xl font-serif font-bold text-sepia">Combos</h3>
+          </div>
+          <p className="text-sepia/70 mt-2">{combos.length} combos listos para molote + refresco o paquetes mas amplios.</p>
         </Link>
         <Link href="/admin/orders" className="bg-white rounded-2xl p-6 border border-beige-tostado/30 shadow-sm">
           <h3 className="text-2xl font-serif font-bold text-sepia">Pedidos</h3>

@@ -7,6 +7,7 @@ import { LogOut, Menu, Search, ShoppingBasket, UserRound } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { routeSectionMap } from "@/config/site-sections";
 import { isFrontendSectionEnabled } from "@/lib/site-sections";
+import { getUserPrimaryHref, getUserPrimaryLabel } from "@/lib/user-access";
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartItemCount, useCartStore } from "@/store/cart-store";
 import type { SiteContent } from "@/types/site-content";
@@ -73,13 +74,13 @@ export const Header = ({ siteContent }: { siteContent?: SiteContent | null }) =>
             {currentUser ? (
               <>
                 <Link
-                  href="/mi-cuenta"
+                  href={getUserPrimaryHref(currentUser)}
                   className="inline-flex items-center gap-2 rounded-xl border border-beige-tostado/25 px-3 py-2 text-sepia transition-colors hover:border-terracota hover:text-terracota"
-                  aria-label="Mi cuenta"
+                  aria-label={currentUser.role === "admin" ? "Panel admin" : "Mi cuenta"}
                 >
                   <UserRound size={18} />
                   <span className="hidden text-sm font-semibold sm:inline">
-                    {currentUser.username}
+                    {getUserPrimaryLabel(currentUser)}
                   </span>
                 </Link>
                 <button

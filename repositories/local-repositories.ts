@@ -1,8 +1,10 @@
+import type { Combo } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
 import type { Order, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
 import type {
+  ComboRepository,
   InventoryRepository,
   OrderRepository,
   ProductRepository,
@@ -31,6 +33,20 @@ const toProductRecord = (
   available: patch.available ?? current.available,
   tags: patch.tags ?? current.tags,
   badge: "badge" in patch ? patch.badge : current.badge,
+});
+
+const toComboRecord = (current: Combo, patch: Partial<Combo>): Combo => ({
+  id: current.id,
+  name: patch.name ?? current.name,
+  description: "description" in patch ? patch.description : current.description,
+  image: "image" in patch ? patch.image : current.image,
+  items: patch.items ?? current.items,
+  regularPrice: patch.regularPrice ?? current.regularPrice,
+  finalPrice: patch.finalPrice ?? current.finalPrice,
+  active: patch.active ?? current.active,
+  featured: patch.featured ?? current.featured,
+  order: patch.order ?? current.order,
+  category: "category" in patch ? patch.category : current.category,
 });
 
 export const localProductRepository: ProductRepository = {
@@ -150,6 +166,40 @@ export const localOrderRepository: OrderRepository = {
   },
 };
 
+export const localComboRepository: ComboRepository = {
+  async list() {
+    const store = await readStore();
+    return [...store.combos].sort((left, right) => left.order - right.order);
+  },
+  async findById(id) {
+    const store = await readStore();
+    return store.combos.find((combo) => combo.id === id);
+  },
+  async create(input) {
+    const store = await readStore();
+    store.combos.push(input);
+    await writeStore(store);
+    return input;
+  },
+  async update(id, patch) {
+    const store = await readStore();
+    const idx = store.combos.findIndex((combo) => combo.id === id);
+    if (idx < 0) {
+      throw new Error("Combo no encontrado");
+    }
+
+    const updated = toComboRecord(store.combos[idx], patch);
+    store.combos[idx] = updated;
+    await writeStore(store);
+    return updated;
+  },
+  async remove(id) {
+    const store = await readStore();
+    store.combos = store.combos.filter((combo) => combo.id !== id);
+    await writeStore(store);
+  },
+};
+
 export const localSiteContentRepository: SiteContentRepository = {
   async get() {
     const store = await readStore();
@@ -166,6 +216,7 @@ export const localSiteContentRepository: SiteContentRepository = {
 export interface Repositories {
   products: ProductRepository;
   inventory: InventoryRepository;
+  combos: ComboRepository;
   orders: OrderRepository;
   siteContent: SiteContentRepository;
 }
@@ -173,6 +224,7 @@ export interface Repositories {
 export const localRepositories: Repositories = {
   products: localProductRepository,
   inventory: localInventoryRepository,
+  combos: localComboRepository,
   orders: localOrderRepository,
   siteContent: localSiteContentRepository,
 };
@@ -198,6 +250,13 @@ const remoteStub: Repositories = {
     findByProductId: notImplemented,
     upsert: notImplemented,
     adjustStock: notImplemented,
+  },
+  combos: {
+    list: notImplemented,
+    findById: notImplemented,
+    create: notImplemented,
+    update: notImplemented,
+    remove: notImplemented,
   },
   orders: {
     list: notImplemented,

@@ -7,6 +7,7 @@ import {
   ClipboardList,
   FilePenLine,
   LayoutDashboard,
+  PackagePlus,
   PackageSearch,
   ShieldAlert,
   Store,
@@ -37,6 +38,12 @@ const links = [
     label: "Inventario",
     description: "Stock, minimo y backorder",
     icon: PackageSearch,
+  },
+  {
+    href: "/admin/combos",
+    label: "Combos",
+    description: "Paquetes armados con productos existentes",
+    icon: PackagePlus,
   },
   {
     href: "/admin/orders",

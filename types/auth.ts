@@ -1,6 +1,7 @@
 import type { UserAccountProfile } from "@/types/account";
 
 export type AppUserRole = "admin" | "user";
+export type UserRole = AppUserRole;
 
 export interface AppUser extends UserAccountProfile {
   username: string;

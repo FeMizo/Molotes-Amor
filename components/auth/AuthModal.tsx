@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { assertValidEmail, assertValidPhone } from "@/lib/contact";
+import { getUserPrimaryHref } from "@/lib/user-access";
 import { useAuthStore } from "@/store/auth-store";
 
 import { ModalShell } from "../shared/ModalShell";
@@ -90,7 +91,7 @@ export const AuthModal = () => {
     try {
       const user = login({ username, password });
       resetLocalForms();
-      router.push(user.role === "admin" ? "/admin" : "/mi-cuenta");
+      router.push(getUserPrimaryHref(user));
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "No se pudo iniciar sesion.",
@@ -135,7 +136,7 @@ export const AuthModal = () => {
         password: registerForm.password,
       });
       resetLocalForms();
-      router.push(user.role === "admin" ? "/admin" : "/mi-cuenta");
+      router.push(getUserPrimaryHref(user));
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "No se pudo crear la cuenta.",

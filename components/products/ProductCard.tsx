@@ -103,6 +103,20 @@ export const ProductCard = ({
           </span>
         </div>
 
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sepia/55">
+          <span>{product.category}</span>
+          {product.kind === "combo" ? (
+            <span className="rounded-full bg-terracota/10 px-2 py-1 text-terracota">
+              Combo
+            </span>
+          ) : null}
+          {product.kind === "combo" && product.comboRegularPrice && product.comboRegularPrice > product.price ? (
+            <span className="text-olivo">
+              Ahorras ${product.comboRegularPrice - product.price}
+            </span>
+          ) : null}
+        </div>
+
         <p className="text-sm text-sepia/70 mb-6 line-clamp-2 min-h-[2.5rem]">{product.description}</p>
 
         <p

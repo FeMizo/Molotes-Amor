@@ -9,6 +9,7 @@ import type { CartItem, SavedForLaterItem } from "@/types/cart";
 const toStoredItem = (product: CatalogProduct, quantity = 1): CartItem => ({
   id: product.id,
   name: product.name,
+  kind: product.kind,
   price: product.price,
   image: product.image,
   quantity,

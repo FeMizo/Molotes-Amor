@@ -1,5 +1,5 @@
 import type { Inventory } from "@/types/inventory";
-import type { Product } from "@/types/product";
+import { PRODUCT_CATEGORIES, type Product } from "@/types/product";
 
 export const PRODUCT_SEED: Product[] = [
   {
@@ -85,6 +85,36 @@ export const PRODUCT_SEED: Product[] = [
     available: true,
     tags: ["especialidad", "huitlacoche", "epazote"],
   },
+  {
+    id: "7",
+    slug: "refresco-cola-cana",
+    name: "Refresco Cola de la Casa",
+    description: "Refresco frio sabor cola para acompanar cualquier molote.",
+    longDescription:
+      "Botella individual bien fria, ideal para equilibrar los sabores intensos del menu.",
+    price: 28,
+    category: "Bebidas",
+    image: "https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=800&q=80",
+    badge: "Popular",
+    featured: false,
+    available: true,
+    tags: ["refresco", "bebida", "cola"],
+  },
+  {
+    id: "8",
+    slug: "refresco-limon-brisa",
+    name: "Refresco Limon Brisa",
+    description: "Refresco sabor limon con perfil fresco y ligeramente citrico.",
+    longDescription:
+      "Opcion individual para sumar a combos o acompanar pedidos con un sabor mas ligero.",
+    price: 28,
+    category: "Bebidas",
+    image: "https://images.unsplash.com/photo-1622484212850-eb596d769edc?auto=format&fit=crop&w=800&q=80",
+    badge: "Nuevo",
+    featured: false,
+    available: true,
+    tags: ["refresco", "bebida", "limon"],
+  },
 ];
 
 export const INVENTORY_SEED: Inventory[] = [
@@ -94,6 +124,8 @@ export const INVENTORY_SEED: Inventory[] = [
   { productId: "4", stock: 10, minStock: 4, allowBackorder: false },
   { productId: "5", stock: 12, minStock: 4, allowBackorder: false },
   { productId: "6", stock: 6, minStock: 3, allowBackorder: false },
+  { productId: "7", stock: 20, minStock: 6, allowBackorder: false },
+  { productId: "8", stock: 18, minStock: 6, allowBackorder: false },
 ];
 
-export const CATEGORIES = ["Todos", "Tradicionales", "Quesos", "Vegetarianos", "Especialidades"];
+export const CATEGORIES = ["Todos", ...PRODUCT_CATEGORIES];

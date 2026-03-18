@@ -2,11 +2,18 @@ import type { PoolClient } from "pg";
 
 import { dbQuery, withDbClient } from "@/lib/db";
 import { normalizeSiteContent } from "@/data/site-content";
+import type { Combo, ComboItem } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
 import type { Order, OrderItem, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
-import type { InventoryRepository, OrderRepository, ProductRepository, SiteContentRepository } from "@/types/storage";
+import type {
+  ComboRepository,
+  InventoryRepository,
+  OrderRepository,
+  ProductRepository,
+  SiteContentRepository,
+} from "@/types/storage";
 
 interface ProductRow {
   id: string;
@@ -29,6 +36,26 @@ interface InventoryRow {
   stock: number;
   min_stock: number | null;
   allow_backorder: boolean;
+}
+
+interface ComboRow {
+  id: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+  regular_price: number;
+  final_price: number;
+  active: boolean;
+  featured: boolean;
+  display_order: number;
+  category: string | null;
+}
+
+interface ComboItemRow {
+  combo_id: string;
+  position: number;
+  product_id: string;
+  quantity: number;
 }
 
 interface OrderRow {
@@ -91,6 +118,25 @@ const mapInventoryRow = (row: InventoryRow): Inventory => ({
   allowBackorder: row.allow_backorder,
 });
 
+const mapComboItemRow = (row: ComboItemRow): ComboItem => ({
+  productId: row.product_id,
+  quantity: Number(row.quantity),
+});
+
+const mapComboRow = (row: ComboRow, items: ComboItem[]): Combo => ({
+  id: row.id,
+  name: row.name,
+  description: row.description ?? undefined,
+  image: row.image ?? undefined,
+  items,
+  regularPrice: Number(row.regular_price),
+  finalPrice: Number(row.final_price),
+  active: row.active,
+  featured: row.featured,
+  order: Number(row.display_order),
+  category: row.category ?? undefined,
+});
+
 const mapOrderItemRow = (row: OrderItemRow): OrderItem => ({
   productId: row.product_id,
   productName: row.product_name,
@@ -149,6 +195,31 @@ const loadOrderItems = async (client: PoolClient, orderIds: string[]): Promise<M
   }
 
   return itemsByOrder;
+};
+
+const loadComboItems = async (client: PoolClient, comboIds: string[]): Promise<Map<string, ComboItem[]>> => {
+  const itemsByCombo = new Map<string, ComboItem[]>();
+  if (comboIds.length === 0) {
+    return itemsByCombo;
+  }
+
+  const { rows } = await client.query<ComboItemRow>(
+    `
+      SELECT combo_id, position, product_id, quantity
+      FROM combo_items
+      WHERE combo_id = ANY($1::text[])
+      ORDER BY combo_id ASC, position ASC
+    `,
+    [comboIds],
+  );
+
+  for (const row of rows) {
+    const current = itemsByCombo.get(row.combo_id) ?? [];
+    current.push(mapComboItemRow(row));
+    itemsByCombo.set(row.combo_id, current);
+  }
+
+  return itemsByCombo;
 };
 
 const productFieldSetters = (patch: Partial<Product>) => {
@@ -353,6 +424,190 @@ export const postgresInventoryRepository: InventoryRepository = {
   },
 };
 
+export const postgresComboRepository: ComboRepository = {
+  async list() {
+    return withDbClient(async (client) => {
+      const combosResult = await client.query<ComboRow>(
+        `
+          SELECT id, name, description, image, regular_price, final_price, active, featured, display_order, category
+          FROM combos
+          ORDER BY display_order ASC, name ASC
+        `,
+      );
+
+      const comboIds = combosResult.rows.map((row) => row.id);
+      const itemsByCombo = await loadComboItems(client, comboIds);
+
+      return combosResult.rows.map((row) => mapComboRow(row, itemsByCombo.get(row.id) ?? []));
+    });
+  },
+  async findById(id) {
+    return withDbClient(async (client) => {
+      const comboResult = await client.query<ComboRow>(
+        `
+          SELECT id, name, description, image, regular_price, final_price, active, featured, display_order, category
+          FROM combos
+          WHERE id = $1
+        `,
+        [id],
+      );
+
+      const row = comboResult.rows[0];
+      if (!row) {
+        return undefined;
+      }
+
+      const itemsByCombo = await loadComboItems(client, [id]);
+      return mapComboRow(row, itemsByCombo.get(id) ?? []);
+    });
+  },
+  async create(combo) {
+    return withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        await client.query(
+          `
+            INSERT INTO combos (
+              id,
+              name,
+              description,
+              image,
+              regular_price,
+              final_price,
+              active,
+              featured,
+              display_order,
+              category
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+            )
+          `,
+          [
+            combo.id,
+            combo.name,
+            combo.description ?? null,
+            combo.image ?? null,
+            combo.regularPrice,
+            combo.finalPrice,
+            combo.active,
+            combo.featured,
+            combo.order,
+            combo.category ?? null,
+          ],
+        );
+
+        for (const [index, item] of combo.items.entries()) {
+          await client.query(
+            `
+              INSERT INTO combo_items (
+                combo_id,
+                position,
+                product_id,
+                quantity
+              ) VALUES (
+                $1, $2, $3, $4
+              )
+            `,
+            [combo.id, index, item.productId, item.quantity],
+          );
+        }
+
+        await client.query("COMMIT");
+        return combo;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  },
+  async update(id, patch) {
+    return withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        const comboResult = await client.query<ComboRow>(
+          `
+            SELECT id, name, description, image, regular_price, final_price, active, featured, display_order, category
+            FROM combos
+            WHERE id = $1
+          `,
+          [id],
+        );
+
+        const currentRow = comboResult.rows[0];
+        if (!currentRow) {
+          throw new Error("Combo no encontrado");
+        }
+
+        const itemsByCombo = await loadComboItems(client, [id]);
+        const current = mapComboRow(currentRow, itemsByCombo.get(id) ?? []);
+
+        const nextCombo: Combo = {
+          ...current,
+          ...patch,
+          items: patch.items ?? current.items,
+        };
+
+        await client.query(
+          `
+            UPDATE combos
+            SET name = $2,
+                description = $3,
+                image = $4,
+                regular_price = $5,
+                final_price = $6,
+                active = $7,
+                featured = $8,
+                display_order = $9,
+                category = $10
+            WHERE id = $1
+          `,
+          [
+            id,
+            nextCombo.name,
+            nextCombo.description ?? null,
+            nextCombo.image ?? null,
+            nextCombo.regularPrice,
+            nextCombo.finalPrice,
+            nextCombo.active,
+            nextCombo.featured,
+            nextCombo.order,
+            nextCombo.category ?? null,
+          ],
+        );
+
+        await client.query("DELETE FROM combo_items WHERE combo_id = $1", [id]);
+
+        for (const [index, item] of nextCombo.items.entries()) {
+          await client.query(
+            `
+              INSERT INTO combo_items (
+                combo_id,
+                position,
+                product_id,
+                quantity
+              ) VALUES (
+                $1, $2, $3, $4
+              )
+            `,
+            [id, index, item.productId, item.quantity],
+          );
+        }
+
+        await client.query("COMMIT");
+        return nextCombo;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  },
+  async remove(id) {
+    await dbQuery("DELETE FROM combos WHERE id = $1", [id]);
+  },
+};
+
 export const postgresOrderRepository: OrderRepository = {
   async list() {
     return withDbClient(async (client) => {
@@ -530,6 +785,7 @@ export const postgresSiteContentRepository: SiteContentRepository = {
 export const postgresRepositories = {
   products: postgresProductRepository,
   inventory: postgresInventoryRepository,
+  combos: postgresComboRepository,
   orders: postgresOrderRepository,
   siteContent: postgresSiteContentRepository,
 };

@@ -1,3 +1,12 @@
+export const PRODUCT_CATEGORIES = [
+  "Tradicionales",
+  "Quesos",
+  "Vegetarianos",
+  "Especialidades",
+  "Bebidas",
+] as const;
+
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number] | (string & {});
 export type ProductBadge = "Popular" | "Nuevo" | "Mas pedido";
 
 export interface Product {
@@ -8,7 +17,7 @@ export interface Product {
   longDescription: string;
   price: number;
   previousPrice?: number;
-  category: string;
+  category: ProductCategory;
   image: string;
   featured: boolean;
   available: boolean;

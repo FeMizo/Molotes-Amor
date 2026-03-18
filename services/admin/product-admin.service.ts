@@ -1,7 +1,7 @@
 import { getRepositories } from "@/repositories/local-repositories";
 import { toSlug } from "@/lib/slug";
 import type { Inventory } from "@/types/inventory";
-import type { Product } from "@/types/product";
+import type { Product, ProductCategory } from "@/types/product";
 
 export interface ProductCreateInput {
   name: string;
@@ -9,7 +9,7 @@ export interface ProductCreateInput {
   longDescription: string;
   price: number;
   previousPrice?: number;
-  category: string;
+  category: ProductCategory;
   image: string;
   featured: boolean;
   available: boolean;
@@ -101,5 +101,31 @@ export const updateProductWithInventory = async (id: string, input: ProductUpdat
 
 export const deleteProductWithInventory = async (id: string) => {
   const repos = getRepositories();
+  const [products, combos] = await Promise.all([repos.products.list(), repos.combos.list()]);
+  const productMap = new Map(products.map((product) => [product.id, product]));
+
+  for (const combo of combos) {
+    if (!combo.items.some((item) => item.productId === id)) {
+      continue;
+    }
+
+    const remainingItems = combo.items.filter((item) => item.productId !== id);
+
+    if (remainingItems.length === 0) {
+      await repos.combos.remove(combo.id);
+      continue;
+    }
+
+    const regularPrice = remainingItems.reduce((sum, item) => {
+      const product = productMap.get(item.productId);
+      return sum + (product?.price ?? 0) * item.quantity;
+    }, 0);
+
+    await repos.combos.update(combo.id, {
+      items: remainingItems,
+      regularPrice,
+    });
+  }
+
   await repos.products.remove(id);
 };

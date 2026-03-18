@@ -9,6 +9,7 @@ import type { CatalogProduct } from "@/types/catalog";
 
 const fallbackProducts: CatalogProduct[] = PRODUCT_SEED.map((product) => ({
   ...product,
+  kind: "product",
   inventory: toInventoryView({
     productId: product.id,
     stock: 10,

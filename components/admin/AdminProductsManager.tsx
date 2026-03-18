@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { useAdminProducts } from "@/hooks/use-admin-products";
 import type { ProductAdminFormState } from "@/types/admin";
+import { PRODUCT_CATEGORIES } from "@/types/product";
 
 import { AdminProductForm } from "./AdminProductForm";
 import { ModalShell } from "../shared/ModalShell";
@@ -47,7 +48,7 @@ export const AdminProductsManager = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const categories = useMemo(
-    () => Array.from(new Set(products.map((product) => product.category))),
+    () => Array.from(new Set([...PRODUCT_CATEGORIES, ...products.map((product) => product.category)])),
     [products],
   );
   const lowStockCount = products.filter(

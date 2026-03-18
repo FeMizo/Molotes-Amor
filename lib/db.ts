@@ -81,6 +81,21 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS combos (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      image TEXT,
+      regular_price INTEGER NOT NULL,
+      final_price INTEGER NOT NULL,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      featured BOOLEAN NOT NULL DEFAULT FALSE,
+      display_order INTEGER NOT NULL DEFAULT 0,
+      category TEXT
+    );
+  `);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       payment_ref TEXT,
@@ -174,6 +189,16 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS combo_items (
+      combo_id TEXT NOT NULL REFERENCES combos(id) ON DELETE CASCADE,
+      position INTEGER NOT NULL,
+      product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      quantity INTEGER NOT NULL,
+      PRIMARY KEY (combo_id, position)
+    );
+  `);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS site_content (
       id TEXT PRIMARY KEY,
       payload JSONB NOT NULL
@@ -226,6 +251,66 @@ const backfillOrderPaymentRefs = async (client: PoolClient): Promise<void> => {
         WHERE id = $1
       `,
       [order.id, order.paymentRef, order.payment?.transferReference ?? null],
+    );
+  }
+};
+
+const backfillSeedCatalog = async (client: PoolClient): Promise<void> => {
+  const seed = seedStore();
+
+  for (const product of seed.products) {
+    await client.query(
+      `
+        INSERT INTO products (
+          id,
+          slug,
+          name,
+          description,
+          long_description,
+          price,
+          previous_price,
+          category,
+          image,
+          featured,
+          available,
+          tags,
+          badge
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13
+        )
+        ON CONFLICT (id) DO NOTHING
+      `,
+      [
+        product.id,
+        product.slug,
+        product.name,
+        product.description,
+        product.longDescription,
+        product.price,
+        product.previousPrice ?? null,
+        product.category,
+        product.image,
+        product.featured,
+        product.available,
+        JSON.stringify(product.tags),
+        product.badge ?? null,
+      ],
+    );
+  }
+
+  for (const record of seed.inventory) {
+    await client.query(
+      `
+        INSERT INTO inventory (product_id, stock, min_stock, allow_backorder)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (product_id) DO NOTHING
+      `,
+      [
+        record.productId,
+        record.stock,
+        record.minStock ?? null,
+        record.allowBackorder,
+      ],
     );
   }
 };
@@ -380,6 +465,57 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
     }
   }
 
+  for (const combo of seed.combos) {
+    await client.query(
+      `
+        INSERT INTO combos (
+          id,
+          name,
+          description,
+          image,
+          regular_price,
+          final_price,
+          active,
+          featured,
+          display_order,
+          category
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+        )
+        ON CONFLICT (id) DO NOTHING
+      `,
+      [
+        combo.id,
+        combo.name,
+        combo.description ?? null,
+        combo.image ?? null,
+        combo.regularPrice,
+        combo.finalPrice,
+        combo.active,
+        combo.featured,
+        combo.order,
+        combo.category ?? null,
+      ],
+    );
+
+    for (const [index, item] of combo.items.entries()) {
+      await client.query(
+        `
+          INSERT INTO combo_items (
+            combo_id,
+            position,
+            product_id,
+            quantity
+          ) VALUES (
+            $1, $2, $3, $4
+          )
+          ON CONFLICT (combo_id, position) DO NOTHING
+        `,
+        [combo.id, index, item.productId, item.quantity],
+      );
+    }
+  }
+
   await client.query(
     `
       INSERT INTO site_content (id, payload)
@@ -398,6 +534,7 @@ export const ensureDatabaseReady = async (): Promise<void> => {
         await client.query("BEGIN");
         await createSchema(client);
         await seedDatabase(client);
+        await backfillSeedCatalog(client);
         await backfillOrderPaymentRefs(client);
         await client.query("COMMIT");
       } catch (error) {

@@ -1,4 +1,6 @@
+import type { Combo } from "@/types/combo";
 import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
+import type { ProductBadge, ProductCategory } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
 
 import { httpRequest } from "./http";
@@ -11,12 +13,12 @@ export interface ProductWithInventoryResponse {
   longDescription: string;
   price: number;
   previousPrice?: number;
-  category: string;
+  category: ProductCategory;
   image: string;
   featured: boolean;
   available: boolean;
   tags: string[];
-  badge?: "Popular" | "Nuevo" | "Mas pedido";
+  badge?: ProductBadge;
   inventory: {
     productId: string;
     stock: number;
@@ -42,18 +44,22 @@ export interface CreateProductPayload {
   longDescription: string;
   price: number;
   previousPrice?: number;
-  category: string;
+  category: ProductCategory;
   image: string;
   featured: boolean;
   available: boolean;
   tags: string[];
-  badge?: "Popular" | "Nuevo" | "Mas pedido";
+  badge?: ProductBadge;
   stock: number;
   minStock?: number;
   allowBackorder: boolean;
 }
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
+export type CreateComboPayload = Omit<Combo, "id" | "regularPrice">;
+export type UpdateComboPayload = Partial<CreateComboPayload> & {
+  regularPrice?: number;
+};
 
 export const adminClient = {
   listProducts: () => httpRequest<ProductWithInventoryResponse[]>("/api/admin/products"),
@@ -69,6 +75,21 @@ export const adminClient = {
     }),
   deleteProduct: (id: string) =>
     httpRequest<{ ok: true }>(`/api/admin/products/${id}`, {
+      method: "DELETE",
+    }),
+  listCombos: () => httpRequest<Combo[]>("/api/admin/combos"),
+  createCombo: (payload: CreateComboPayload) =>
+    httpRequest<Combo>("/api/admin/combos", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateCombo: (id: string, payload: UpdateComboPayload) =>
+    httpRequest<Combo>(`/api/admin/combos/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  deleteCombo: (id: string) =>
+    httpRequest<{ ok: true }>(`/api/admin/combos/${id}`, {
       method: "DELETE",
     }),
   listInventory: () => httpRequest<InventoryRow[]>("/api/admin/inventory"),

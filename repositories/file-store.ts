@@ -22,10 +22,21 @@ export const readStore = async (): Promise<DataStore> => {
   const raw = await fs.readFile(DB_PATH, "utf8");
   const parsed = JSON.parse(raw) as Partial<DataStore>;
   const seed = seedStore();
+  const productMap = new Map(seed.products.map((product) => [product.id, product]));
+  const inventoryMap = new Map(seed.inventory.map((record) => [record.productId, record]));
+
+  for (const product of parsed.products ?? []) {
+    productMap.set(product.id, product);
+  }
+
+  for (const record of parsed.inventory ?? []) {
+    inventoryMap.set(record.productId, record);
+  }
 
   return {
-    products: parsed.products ?? seed.products,
-    inventory: parsed.inventory ?? seed.inventory,
+    products: [...productMap.values()],
+    inventory: [...inventoryMap.values()],
+    combos: parsed.combos ?? seed.combos,
     orders: parsed.orders ?? seed.orders,
     siteContent: normalizeSiteContent(parsed.siteContent),
   };

@@ -1,5 +1,6 @@
 "use client";
 
+import { PRODUCT_CATEGORIES } from "@/types/product";
 import type { ProductAdminFormState } from "@/types/admin";
 
 interface AdminProductFormProps {
@@ -71,12 +72,17 @@ export const AdminProductForm = ({
       />
     </div>
     <div className="grid gap-3 md:grid-cols-2">
-      <input
-        placeholder="Categoria"
+      <select
         value={form.category}
         onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
         className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
-      />
+      >
+        {PRODUCT_CATEGORIES.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
       <input
         placeholder="Badge"
         value={form.badge}

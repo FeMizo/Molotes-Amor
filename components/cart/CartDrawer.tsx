@@ -94,6 +94,11 @@ export const CartDrawer = ({
                           <h4 className="font-bold text-sepia transition-colors duration-300 group-hover:text-terracota">
                             {item.name}
                           </h4>
+                          {item.kind === "combo" ? (
+                            <p className="text-xs font-semibold uppercase tracking-wider text-terracota/85">
+                              Combo
+                            </p>
+                          ) : null}
                           {item.maxQuantity ? (
                             <p className="text-xs text-sepia/55">
                               Maximo disponible: {item.maxQuantity}

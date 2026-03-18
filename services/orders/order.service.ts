@@ -13,13 +13,17 @@ const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 
 export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
   const repos = getRepositories();
   const siteContent = await getSiteContent();
-  const [products, inventory, existingOrders] = await Promise.all([
+  const [products, inventory, combos, existingOrders] = await Promise.all([
     repos.products.list(),
     repos.inventory.list(),
+    repos.combos.list(),
     repos.orders.list(),
   ]);
   const orderId = toOrderId();
   const createdAt = new Date().toISOString();
+  const productMap = new Map(products.map((product) => [product.id, product]));
+  const inventoryMap = new Map(inventory.map((record) => [record.productId, record]));
+  const comboMap = new Map(combos.map((combo) => [combo.id, combo]));
 
   if (input.items.length === 0) {
     throw new Error("El pedido no tiene productos.");
@@ -44,20 +48,59 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     throw new Error("La configuracion de transferencia no esta completa en admin.");
   }
 
+  const stockRequirements = new Map<string, number>();
   const orderItems = input.items.map((item) => {
-    const product = products.find((candidate) => candidate.id === item.productId);
+    const combo = comboMap.get(item.productId);
+    if (combo) {
+      if (!combo.active) {
+        throw new Error(`El combo ${combo.name} ya no esta disponible.`);
+      }
+
+      for (const comboItem of combo.items) {
+        const product = productMap.get(comboItem.productId);
+        const stock = inventoryMap.get(comboItem.productId);
+        if (!product || !stock) {
+          throw new Error(`Falta inventario para uno de los productos del combo ${combo.name}.`);
+        }
+
+        if (!product.available) {
+          throw new Error(`Uno de los productos del combo ${combo.name} no esta disponible.`);
+        }
+
+        const requiredQuantity = comboItem.quantity * item.quantity;
+        stockRequirements.set(
+          comboItem.productId,
+          (stockRequirements.get(comboItem.productId) ?? 0) + requiredQuantity,
+        );
+      }
+
+      return {
+        productId: combo.id,
+        productName: combo.name,
+        unitPrice: combo.finalPrice,
+        quantity: item.quantity,
+        lineTotal: combo.finalPrice * item.quantity,
+      };
+    }
+
+    const product = productMap.get(item.productId);
     if (!product) {
       throw new Error("Producto no encontrado en catalogo.");
     }
 
-    const stock = inventory.find((record) => record.productId === product.id);
+    const stock = inventoryMap.get(product.id);
     if (!stock) {
       throw new Error(`Inventario faltante para ${product.name}.`);
     }
 
-    if (!stock.allowBackorder && item.quantity > stock.stock) {
-      throw new Error(`Stock insuficiente para ${product.name}.`);
+    if (!product.available) {
+      throw new Error(`El producto ${product.name} ya no esta disponible.`);
     }
+
+    stockRequirements.set(
+      product.id,
+      (stockRequirements.get(product.id) ?? 0) + item.quantity,
+    );
 
     return {
       productId: product.id,
@@ -65,13 +108,25 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
       unitPrice: product.price,
       quantity: item.quantity,
       lineTotal: product.price * item.quantity,
-      stockInfo: stock,
     };
   });
 
-  for (const item of orderItems) {
-    if (!item.stockInfo.allowBackorder) {
-      await repos.inventory.adjustStock(item.productId, -item.quantity);
+  for (const [productId, requiredQuantity] of stockRequirements.entries()) {
+    const product = productMap.get(productId);
+    const stock = inventoryMap.get(productId);
+    if (!product || !stock) {
+      throw new Error("Inventario faltante para completar el pedido.");
+    }
+
+    if (!stock.allowBackorder && requiredQuantity > stock.stock) {
+      throw new Error(`Stock insuficiente para ${product.name}.`);
+    }
+  }
+
+  for (const [productId, requiredQuantity] of stockRequirements.entries()) {
+    const stock = inventoryMap.get(productId);
+    if (stock && !stock.allowBackorder) {
+      await repos.inventory.adjustStock(productId, -requiredQuantity);
     }
   }
 
@@ -83,7 +138,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
   const order: Order = {
     id: orderId,
     paymentRef,
-    items: orderItems.map(({ stockInfo: _stockInfo, ...item }) => item),
+    items: orderItems,
     subtotal,
     total: subtotal,
     status: "pendiente",
