@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bookmark, LockKeyhole, MapPinned, Package, UserRound } from "lucide-react";
+import {
+  Bookmark,
+  LockKeyhole,
+  MapPinned,
+  Package,
+  UserRound,
+} from "lucide-react";
 
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 
@@ -39,11 +45,7 @@ const items = [
   },
 ];
 
-export const AccountShell = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const AccountShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const currentUser = useAuthStore(selectCurrentUser);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
@@ -62,7 +64,8 @@ export const AccountShell = ({
                 Mi <span className="text-terracota italic">cuenta</span>
               </h1>
               <p className="mt-3 text-crema/75">
-                Revisa pedidos, mantente al tanto del estado actual y administra tus datos sin salir del flujo de compra.
+                Revisa pedidos, mantente al tanto del estado actual y administra
+                tus datos sin salir del flujo de compra.
               </p>
             </div>
             {currentUser ? (
@@ -87,13 +90,16 @@ export const AccountShell = ({
               Inicia sesion para ver tu centro de pedidos
             </h2>
             <p className="mt-3 max-w-2xl text-sepia/65">
-              Este panel muestra solamente pedidos vinculados al usuario autenticado.
+              Este panel muestra solamente pedidos vinculados al usuario
+              autenticado.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() =>
-                  openAuthModal("Inicia sesion para abrir tu centro de pedidos.")
+                  openAuthModal(
+                    "Inicia sesion para abrir tu centro de pedidos.",
+                  )
                 }
                 className="rounded-xl bg-terracota px-5 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
               >
@@ -111,74 +117,76 @@ export const AccountShell = ({
 
         {!currentUser ? null : (
           <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
-          <aside className="space-y-4">
-            <div className="rounded-2xl border border-beige-tostado/30 bg-white p-4 shadow-sm">
-              <nav className="space-y-2">
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  const active =
-                    pathname === item.href || pathname.startsWith(`${item.href}/`);
+            <aside className="space-y-4">
+              <div className="rounded-2xl border border-beige-tostado/30 bg-white p-4 shadow-sm">
+                <nav className="space-y-2">
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    const active =
+                      pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex gap-3 rounded-2xl border px-4 py-4 transition-colors ${
-                        active
-                          ? "border-terracota/35 bg-terracota/10"
-                          : "border-transparent hover:border-beige-tostado/30 hover:bg-crema"
-                      }`}
-                    >
-                      <span
-                        className={`mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl ${
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex gap-3 rounded-2xl border px-4 py-4 transition-colors ${
                           active
-                            ? "bg-terracota text-crema"
-                            : "bg-beige-tostado/15 text-sepia"
+                            ? "border-terracota/35 bg-terracota/10"
+                            : "border-transparent hover:border-beige-tostado/30 hover:bg-crema"
                         }`}
                       >
-                        <Icon size={18} />
-                      </span>
-                      <span className="block min-w-0">
-                        <span className="block font-semibold text-sepia">
-                          {item.label}
+                        <span
+                          className={`mt-0.5 inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl ${
+                            active
+                              ? "bg-terracota text-crema"
+                              : "bg-beige-tostado/15 text-sepia"
+                          }`}
+                        >
+                          <Icon size={18} />
                         </span>
-                        <span className="mt-1 block text-sm text-sepia/60">
-                          {item.description}
+                        <span className="block min-w-0">
+                          <span className="block font-semibold text-sepia">
+                            {item.label}
+                          </span>
+                          <span className="mt-1 block text-sm text-sepia/60">
+                            {item.description}
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            <div className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20 text-sepia">
-                  <MapPinned size={18} />
-                </span>
-                <div>
-                  <h2 className="font-semibold text-sepia">Compra mas rapido</h2>
-                  <p className="text-sm text-sepia/60">
-                    Guarda contacto, direcciones y favoritos para repetir pedido con menos pasos.
-                  </p>
-                </div>
+                      </Link>
+                    );
+                  })}
+                </nav>
               </div>
-              {currentUser ? (
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="mt-4 w-full rounded-xl border border-beige-tostado/35 px-4 py-3 text-left font-semibold text-sepia transition-colors hover:border-terracota"
-                >
-                  Cerrar sesion
-                </button>
-              ) : null}
-            </div>
-          </aside>
 
-          <div className="space-y-6 opacity-100">
-            {children}
-          </div>
+              <div className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl bg-beige-tostado/20 text-sepia">
+                    <MapPinned size={18} />
+                  </span>
+                  <div>
+                    <h2 className="font-semibold text-sepia">
+                      Compra mas rapido
+                    </h2>
+                    <p className="text-sm text-sepia/60">
+                      Guarda contacto, direcciones y favoritos para repetir
+                      pedido con menos pasos.
+                    </p>
+                  </div>
+                </div>
+                {currentUser ? (
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="mt-4 w-full rounded-xl border border-beige-tostado/35 px-4 py-3 text-left font-semibold text-sepia transition-colors hover:border-terracota"
+                  >
+                    Cerrar sesion
+                  </button>
+                ) : null}
+              </div>
+            </aside>
+
+            <div className="space-y-6 opacity-100">{children}</div>
           </div>
         )}
       </div>

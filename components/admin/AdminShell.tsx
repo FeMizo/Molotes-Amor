@@ -13,7 +13,11 @@ import {
   Users,
 } from "lucide-react";
 
-import { selectCurrentUser, selectIsAdmin, useAuthStore } from "@/store/auth-store";
+import {
+  selectCurrentUser,
+  selectIsAdmin,
+  useAuthStore,
+} from "@/store/auth-store";
 
 const links = [
   {
@@ -70,10 +74,12 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
               Sistema interno
             </p>
             <h1 className="mt-3 text-4xl font-serif font-bold md:text-5xl">
-              Acceso <span className="text-terracota italic">Administrador</span>
+              Acceso{" "}
+              <span className="text-terracota italic">Administrador</span>
             </h1>
             <p className="mt-3 text-crema/70">
-              Ingresa con la cuenta de admin temporal para operar catalogo, pedidos e inventario.
+              Ingresa con la cuenta de admin temporal para operar catalogo,
+              pedidos e inventario.
             </p>
           </div>
 
@@ -84,16 +90,21 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
               </span>
               <div className="space-y-3">
                 <h2 className="text-2xl font-serif font-bold text-sepia">
-                  {currentUser ? "Tu cuenta no tiene permisos de admin" : "Inicia sesion como admin"}
+                  {currentUser
+                    ? "Tu cuenta no tiene permisos de admin"
+                    : "Inicia sesion como admin"}
                 </h2>
                 <p className="max-w-2xl text-sepia/65">
-                  Usa `adminmolotes` con contrasena `molotesamor`. Los usuarios cliente no pueden entrar al panel.
+                  Usa `adminmolotes` con contrasena `molotesamor`. Los usuarios
+                  cliente no pueden entrar al panel.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() =>
-                      openAuthModal("Inicia sesion con el usuario admin para acceder al panel.")
+                      openAuthModal(
+                        "Inicia sesion con el usuario admin para acceder al panel.",
+                      )
                     }
                     className="rounded-xl bg-terracota px-5 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
                   >
@@ -133,10 +144,12 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
                 Sistema interno
               </p>
               <h1 className="mt-3 text-4xl font-serif font-bold md:text-5xl">
-                Panel <span className="text-terracota italic">Administrador</span>
+                Panel{" "}
+                <span className="text-terracota italic">Administrador</span>
               </h1>
               <p className="mt-3 text-crema/70">
-                Opera catalogo, pedidos, inventario, contenido y usuarios sin mezclar la experiencia publica con el backend interno.
+                Opera catalogo, pedidos, inventario, contenido y usuarios sin
+                mezclar la experiencia publica con el backend interno.
               </p>
             </div>
             <Link
@@ -156,7 +169,8 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
                 {links.map((link) => {
                   const Icon = link.icon;
                   const active =
-                    pathname === link.href || pathname.startsWith(`${link.href}/`);
+                    pathname === link.href ||
+                    pathname.startsWith(`${link.href}/`);
 
                   return (
                     <Link
@@ -169,7 +183,7 @@ export const AdminShell = ({ children }: { children: React.ReactNode }) => {
                       }`}
                     >
                       <span
-                        className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${
+                        className={`inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl ${
                           active
                             ? "bg-terracota text-crema"
                             : "bg-beige-tostado/15 text-sepia"

@@ -13,13 +13,22 @@ import { OrderProgressTracker } from "../orders/OrderProgressTracker";
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
 
 export const AccountDashboard = () => {
-  const { activeOrder, error, favoriteProducts, loading, profile, recentOrders, stats } =
-    useUserAccount();
+  const {
+    activeOrder,
+    error,
+    favoriteProducts,
+    loading,
+    profile,
+    recentOrders,
+    stats,
+  } = useUserAccount();
 
   if (loading) {
     return (
       <article className="rounded-[2rem] border border-beige-tostado/30 bg-white p-8 shadow-sm">
-        <p className="font-semibold text-sepia">Cargando tu centro de pedidos...</p>
+        <p className="font-semibold text-sepia">
+          Cargando tu centro de pedidos...
+        </p>
       </article>
     );
   }
@@ -50,47 +59,55 @@ export const AccountDashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
+            <span className="inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <ReceiptText size={18} />
             </span>
             <div>
               <p className="text-sm text-sepia/60">Pedidos totales</p>
-              <p className="text-3xl font-serif font-bold">{stats.totalOrders}</p>
-            </div>
-          </div>
-        </article>
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
-          <div className="flex items-center gap-3 text-sepia">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
-              <Clock3 size={18} />
-            </span>
-            <div>
-              <p className="text-sm text-sepia/60">Pedidos activos</p>
-              <p className="text-3xl font-serif font-bold">{stats.activeOrders}</p>
-            </div>
-          </div>
-        </article>
-        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
-          <div className="flex items-center gap-3 text-sepia">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
-              <Package size={18} />
-            </span>
-            <div>
-              <p className="text-sm text-sepia/60">Ultimo pedido</p>
-              <p className="text-lg font-bold">
-                {stats.lastOrderAt ? formatDate(stats.lastOrderAt) : "Sin fecha"}
+              <p className="text-3xl font-serif font-bold">
+                {stats.totalOrders}
               </p>
             </div>
           </div>
         </article>
         <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
           <div className="flex items-center gap-3 text-sepia">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
+            <span className="inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
+              <Clock3 size={18} />
+            </span>
+            <div>
+              <p className="text-sm text-sepia/60">Pedidos activos</p>
+              <p className="text-3xl font-serif font-bold">
+                {stats.activeOrders}
+              </p>
+            </div>
+          </div>
+        </article>
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
+          <div className="flex items-center gap-3 text-sepia">
+            <span className="inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
+              <Package size={18} />
+            </span>
+            <div>
+              <p className="text-sm text-sepia/60">Ultimo pedido</p>
+              <p className="text-lg font-bold">
+                {stats.lastOrderAt
+                  ? formatDate(stats.lastOrderAt)
+                  : "Sin fecha"}
+              </p>
+            </div>
+          </div>
+        </article>
+        <article className="rounded-2xl border border-beige-tostado/30 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-md">
+          <div className="flex items-center gap-3 text-sepia">
+            <span className="inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-xl bg-beige-tostado/20">
               <Heart size={18} />
             </span>
             <div>
               <p className="text-sm text-sepia/60">Favoritos</p>
-              <p className="text-3xl font-serif font-bold">{stats.favoriteCount}</p>
+              <p className="text-3xl font-serif font-bold">
+                {stats.favoriteCount}
+              </p>
             </div>
           </div>
         </article>
@@ -104,7 +121,9 @@ export const AccountDashboard = () => {
                 Pedido actual
               </p>
               <h2 className="mt-2 text-3xl font-serif font-bold text-sepia">
-                {activeOrder ? `Ref. ${getOrderPaymentRef(activeOrder)}` : "Sin pedido activo"}
+                {activeOrder
+                  ? `Ref. ${getOrderPaymentRef(activeOrder)}`
+                  : "Sin pedido activo"}
               </h2>
               <p className="mt-2 max-w-2xl text-sepia/65">
                 {activeOrder
@@ -112,14 +131,18 @@ export const AccountDashboard = () => {
                   : "No tienes pedidos en proceso. Cuando haya uno activo, aqui veras su avance y el tiempo estimado."}
               </p>
             </div>
-            {activeOrder ? <OrderStatusBadge status={activeOrder.status} /> : null}
+            {activeOrder ? (
+              <OrderStatusBadge status={activeOrder.status} />
+            ) : null}
           </div>
 
           {activeOrder ? (
             <div className="mt-6 space-y-5">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
-                  <p className="text-sm font-semibold text-sepia/60">Hora estimada</p>
+                  <p className="text-sm font-semibold text-sepia/60">
+                    Hora estimada
+                  </p>
                   <p className="mt-1 text-lg font-bold text-sepia">
                     {activeOrder.etaLabel ?? "En actualizacion"}
                   </p>
@@ -127,12 +150,18 @@ export const AccountDashboard = () => {
                 <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
                   <p className="text-sm font-semibold text-sepia/60">Canal</p>
                   <p className="mt-1 text-lg font-bold capitalize text-sepia">
-                    {activeOrder.channel === "delivery" ? "Entrega" : "Recoger en tienda"}
+                    {activeOrder.channel === "delivery"
+                      ? "Entrega"
+                      : "Recoger en tienda"}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-crema p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
-                  <p className="text-sm font-semibold text-sepia/60">Contacto</p>
-                  <p className="mt-1 text-lg font-bold text-sepia">{profile.phone}</p>
+                  <p className="text-sm font-semibold text-sepia/60">
+                    Contacto
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-sepia">
+                    {profile.phone}
+                  </p>
                 </div>
               </div>
 
@@ -179,10 +208,12 @@ export const AccountDashboard = () => {
               <p className="font-semibold text-sepia">{profile.phone}</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-sepia/55">Direccion principal</p>
+              <p className="text-sm font-semibold text-sepia/55">
+                Direccion principal
+              </p>
               <p className="font-semibold text-sepia">
-                {profile.addresses.find((address) => address.isDefault)?.line1 ??
-                  "Sin direccion principal"}
+                {profile.addresses.find((address) => address.isDefault)
+                  ?.line1 ?? "Sin direccion principal"}
               </p>
             </div>
           </div>
@@ -215,7 +246,10 @@ export const AccountDashboard = () => {
                 Resumen rapido para seguir lo ultimo que pediste.
               </p>
             </div>
-            <Link href="/mi-cuenta/pedidos" className="text-sm font-bold text-terracota">
+            <Link
+              href="/mi-cuenta/pedidos"
+              className="text-sm font-bold text-terracota"
+            >
               Ver historial
             </Link>
           </div>
@@ -228,9 +262,12 @@ export const AccountDashboard = () => {
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="font-bold text-sepia">Ref. {getOrderPaymentRef(order)}</p>
+                    <p className="font-bold text-sepia">
+                      Ref. {getOrderPaymentRef(order)}
+                    </p>
                     <p className="mt-1 text-sm text-sepia/60">
-                      {formatDate(order.createdAt)} · {order.items.length} productos
+                      {formatDate(order.createdAt)} · {order.items.length}{" "}
+                      productos
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

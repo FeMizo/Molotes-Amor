@@ -12,7 +12,7 @@ export const FavoriteToggleButton = ({
   <button
     type="button"
     onClick={onToggle}
-    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-sm transition-colors ${
+    className={`inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full border shadow-sm transition-colors ${
       active
         ? "border-rojo-quemado/40 bg-rojo-quemado text-crema"
         : "border-crema/70 bg-crema/90 text-sepia hover:text-rojo-quemado"
