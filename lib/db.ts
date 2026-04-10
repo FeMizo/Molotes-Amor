@@ -115,7 +115,8 @@ const createSchema = async (client: PoolClient): Promise<void> => {
       payment_account_holder TEXT,
       payment_account_number TEXT,
       payment_clabe TEXT,
-      notes TEXT
+      notes TEXT,
+      delivery_day TEXT
     );
   `);
 
@@ -173,6 +174,11 @@ const createSchema = async (client: PoolClient): Promise<void> => {
     UPDATE orders
     SET payment_method = 'efectivo'
     WHERE payment_method IS NULL OR BTRIM(payment_method) = '';
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS delivery_day TEXT;
   `);
 
   await client.query(`
@@ -406,9 +412,10 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
             payment_account_holder,
             payment_account_number,
             payment_clabe,
-            notes
+            notes,
+            delivery_day
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
           )
           ON CONFLICT (id) DO NOTHING
         `,
@@ -432,6 +439,7 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
           order.payment?.accountNumber ?? null,
           order.payment?.clabe ?? null,
           order.notes ?? null,
+          order.deliveryDay ?? null,
         ],
       );
 

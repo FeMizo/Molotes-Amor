@@ -41,9 +41,17 @@ export const Header = ({ siteContent }: { siteContent?: SiteContent | null }) =>
           </div>
 
           <Link href="/" className="flex-shrink-0 flex items-center group">
-            <h1 className="text-3xl font-bold tracking-tighter text-terracota italic group-hover:scale-105 transition-transform">
-              Molotes <span className="text-canela font-normal not-italic">El Tradicional</span>
-            </h1>
+            {siteContent?.brand?.logo ? (
+              <img
+                src={siteContent.brand.logo}
+                alt={siteContent.brand.metaTitle || "Logo"}
+                className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+            ) : (
+              <h1 className="text-3xl font-bold tracking-tighter text-terracota italic group-hover:scale-105 transition-transform">
+                Molotes <span className="text-canela font-normal not-italic">El Tradicional</span>
+              </h1>
+            )}
           </Link>
 
           <nav className="hidden md:flex space-x-8">

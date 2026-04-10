@@ -168,7 +168,14 @@ export const AdminOrdersManager = () => {
                 </div>
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <span className="text-sepia/60">{order.items.length} items</span>
-                  <span className="font-bold text-terracota">{formatCurrency(order.total)}</span>
+                  <div className="flex items-center gap-2">
+                    {order.deliveryDay ? (
+                      <span className="rounded-full bg-mostaza/20 px-2 py-0.5 text-xs font-semibold capitalize text-sepia">
+                        {order.deliveryDay}
+                      </span>
+                    ) : null}
+                    <span className="font-bold text-terracota">{formatCurrency(order.total)}</span>
+                  </div>
                 </div>
               </button>
             ))}
@@ -201,6 +208,14 @@ export const AdminOrdersManager = () => {
                   <p className="text-sm text-sepia/55">
                     {formatDateTime(selectedOrder.createdAt)}
                   </p>
+                  {selectedOrder.deliveryDay ? (
+                    <p className="mt-1 text-sm font-semibold text-sepia">
+                      Entrega:{" "}
+                      <span className="capitalize text-terracota">
+                        {selectedOrder.deliveryDay}
+                      </span>
+                    </p>
+                  ) : null}
                 </div>
                 <div className="space-y-3">
                   <OrderStatusBadge status={selectedOrder.status} />

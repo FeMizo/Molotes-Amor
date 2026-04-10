@@ -2,6 +2,7 @@
 
 import { PRODUCT_CATEGORIES } from "@/types/product";
 import type { ProductAdminFormState } from "@/types/admin";
+import { ImageUploadInput } from "@/components/admin/ImageUploadInput";
 
 const badgeOptions: Array<ProductAdminFormState["badge"]> = [
   "",
@@ -107,11 +108,9 @@ export const AdminProductForm = ({
         ))}
       </select>
     </div>
-    <input
-      placeholder="URL imagen"
+    <ImageUploadInput
       value={form.image}
-      onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
-      className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+      onChange={(url) => setForm((prev) => ({ ...prev, image: url }))}
     />
     <input
       placeholder="Tags separados por coma"

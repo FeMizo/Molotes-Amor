@@ -164,6 +164,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
             method: "efectivo",
           },
     notes: input.notes,
+    deliveryDay: input.deliveryDay,
   };
 
   return repos.orders.create(order);

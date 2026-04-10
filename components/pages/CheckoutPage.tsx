@@ -8,7 +8,7 @@ import { getOrderPaymentRef, isTransferConfigReady, paymentMethodLabel } from "@
 import { adminClient } from "@/services/client/admin-client";
 import { selectCurrentUser, useAuthStore } from "@/store/auth-store";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
-import type { Order, OrderPaymentMethod } from "@/types/order";
+import type { Order, OrderDeliveryDay, OrderPaymentMethod } from "@/types/order";
 import type { OperationsContent } from "@/types/site-content";
 
 export const CheckoutPage = ({ operations }: { operations: OperationsContent }) => {
@@ -22,6 +22,7 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<OrderPaymentMethod>("efectivo");
+  const [deliveryDay, setDeliveryDay] = useState<OrderDeliveryDay>("sabado");
   const [loading, setLoading] = useState(false);
   const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -29,6 +30,23 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
 
   const subtotal = useMemo(() => cartSubtotal(items), [items]);
   const transferReady = useMemo(() => isTransferConfigReady(operations), [operations]);
+
+  const weekendDays = useMemo(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const toSat = (6 - day + 7) % 7;
+    const toSun = (7 - day) % 7;
+    const saturday = new Date(today);
+    saturday.setDate(today.getDate() + toSat);
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() + toSun);
+    const fmt = (d: Date) =>
+      d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+    return {
+      sabado: fmt(saturday),
+      domingo: fmt(sunday),
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentUser) {
@@ -89,6 +107,7 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
           method: paymentMethod,
         },
         notes: notes || undefined,
+        deliveryDay,
         items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
@@ -129,6 +148,13 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
                   ? `Usa esta referencia en tu transferencia: ${getOrderPaymentRef(submittedOrder)}`
                   : "Conserva esta referencia para identificar tu pedido rapidamente."}
               </p>
+              {submittedOrder.deliveryDay ? (
+                <p className="mt-3 text-sm font-semibold text-sepia">
+                  Entrega:{" "}
+                  <span className="capitalize">{submittedOrder.deliveryDay}</span>{" "}
+                  &mdash; {weekendDays[submittedOrder.deliveryDay]}
+                </p>
+              ) : null}
             </div>
           ) : null}
           {submittedOrder?.payment?.method === "transferencia" ? (
@@ -268,6 +294,28 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
             </div>
             <div className="space-y-3">
               <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">
+                Dia de entrega
+              </label>
+              <div className="grid gap-3 md:grid-cols-2">
+                {(["sabado", "domingo"] as const).map((day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => setDeliveryDay(day)}
+                    className={`rounded-2xl border px-5 py-4 text-left transition-all ${
+                      deliveryDay === day
+                        ? "border-terracota bg-terracota/10"
+                        : "border-beige-tostado/30 bg-crema hover:border-terracota/30 hover:bg-crema/70"
+                    }`}
+                  >
+                    <p className="font-bold text-sepia capitalize">{day}</p>
+                    <p className="mt-1 text-sm text-sepia/65">{weekendDays[day]}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-sepia/60 uppercase tracking-widest">
                 Metodo de pago
               </label>
               <div className="grid gap-3 md:grid-cols-2">
@@ -371,6 +419,13 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
                 Metodo de pago
               </p>
               <p className="mt-1 font-bold text-sepia">{paymentMethodLabel[paymentMethod]}</p>
+            </div>
+            <div className="rounded-xl bg-crema px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-sepia/55">
+                Dia de entrega
+              </p>
+              <p className="mt-1 font-bold text-sepia capitalize">{deliveryDay}</p>
+              <p className="text-xs text-sepia/60">{weekendDays[deliveryDay]}</p>
             </div>
           </div>
         </article>

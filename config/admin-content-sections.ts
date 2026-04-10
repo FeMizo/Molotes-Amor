@@ -6,10 +6,12 @@ import type {
 
 type ContentRoot = Exclude<keyof SiteContent, "pageSections">;
 
+type FieldKind = "input" | "textarea" | "switch" | "image";
+
 export interface ContentFieldDefinition {
   path: [ContentRoot, string];
   label: string;
-  kind?: "input" | "textarea" | "switch";
+  kind?: FieldKind;
 }
 
 export const adminContentSections: AdminContentSection[] = [
@@ -17,6 +19,12 @@ export const adminContentSections: AdminContentSection[] = [
     id: "sections",
     name: "Secciones frontend",
     description: "Habilita, deshabilita y ordena bloques visibles en el sitio.",
+    group: "system",
+  },
+  {
+    id: "brand",
+    name: "Marca y SEO",
+    description: "Logo del sitio, titulo y descripcion para buscadores.",
     group: "system",
   },
   {
@@ -98,6 +106,11 @@ export const adminContentSections: AdminContentSection[] = [
 ];
 
 export const adminContentFieldRegistry: Partial<Record<AdminContentSectionId, ContentFieldDefinition[]>> = {
+  brand: [
+    { path: ["brand", "logo"], label: "Logo del sitio", kind: "image" },
+    { path: ["brand", "metaTitle"], label: "Titulo SEO (pestaña del navegador)" },
+    { path: ["brand", "metaDescription"], label: "Descripcion SEO (buscadores)", kind: "textarea" },
+  ],
   operations: [
     { path: ["operations", "isOrderingEnabled"], label: "Permitir pedidos", kind: "switch" },
     { path: ["operations", "statusLabel"], label: "Estado visible" },

@@ -32,6 +32,8 @@ export interface OrderPayment {
   clabe?: string;
 }
 
+export type OrderDeliveryDay = "sabado" | "domingo";
+
 export interface Order {
   id: string;
   paymentRef: string;
@@ -45,6 +47,7 @@ export interface Order {
   customer: CustomerInfo;
   payment?: OrderPayment;
   notes?: string;
+  deliveryDay?: OrderDeliveryDay;
 }
 
 export interface CreateOrderItemInput {
@@ -64,5 +67,6 @@ export interface CreateOrderInput {
     method: OrderPaymentMethod;
   };
   notes?: string;
+  deliveryDay?: OrderDeliveryDay;
   items: CreateOrderItemInput[];
 }

@@ -18,10 +18,20 @@ const sans = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Molotes El Tradicional",
-  description: "Sabor artesanal con un toque moderno.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const siteContent = await getSiteContent();
+    return {
+      title: siteContent.brand.metaTitle || "Molotes El Tradicional",
+      description: siteContent.brand.metaDescription || "Sabor artesanal con un toque moderno.",
+    };
+  } catch {
+    return {
+      title: "Molotes El Tradicional",
+      description: "Sabor artesanal con un toque moderno.",
+    };
+  }
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let siteContent = null;

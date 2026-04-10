@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       customer: { name: string; phone: string; email?: string; address?: string };
       payment?: { method?: "efectivo" | "transferencia" };
       notes?: string;
+      deliveryDay?: "sabado" | "domingo";
       items: { productId: string; quantity: number }[];
     };
 
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
         method: body.payment?.method ?? "efectivo",
       },
       notes: body.notes,
+      deliveryDay: body.deliveryDay,
       items: body.items.map((item) => ({
         productId: item.productId,
         quantity: Number(item.quantity),

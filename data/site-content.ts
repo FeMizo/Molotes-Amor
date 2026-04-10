@@ -3,6 +3,11 @@ import { normalizeFrontendSections } from "@/lib/site-sections";
 import type { DeepPartial, SiteContent } from "@/types/site-content";
 
 export const defaultSiteContent: SiteContent = {
+  brand: {
+    logo: "",
+    metaTitle: "Molotes El Tradicional",
+    metaDescription: "Sabor artesanal con un toque moderno.",
+  },
   home: {
     heroBadge: "Tradicion poblana desde 1985",
     heroTitle: "El Arte del",
@@ -141,6 +146,10 @@ export const defaultSiteContent: SiteContent = {
 };
 
 export const normalizeSiteContent = (input?: DeepPartial<SiteContent> | null): SiteContent => ({
+  brand: {
+    ...defaultSiteContent.brand,
+    ...(input?.brand ?? {}),
+  },
   home: {
     ...defaultSiteContent.home,
     ...(input?.home ?? {}),

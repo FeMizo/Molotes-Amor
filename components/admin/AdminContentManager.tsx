@@ -7,6 +7,7 @@ import {
   adminContentFieldRegistry,
   adminContentSections,
 } from "@/config/admin-content-sections";
+import { ImageUploadInput } from "@/components/admin/ImageUploadInput";
 import { frontendSectionDefinitions } from "@/config/site-sections";
 import { useAdminSiteContent } from "@/hooks/use-admin-site-content";
 import type {
@@ -285,7 +286,16 @@ export const AdminContentManager = () => {
                     {sectionFields.map((field) => (
                       <label key={`${field.path[0]}.${field.path[1]}`} className="block">
                         <span className="mb-2 block text-sm font-semibold text-sepia">{field.label}</span>
-                        {field.kind === "textarea" ? (
+                        {field.kind === "image" ? (
+                          <ImageUploadInput
+                            value={String(getFieldValue(form, field.path) ?? "")}
+                            onChange={(url) =>
+                              setForm((prev) =>
+                                prev ? setFieldValue(prev, field.path, url) : prev,
+                              )
+                            }
+                          />
+                        ) : field.kind === "textarea" ? (
                           <textarea
                             value={String(getFieldValue(form, field.path) ?? "")}
                             onChange={(event) =>

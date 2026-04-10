@@ -4,7 +4,7 @@ import { dbQuery, withDbClient } from "@/lib/db";
 import { normalizeSiteContent } from "@/data/site-content";
 import type { Combo, ComboItem } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
-import type { Order, OrderItem, OrderStatus } from "@/types/order";
+import type { Order, OrderDeliveryDay, OrderItem, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
 import type {
@@ -78,6 +78,7 @@ interface OrderRow {
   payment_account_number: string | null;
   payment_clabe: string | null;
   notes: string | null;
+  delivery_day: string | null;
 }
 
 interface OrderItemRow {
@@ -170,6 +171,7 @@ const mapOrderRow = (row: OrderRow, items: OrderItem[]): Order => ({
     clabe: row.payment_clabe ?? undefined,
   },
   notes: row.notes ?? undefined,
+  deliveryDay: (row.delivery_day as OrderDeliveryDay) ?? undefined,
 });
 
 const loadOrderItems = async (client: PoolClient, orderIds: string[]): Promise<Map<string, OrderItem[]>> => {
@@ -613,7 +615,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const ordersResult = await client.query<OrderRow>(
         `
-          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
           FROM orders
           ORDER BY created_at DESC
         `,
@@ -629,7 +631,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const orderResult = await client.query<OrderRow>(
         `
-          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
           FROM orders
           WHERE id = $1
         `,
@@ -671,9 +673,10 @@ export const postgresOrderRepository: OrderRepository = {
               payment_account_holder,
               payment_account_number,
               payment_clabe,
-              notes
+              notes,
+              delivery_day
             ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
             )
           `,
           [
@@ -696,6 +699,7 @@ export const postgresOrderRepository: OrderRepository = {
             order.payment?.accountNumber ?? null,
             order.payment?.clabe ?? null,
             order.notes ?? null,
+            order.deliveryDay ?? null,
           ],
         );
 

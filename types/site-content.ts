@@ -107,6 +107,12 @@ export interface PromotionsContent {
   benefitThree: string;
 }
 
+export interface BrandContent {
+  logo: string;
+  metaTitle: string;
+  metaDescription: string;
+}
+
 export interface OperationsContent {
   isOrderingEnabled: boolean;
   statusLabel: string;
@@ -141,7 +147,7 @@ export interface FrontendSectionConfig {
   config?: Record<string, string | number | boolean | null>;
 }
 
-export type AdminContentSectionId = "sections" | "operations" | PageSectionKey;
+export type AdminContentSectionId = "sections" | "brand" | "operations" | PageSectionKey;
 
 export interface AdminContentSection {
   id: AdminContentSectionId;
@@ -152,6 +158,7 @@ export interface AdminContentSection {
 }
 
 export interface SiteContent {
+  brand: BrandContent;
   home: HomeContent;
   menu: MenuContent;
   about: AboutContent;

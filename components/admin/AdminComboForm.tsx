@@ -4,6 +4,7 @@ import { COMBO_CATEGORIES } from "@/types/combo";
 import type { ComboAdminFormState } from "@/types/admin";
 import type { ProductWithInventoryResponse } from "@/services/client/admin-client";
 import { formatCurrency } from "@/lib/format";
+import { ImageUploadInput } from "@/components/admin/ImageUploadInput";
 
 interface AdminComboFormProps {
   form: ComboAdminFormState;
@@ -73,12 +74,11 @@ export const AdminComboForm = ({
       className="min-h-24 w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
     />
 
-    <div className="grid gap-4 md:grid-cols-3">
-      <input
-        placeholder="URL imagen opcional"
+    <div className="grid gap-4 md:grid-cols-[1fr_180px]">
+      <ImageUploadInput
         value={form.image}
-        onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
-        className="rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none md:col-span-2"
+        onChange={(url) => setForm((prev) => ({ ...prev, image: url }))}
+        optional
       />
       <input
         required
