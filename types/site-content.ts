@@ -115,6 +115,7 @@ export interface BrandContent {
 
 export interface OperationsContent {
   isOrderingEnabled: boolean;
+  isTransferEnabled: boolean;
   statusLabel: string;
   bannerText: string;
   notice: string;

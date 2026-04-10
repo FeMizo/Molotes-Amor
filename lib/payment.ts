@@ -12,7 +12,8 @@ export const paymentMethodLabel: Record<OrderPaymentMethod, string> = {
 
 export const isTransferConfigReady = (operations: OperationsContent): boolean =>
   Boolean(
-    operations.transferBank.trim() &&
+    operations.isTransferEnabled &&
+      operations.transferBank.trim() &&
       operations.transferAccountHolder.trim() &&
       (operations.transferClabe.trim() || operations.transferAccountNumber.trim()),
   );

@@ -129,6 +129,7 @@ export const defaultSiteContent: SiteContent = {
   },
   operations: {
     isOrderingEnabled: true,
+    isTransferEnabled: true,
     statusLabel: "Abierto",
     bannerText: "Estamos recibiendo pedidos con normalidad.",
     notice: "Pedidos habilitados. El equipo esta listo para preparar y despachar.",
