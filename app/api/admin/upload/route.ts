@@ -1,11 +1,8 @@
-import { mkdir, writeFile } from "fs/promises";
-import { join } from "path";
-
 import { fail } from "@/lib/api";
 
-export const runtime = "nodejs";
-
 const ALLOWED_EXTS = ["jpg", "jpeg", "png", "webp", "gif", "avif"] as const;
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
@@ -27,12 +24,19 @@ export async function POST(request: Request) {
       return fail("La imagen no puede superar 5 MB.", 400);
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const uploadsDir = join(process.cwd(), "public", "uploads");
 
+    if (process.env.VERCEL) {
+      const { put } = await import("@vercel/blob");
+      const blob = await put(`uploads/${filename}`, file, { access: "public" });
+      return Response.json({ url: blob.url }, { status: 201 });
+    }
+
+    const { mkdir, writeFile } = await import("fs/promises");
+    const { join } = await import("path");
+    const uploadsDir = join(process.cwd(), "public", "uploads");
     await mkdir(uploadsDir, { recursive: true });
-    await writeFile(join(uploadsDir, filename), buffer);
+    await writeFile(join(uploadsDir, filename), Buffer.from(await file.arrayBuffer()));
 
     return Response.json({ url: `/uploads/${filename}` }, { status: 201 });
   } catch (error) {
