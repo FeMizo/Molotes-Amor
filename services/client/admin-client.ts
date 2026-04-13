@@ -116,6 +116,11 @@ export const adminClient = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  linkGuestOrders: (payload: { userId: string; username: string; email?: string; phone?: string }) =>
+    httpRequest<{ linked: number }>("/api/orders/link", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   getSiteContent: () => httpRequest<SiteContent>("/api/admin/content"),
   updateSiteContent: (payload: SiteContent) =>
     httpRequest<SiteContent>("/api/admin/content", {

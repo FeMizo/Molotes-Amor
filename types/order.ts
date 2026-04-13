@@ -56,7 +56,7 @@ export interface CreateOrderItemInput {
 }
 
 export interface CreateOrderInput {
-  account: {
+  account?: {
     userId: string;
     username: string;
   };

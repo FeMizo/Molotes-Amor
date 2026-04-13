@@ -143,8 +143,8 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     total: subtotal,
     status: "pendiente",
     createdAt,
-    userId: input.account.userId,
-    userUsername: input.account.username,
+    userId: input.account?.userId,
+    userUsername: input.account?.username,
     customer: {
       ...input.customer,
       email: customerEmail,

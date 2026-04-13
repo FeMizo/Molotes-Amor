@@ -24,8 +24,6 @@ export async function POST(request: Request) {
     };
 
     if (
-      !body.account?.userId ||
-      !body.account?.username ||
       !body.customer?.name ||
       !body.customer?.phone ||
       !body.customer?.email ||

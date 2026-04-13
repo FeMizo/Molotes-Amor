@@ -65,12 +65,6 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    if (!currentUser) {
-      setErrorMessage("Necesitas iniciar sesion antes de confirmar tu pedido.");
-      openAuthModal("Inicia sesion para finalizar tu compra.");
-      return;
-    }
-
     if (!operations.isOrderingEnabled) {
       setErrorMessage(operations.checkoutMessage);
       return;
@@ -93,10 +87,9 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
         "Ingresa un correo valido para tu pedido.",
       );
       const order = await adminClient.createOrder({
-        account: {
-          userId: currentUser.id,
-          username: currentUser.username,
-        },
+        ...(currentUser
+          ? { account: { userId: currentUser.id, username: currentUser.username } }
+          : {}),
         customer: {
           name,
           phone: normalizedPhone,
@@ -218,17 +211,17 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
         <article className="bg-white rounded-2xl p-8 border border-beige-tostado/30 shadow-sm">
           <h1 className="text-4xl font-serif font-bold text-sepia mb-6">Finalizar pedido</h1>
           {!currentUser ? (
-            <div className="mb-5 rounded-2xl border border-mostaza/30 bg-mostaza/10 px-5 py-4">
-              <p className="font-semibold text-sepia">Necesitas iniciar sesion para comprar.</p>
+            <div className="mb-5 rounded-2xl border border-beige-tostado/30 bg-crema px-5 py-4">
+              <p className="font-semibold text-sepia">Comprando como invitado</p>
               <p className="mt-1 text-sm text-sepia/70">
-                El pedido quedara vinculado a tu usuario y aparecera en Mis pedidos.
+                Si tienes cuenta o te registras despues, tus pedidos se vincularan automaticamente por correo o telefono.
               </p>
               <button
                 type="button"
-                onClick={() => openAuthModal("Inicia sesion para continuar con tu compra.")}
-                className="mt-4 rounded-xl bg-terracota px-4 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
+                onClick={() => openAuthModal("Inicia sesion para vincular tus pedidos a tu cuenta.")}
+                className="mt-3 text-sm font-semibold text-terracota transition-colors hover:text-rojo-quemado"
               >
-                Iniciar sesion
+                Iniciar sesion / Registrarte
               </button>
             </div>
           ) : null}
@@ -385,16 +378,10 @@ export const CheckoutPage = ({ operations }: { operations: OperationsContent }) 
             {successMessage ? <p className="text-olivo font-semibold">{successMessage}</p> : null}
             <button
               type="submit"
-              disabled={loading || !currentUser || !operations.isOrderingEnabled}
+              disabled={loading || !operations.isOrderingEnabled}
               className="w-full py-4 bg-terracota hover:bg-rojo-quemado text-crema font-bold rounded-xl transition-colors disabled:opacity-50"
             >
-              {loading
-                ? "Procesando..."
-                : !operations.isOrderingEnabled
-                  ? "Pedidos pausados"
-                  : currentUser
-                    ? "Confirmar pedido"
-                    : "Inicia sesion para comprar"}
+              {loading ? "Procesando..." : !operations.isOrderingEnabled ? "Pedidos pausados" : "Confirmar pedido"}
             </button>
           </form>
         </article>

@@ -60,7 +60,7 @@ export const MenuPage = ({ content }: { content: SiteContent }) => {
         </section>
       ) : null}
 
-      <section className="sticky top-20 z-30 border-b border-beige-tostado/20 bg-crema/95 py-4 shadow-sm backdrop-blur-md">
+      <section className="border-b border-beige-tostado/20 bg-crema/95 py-4 shadow-sm backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 space-y-4">
           {!orderingEnabled ? (
             <div className="rounded-2xl border border-mostaza/30 bg-mostaza/10 px-4 py-3 text-left text-sm text-sepia">

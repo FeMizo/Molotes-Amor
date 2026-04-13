@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { assertValidEmail, assertValidPhone } from "@/lib/contact";
 import { getUserPrimaryHref } from "@/lib/user-access";
+import { adminClient } from "@/services/client/admin-client";
 import { useAuthStore } from "@/store/auth-store";
 
 import { ModalShell } from "../shared/ModalShell";
@@ -135,6 +136,13 @@ export const AuthModal = () => {
         phone,
         password: registerForm.password,
       });
+
+      adminClient
+        .linkGuestOrders({ userId: user.id, username: user.username, email, phone })
+        .catch(() => {
+          // Fire-and-forget: linking failure doesn't block registration.
+        });
+
       resetLocalForms();
       router.push(getUserPrimaryHref(user));
     } catch (submitError) {
