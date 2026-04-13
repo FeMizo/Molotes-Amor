@@ -748,6 +748,45 @@ export const postgresOrderRepository: OrderRepository = {
     const items = await this.findById(id);
     return mapOrderRow(rows[0], items?.items ?? []);
   },
+  async updateItems(id, items, subtotal, total) {
+    return withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        const { rows } = await client.query<OrderRow>(
+          `
+            UPDATE orders
+            SET subtotal = $2, total = $3
+            WHERE id = $1
+            RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
+          `,
+          [id, subtotal, total],
+        );
+
+        if (!rows[0]) {
+          throw new Error("Pedido no encontrado");
+        }
+
+        await client.query(`DELETE FROM order_items WHERE order_id = $1`, [id]);
+
+        for (const [index, item] of items.entries()) {
+          await client.query(
+            `
+              INSERT INTO order_items (order_id, position, product_id, product_name, unit_price, quantity, line_total)
+              VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `,
+            [id, index, item.productId, item.productName, item.unitPrice, item.quantity, item.lineTotal],
+          );
+        }
+
+        await client.query("COMMIT");
+        return mapOrderRow(rows[0], items);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  },
 };
 
 export const postgresSiteContentRepository: SiteContentRepository = {

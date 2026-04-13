@@ -164,6 +164,17 @@ export const localOrderRepository: OrderRepository = {
     await writeStore(store);
     return updated;
   },
+  async updateItems(id, items, subtotal, total) {
+    const store = await readStore();
+    const idx = store.orders.findIndex((order) => order.id === id);
+    if (idx < 0) {
+      throw new Error("Pedido no encontrado");
+    }
+    const updated: Order = { ...store.orders[idx], items, subtotal, total };
+    store.orders[idx] = updated;
+    await writeStore(store);
+    return updated;
+  },
 };
 
 export const localComboRepository: ComboRepository = {
@@ -263,6 +274,7 @@ const remoteStub: Repositories = {
     findById: notImplemented,
     create: notImplemented,
     updateStatus: notImplemented,
+    updateItems: notImplemented,
   },
   siteContent: {
     get: notImplemented,

@@ -40,5 +40,14 @@ export const useAdminOrders = () => {
     setOrders((prev) => prev.map((order) => (order.id === id ? updated : order)));
   };
 
-  return { orders, loading, error, reload: load, updateStatus };
+  const updateItems = async (
+    id: string,
+    items: { productId: string; productName: string; unitPrice: number; quantity: number }[],
+  ) => {
+    const updated = normalizeOrders([await adminClient.updateOrderItems(id, items)])[0];
+    setOrders((prev) => prev.map((order) => (order.id === id ? updated : order)));
+    return updated;
+  };
+
+  return { orders, loading, error, reload: load, updateStatus, updateItems };
 };

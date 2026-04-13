@@ -111,6 +111,14 @@ export const adminClient = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
+  updateOrderItems: (
+    id: string,
+    items: { productId: string; productName: string; unitPrice: number; quantity: number }[],
+  ) =>
+    httpRequest<Order>(`/api/admin/orders/${id}/items`, {
+      method: "PATCH",
+      body: JSON.stringify({ items }),
+    }),
   createOrder: (payload: CreateOrderInput) =>
     httpRequest<Order>("/api/admin/orders", {
       method: "POST",

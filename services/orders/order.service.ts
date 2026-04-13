@@ -180,6 +180,27 @@ export const updateOrderStatus = async (id: string, status: OrderStatus): Promis
   return repos.orders.updateStatus(id, status);
 };
 
+export const updateOrderItems = async (
+  id: string,
+  items: { productId: string; productName: string; unitPrice: number; quantity: number }[],
+): Promise<Order> => {
+  if (items.length === 0) {
+    throw new Error("El pedido debe tener al menos un producto.");
+  }
+
+  const orderItems = items.map((item) => ({
+    productId: item.productId,
+    productName: item.productName,
+    unitPrice: item.unitPrice,
+    quantity: item.quantity,
+    lineTotal: item.unitPrice * item.quantity,
+  }));
+
+  const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const repos = getRepositories();
+  return repos.orders.updateItems(id, orderItems, subtotal, subtotal);
+};
+
 export const getOrderById = async (id: string): Promise<Order | undefined> => {
   const repos = getRepositories();
   const order = await repos.orders.findById(id);

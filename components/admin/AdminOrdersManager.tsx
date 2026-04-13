@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Minus, Plus, Trash2, X } from "lucide-react";
 
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { adminOrderStatuses } from "@/lib/order-status";
@@ -11,17 +12,33 @@ import {
   paymentMethodLabel,
 } from "@/lib/payment";
 import { useAdminOrders } from "@/hooks/use-admin-orders";
+import { adminClient } from "@/services/client/admin-client";
 import type { OrderStatus } from "@/types/order";
 
 import { OrderStatusBadge } from "../orders/OrderStatusBadge";
 
+interface DraftItem {
+  productId: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+}
+
 export const AdminOrdersManager = () => {
-  const { orders, loading, error, updateStatus } = useAdminOrders();
+  const { orders, loading, error, updateStatus, updateItems } = useAdminOrders();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // Edit items state
+  const [editMode, setEditMode] = useState(false);
+  const [draftItems, setDraftItems] = useState<DraftItem[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [catalogProducts, setCatalogProducts] = useState<{ id: string; name: string; price: number }[]>([]);
+  const [addProductId, setAddProductId] = useState("");
+  const [addQuantity, setAddQuantity] = useState(1);
 
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -58,6 +75,90 @@ export const AdminOrdersManager = () => {
       setFeedback("Estado actualizado.");
     } catch (error) {
       setFeedbackError(error instanceof Error ? error.message : "No se pudo actualizar estado.");
+    }
+  };
+
+  const openEditMode = async () => {
+    if (!selectedOrder) return;
+    setDraftItems(
+      selectedOrder.items.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+      })),
+    );
+    setAddProductId("");
+    setAddQuantity(1);
+    setFeedback(null);
+    setFeedbackError(null);
+    setEditMode(true);
+
+    if (catalogProducts.length === 0) {
+      try {
+        const products = await adminClient.listProducts();
+        setCatalogProducts(products.map((p) => ({ id: p.id, name: p.name, price: p.price })));
+      } catch {
+        // Non-critical — admin can still edit existing items
+      }
+    }
+  };
+
+  const closeEditMode = () => {
+    setEditMode(false);
+    setDraftItems([]);
+    setAddProductId("");
+    setAddQuantity(1);
+  };
+
+  const setDraftQty = (productId: string, quantity: number) => {
+    setDraftItems((prev) =>
+      prev.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
+    );
+  };
+
+  const removeDraftItem = (productId: string) => {
+    setDraftItems((prev) => prev.filter((item) => item.productId !== productId));
+  };
+
+  const addDraftProduct = () => {
+    const product = catalogProducts.find((p) => p.id === addProductId);
+    if (!product || addQuantity < 1) return;
+
+    setDraftItems((prev) => {
+      const existing = prev.find((item) => item.productId === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.productId === product.id
+            ? { ...item, quantity: item.quantity + addQuantity }
+            : item,
+        );
+      }
+      return [
+        ...prev,
+        { productId: product.id, productName: product.name, unitPrice: product.price, quantity: addQuantity },
+      ];
+    });
+
+    setAddProductId("");
+    setAddQuantity(1);
+  };
+
+  const saveEditItems = async () => {
+    if (!selectedOrder || draftItems.length === 0) return;
+    setEditLoading(true);
+    setFeedback(null);
+    setFeedbackError(null);
+
+    try {
+      await updateItems(selectedOrder.id, draftItems);
+      setFeedback("Pedido actualizado.");
+      setEditMode(false);
+      setDraftItems([]);
+    } catch (err) {
+      setFeedbackError(err instanceof Error ? err.message : "No se pudo actualizar el pedido.");
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -147,7 +248,7 @@ export const AdminOrdersManager = () => {
               <button
                 key={order.id}
                 type="button"
-                onClick={() => setSelectedOrderId(order.id)}
+                onClick={() => { setSelectedOrderId(order.id); closeEditMode(); }}
                 className={`group w-full rounded-2xl border p-4 text-left transition-all duration-300 ${
                   selectedOrder?.id === order.id
                     ? "border-terracota bg-crema shadow-sm"
@@ -304,22 +405,148 @@ export const AdminOrdersManager = () => {
               ) : null}
 
               <div>
-                <h3 className="mb-3 font-bold text-sepia">Items del pedido</h3>
-                <div className="space-y-2">
-                  {selectedOrder.items.map((item) => (
-                    <div
-                      key={`${selectedOrder.id}-${item.productId}`}
-                      className="flex justify-between rounded-xl border border-transparent px-3 py-2 transition-all duration-300 hover:border-beige-tostado/20 hover:bg-crema"
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-bold text-sepia">Items del pedido</h3>
+                  {!editMode ? (
+                    <button
+                      type="button"
+                      onClick={() => void openEditMode()}
+                      className="rounded-xl border border-beige-tostado/30 px-3 py-1.5 text-sm font-semibold text-sepia transition-colors hover:border-terracota hover:text-terracota"
                     >
-                      <p className="text-sepia">
-                        {item.quantity} x {item.productName}
-                      </p>
-                      <p className="font-semibold text-terracota">
-                        {formatCurrency(item.lineTotal)}
-                      </p>
-                    </div>
-                  ))}
+                      Editar items
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={closeEditMode}
+                      className="flex items-center gap-1 text-sm font-semibold text-sepia/60 transition-colors hover:text-rojo-quemado"
+                    >
+                      <X size={14} /> Cancelar
+                    </button>
+                  )}
                 </div>
+
+                {!editMode ? (
+                  <div className="space-y-2">
+                    {selectedOrder.items.map((item) => (
+                      <div
+                        key={`${selectedOrder.id}-${item.productId}`}
+                        className="flex justify-between rounded-xl border border-transparent px-3 py-2 transition-all hover:border-beige-tostado/20 hover:bg-crema"
+                      >
+                        <p className="text-sepia">
+                          {item.quantity} x {item.productName}
+                        </p>
+                        <p className="font-semibold text-terracota">
+                          {formatCurrency(item.lineTotal)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Draft items */}
+                    <div className="space-y-2">
+                      {draftItems.map((item) => (
+                        <div
+                          key={item.productId}
+                          className="flex items-center gap-3 rounded-xl border border-beige-tostado/20 bg-crema px-3 py-2"
+                        >
+                          <p className="flex-1 text-sm font-semibold text-sepia truncate">
+                            {item.productName}
+                          </p>
+                          <p className="text-xs text-sepia/55 shrink-0">
+                            {formatCurrency(item.unitPrice)} c/u
+                          </p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setDraftQty(item.productId, Math.max(1, item.quantity - 1))}
+                              className="rounded-lg border border-beige-tostado/30 p-1 text-sepia hover:border-terracota hover:text-terracota transition-colors"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <input
+                              type="number"
+                              min={1}
+                              value={item.quantity}
+                              onChange={(e) => setDraftQty(item.productId, Math.max(1, Number(e.target.value)))}
+                              className="w-12 rounded-lg border border-beige-tostado/30 bg-white px-2 py-1 text-center text-sm font-bold text-sepia focus:border-terracota focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setDraftQty(item.productId, item.quantity + 1)}
+                              className="rounded-lg border border-beige-tostado/30 p-1 text-sepia hover:border-terracota hover:text-terracota transition-colors"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                          <p className="w-16 text-right text-sm font-bold text-terracota shrink-0">
+                            {formatCurrency(item.unitPrice * item.quantity)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => removeDraftItem(item.productId)}
+                            className="shrink-0 rounded-lg p-1 text-sepia/40 hover:text-rojo-quemado transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add product row */}
+                    {catalogProducts.length > 0 ? (
+                      <div className="flex gap-2 rounded-xl border border-dashed border-beige-tostado/40 bg-crema/50 p-3">
+                        <select
+                          value={addProductId}
+                          onChange={(e) => setAddProductId(e.target.value)}
+                          className="flex-1 rounded-xl border border-beige-tostado/30 bg-white px-3 py-2 text-sm text-sepia focus:border-terracota focus:outline-none"
+                        >
+                          <option value="">Agregar producto...</option>
+                          {catalogProducts.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — {formatCurrency(p.price)}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min={1}
+                          value={addQuantity}
+                          onChange={(e) => setAddQuantity(Math.max(1, Number(e.target.value)))}
+                          className="w-16 rounded-xl border border-beige-tostado/30 bg-white px-3 py-2 text-center text-sm font-bold text-sepia focus:border-terracota focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={addDraftProduct}
+                          disabled={!addProductId}
+                          className="rounded-xl bg-terracota px-4 py-2 text-sm font-bold text-crema transition-colors hover:bg-rojo-quemado disabled:opacity-40"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {/* Total preview */}
+                    <div className="flex items-center justify-between rounded-xl bg-crema px-4 py-3">
+                      <span className="text-sm font-semibold text-sepia/70">Nuevo total</span>
+                      <span className="text-lg font-bold text-sepia">
+                        {formatCurrency(
+                          draftItems.reduce((s, item) => s + item.unitPrice * item.quantity, 0),
+                        )}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => void saveEditItems()}
+                      disabled={editLoading || draftItems.length === 0}
+                      className="w-full rounded-xl bg-terracota py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado disabled:opacity-50"
+                    >
+                      {editLoading ? "Guardando..." : "Guardar cambios"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
