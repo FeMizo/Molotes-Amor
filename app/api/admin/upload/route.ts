@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-    if (process.env.VERCEL) {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
       const { put } = await import("@vercel/blob");
       const blob = await put(`uploads/${filename}`, file, { access: "public" });
       return Response.json({ url: blob.url }, { status: 201 });

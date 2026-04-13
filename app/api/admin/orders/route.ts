@@ -1,4 +1,5 @@
 import { fail, ok } from "@/lib/api";
+import { notifyAdminNewOrder } from "@/lib/whatsapp";
 import { createOrder, listOrders } from "@/services/orders/order.service";
 
 export const runtime = "nodejs";
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
         productId: item.productId,
         quantity: Number(item.quantity),
       })),
+    });
+
+    notifyAdminNewOrder(order).catch((err: unknown) => {
+      console.error("[whatsapp] Error notificando admin:", err instanceof Error ? err.message : err);
     });
 
     return ok(order, { status: 201 });
