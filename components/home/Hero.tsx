@@ -70,7 +70,7 @@ export const Hero = ({
               <img
                 src={content.heroImage}
                 alt="Molotes Tradicionales"
-                className="w-full h-full object-cover aspect-[4/5]"
+                className="w-full h-full object-cover aspect-square"
                 referrerPolicy="no-referrer"
               />
             </div>

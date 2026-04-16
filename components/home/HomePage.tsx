@@ -110,7 +110,7 @@ export const HomePage = ({ content }: { content: SiteContent }) => {
                   <img
                     src={content.home.storyImage}
                     alt="Proceso artesanal"
-                    className="aspect-square w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                    className="aspect-4/3 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
                 </div>

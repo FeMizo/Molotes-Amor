@@ -100,7 +100,7 @@ export const AboutPage = ({ content }: { content: SiteContent }) => {
               <img
                 src={content.about.image}
                 alt="Nuestra Cocina"
-                className="w-full h-full object-cover aspect-[4/5]"
+                className="w-full h-full object-cover aspect-4/3"
                 referrerPolicy="no-referrer"
               />
             </div>
