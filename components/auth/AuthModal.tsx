@@ -247,13 +247,13 @@ export const AuthModal = () => {
               />
             </label>
 
-            <div className="rounded-2xl bg-crema p-4 text-sm text-sepia/70">
+            {/* <div className="rounded-2xl bg-crema p-4 text-sm text-sepia/70">
               <p className="font-semibold text-sepia">Usuarios de prueba</p>
               <p className="mt-1">
                 Admin: `adminmolotes / molotesamor`. Los usuarios cliente mantienen su acceso simple.
               </p>
               <p className="mt-2 font-medium text-sepia">{credentialsHint}</p>
-            </div>
+            </div> */}
 
             {success ? <p className="font-semibold text-olivo">{success}</p> : null}
             {error ? <p className="font-semibold text-rojo-quemado">{error}</p> : null}
