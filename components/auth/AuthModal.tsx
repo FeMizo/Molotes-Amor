@@ -258,7 +258,7 @@ export const AuthModal = () => {
             {success ? <p className="font-semibold text-olivo">{success}</p> : null}
             {error ? <p className="font-semibold text-rojo-quemado">{error}</p> : null}
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
               <button className="rounded-xl bg-terracota px-5 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado">
                 Entrar
               </button>
