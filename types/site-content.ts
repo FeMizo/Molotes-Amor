@@ -107,6 +107,36 @@ export interface PromotionsContent {
   benefitThree: string;
 }
 
+export interface FooterContent {
+  brandTitle: string;
+  brandHighlight: string;
+  description: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  twitterUrl: string;
+  linksTitle: string;
+  menuLabel: string;
+  aboutLabel: string;
+  contactLabel: string;
+  accountLabel: string;
+  adminLabel: string;
+  contactTitle: string;
+  addressValue: string;
+  phoneValue: string;
+  emailValue: string;
+  hoursTitle: string;
+  mondayFridayLabel: string;
+  mondayFridayHours: string;
+  saturdayLabel: string;
+  saturdayHours: string;
+  sundayLabel: string;
+  sundayHours: string;
+  copyrightText: string;
+  privacyLabel: string;
+  termsLabel: string;
+  cookiesLabel: string;
+}
+
 export interface BrandContent {
   logo: string;
   metaTitle: string;
@@ -148,7 +178,7 @@ export interface FrontendSectionConfig {
   config?: Record<string, string | number | boolean | null>;
 }
 
-export type AdminContentSectionId = "sections" | "brand" | "operations" | PageSectionKey;
+export type AdminContentSectionId = "sections" | "brand" | "operations" | "footer" | PageSectionKey;
 
 export interface AdminContentSection {
   id: AdminContentSectionId;
@@ -165,6 +195,7 @@ export interface SiteContent {
   about: AboutContent;
   contact: ContactContent;
   promotions: PromotionsContent;
+  footer: FooterContent;
   operations: OperationsContent;
   pageSections: FrontendSectionConfig[];
 }

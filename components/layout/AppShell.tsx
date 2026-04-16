@@ -31,7 +31,7 @@ export const AppShell = ({
     <>
       <Header siteContent={siteContent} />
       <main className="flex-grow">{children}</main>
-      <Footer />
+      <Footer siteContent={siteContent} />
       <CartDrawer
         orderingEnabled={siteContent?.operations.isOrderingEnabled}
         checkoutMessage={siteContent?.operations.checkoutMessage}

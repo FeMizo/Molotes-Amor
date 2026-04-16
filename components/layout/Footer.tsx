@@ -1,113 +1,129 @@
 import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
 
-export const Footer = () => (
-  <footer className="bg-sepia text-crema py-20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-        <div className="space-y-6">
-          <h2 className="text-3xl font-serif font-bold italic text-terracota">
-            Molotes <span className="text-crema font-normal not-italic">El Tradicional</span>
-          </h2>
-          <p className="text-crema/60 leading-relaxed">
-            Llevando el sabor auténtico de Puebla a tu mesa desde 1985. Calidad artesanal en cada
-            ingrediente.
-          </p>
-          <div className="flex space-x-4">
-            <a href="#" className="p-2 bg-crema/10 hover:bg-terracota rounded-full transition-colors">
-              <Instagram size={20} />
-            </a>
-            <a href="#" className="p-2 bg-crema/10 hover:bg-terracota rounded-full transition-colors">
-              <Facebook size={20} />
-            </a>
-            <a href="#" className="p-2 bg-crema/10 hover:bg-terracota rounded-full transition-colors">
-              <Twitter size={20} />
-            </a>
+import { defaultSiteContent } from "@/data/site-content";
+import type { SiteContent } from "@/types/site-content";
+
+export const Footer = ({ siteContent }: { siteContent?: SiteContent | null }) => {
+  const footer = siteContent?.footer ?? defaultSiteContent.footer;
+
+  return (
+    <footer className="bg-sepia py-20 text-crema">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-6">
+            <h2 className="text-3xl font-serif font-bold italic text-terracota">
+              {footer.brandTitle} <span className="font-normal not-italic text-crema">{footer.brandHighlight}</span>
+            </h2>
+            <p className="leading-relaxed text-crema/60">{footer.description}</p>
+            <div className="flex space-x-4">
+              <a
+                href={footer.instagramUrl || "#"}
+                className="rounded-full bg-crema/10 p-2 transition-colors hover:bg-terracota"
+                aria-label="Instagram"
+              >
+                <Instagram size={20} />
+              </a>
+              <a
+                href={footer.facebookUrl || "#"}
+                className="rounded-full bg-crema/10 p-2 transition-colors hover:bg-terracota"
+                aria-label="Facebook"
+              >
+                <Facebook size={20} />
+              </a>
+              <a
+                href={footer.twitterUrl || "#"}
+                className="rounded-full bg-crema/10 p-2 transition-colors hover:bg-terracota"
+                aria-label="Twitter"
+              >
+                <Twitter size={20} />
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="mb-6 text-lg font-bold uppercase tracking-widest text-mostaza">{footer.linksTitle}</h4>
+            <ul className="space-y-4 text-crema/70">
+              <li>
+                <Link href="/menu" className="transition-colors hover:text-crema">
+                  {footer.menuLabel}
+                </Link>
+              </li>
+              <li>
+                <Link href="/nosotros" className="transition-colors hover:text-crema">
+                  {footer.aboutLabel}
+                </Link>
+              </li>
+              <li>
+                <Link href="/contacto" className="transition-colors hover:text-crema">
+                  {footer.contactLabel}
+                </Link>
+              </li>
+              <li>
+                <Link href="/mi-cuenta" className="transition-colors hover:text-crema">
+                  {footer.accountLabel}
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin" className="transition-colors hover:text-crema">
+                  {footer.adminLabel}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-6 text-lg font-bold uppercase tracking-widest text-mostaza">{footer.contactTitle}</h4>
+            <ul className="space-y-4 text-crema/70">
+              <li className="flex items-start space-x-3">
+                <MapPin size={20} className="flex-shrink-0 text-terracota" />
+                <span>{footer.addressValue}</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <Phone size={20} className="flex-shrink-0 text-terracota" />
+                <span>{footer.phoneValue}</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <Mail size={20} className="flex-shrink-0 text-terracota" />
+                <span>{footer.emailValue}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-6 text-lg font-bold uppercase tracking-widest text-mostaza">{footer.hoursTitle}</h4>
+            <ul className="space-y-4 text-crema/70">
+              <li className="flex justify-between">
+                <span>{footer.mondayFridayLabel}</span>
+                <span className="text-crema">{footer.mondayFridayHours}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>{footer.saturdayLabel}</span>
+                <span className="text-crema">{footer.saturdayHours}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>{footer.sundayLabel}</span>
+                <span className="text-crema">{footer.sundayHours}</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div>
-          <h4 className="text-lg font-bold mb-6 uppercase tracking-widest text-mostaza">Enlaces</h4>
-          <ul className="space-y-4 text-crema/70">
-            <li>
-              <Link href="/menu" className="hover:text-crema transition-colors">
-                Menú
-              </Link>
-            </li>
-            <li>
-              <Link href="/nosotros" className="hover:text-crema transition-colors">
-                Sobre Nosotros
-              </Link>
-            </li>
-            <li>
-              <Link href="/contacto" className="hover:text-crema transition-colors">
-                Contacto
-              </Link>
-            </li>
-            <li>
-              <Link href="/mi-cuenta" className="hover:text-crema transition-colors">
-                Mi Cuenta
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin" className="hover:text-crema transition-colors">
-                Administrador
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-lg font-bold mb-6 uppercase tracking-widest text-mostaza">Contacto</h4>
-          <ul className="space-y-4 text-crema/70">
-            <li className="flex items-start space-x-3">
-              <MapPin size={20} className="text-terracota flex-shrink-0" />
-              <span>Av. Reforma 123, Centro Histórico, Puebla, Pue.</span>
-            </li>
-            <li className="flex items-center space-x-3">
-              <Phone size={20} className="text-terracota flex-shrink-0" />
-              <span>+52 (222) 123 4567</span>
-            </li>
-            <li className="flex items-center space-x-3">
-              <Mail size={20} className="text-terracota flex-shrink-0" />
-              <span>hola@molotestradicional.com</span>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-lg font-bold mb-6 uppercase tracking-widest text-mostaza">Horario</h4>
-          <ul className="space-y-4 text-crema/70">
-            <li className="flex justify-between">
-              <span>Lun - Vie:</span>
-              <span className="text-crema">9:00 - 21:00</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Sábados:</span>
-              <span className="text-crema">9:00 - 22:00</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Domingos:</span>
-              <span className="text-crema">10:00 - 18:00</span>
-            </li>
-          </ul>
+        <div className="flex flex-col items-center justify-between border-t border-crema/10 pt-8 text-sm text-crema/40 md:flex-row">
+          <p>{footer.copyrightText}</p>
+          <div className="mt-4 flex space-x-6 md:mt-0">
+            <a href="#" className="hover:text-crema">
+              {footer.privacyLabel}
+            </a>
+            <a href="#" className="hover:text-crema">
+              {footer.termsLabel}
+            </a>
+            <a href="#" className="hover:text-crema">
+              {footer.cookiesLabel}
+            </a>
+          </div>
         </div>
       </div>
-
-      <div className="pt-8 border-t border-crema/10 flex flex-col md:flex-row justify-between items-center text-sm text-crema/40">
-        <p>© 2026 Molotes El Tradicional. Todos los derechos reservados.</p>
-        <div className="flex space-x-6 mt-4 md:mt-0">
-          <a href="#" className="hover:text-crema">
-            Privacidad
-          </a>
-          <a href="#" className="hover:text-crema">
-            Términos
-          </a>
-          <a href="#" className="hover:text-crema">
-            Cookies
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

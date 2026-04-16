@@ -33,6 +33,10 @@ export const updateSiteContent = async (input: DeepPartial<SiteContent>): Promis
       ...current.promotions,
       ...(input.promotions ?? {}),
     },
+    footer: {
+      ...current.footer,
+      ...(input.footer ?? {}),
+    },
     operations: {
       ...current.operations,
       ...(input.operations ?? {}),
