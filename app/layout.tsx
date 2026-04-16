@@ -18,17 +18,71 @@ const sans = Inter({
   subsets: ["latin"],
 });
 
+const BASE_URL = "https://molotes.aionsite.com.mx";
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  name: "Molotitos Amor",
+  description: "Molotes artesanales en Ciudad del Carmen. Recetas tradicionales, ingredientes frescos y sabor casero en cada mordida.",
+  url: BASE_URL,
+  servesCuisine: "Mexican",
+  priceRange: "$",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Ciudad del Carmen",
+    addressRegion: "Campeche",
+    addressCountry: "MX",
+  },
+  openingHoursSpecification: [],
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const siteContent = await getSiteContent();
+    const title = siteContent.brand.metaTitle || "Molotitos Amor | Molotes en Ciudad del Carmen";
+    const description =
+      siteContent.brand.metaDescription ||
+      "Molotes artesanales en Ciudad del Carmen. Crujientes por fuera, suaves por dentro. Ordena en línea y recibe en casa.";
+
     return {
-      title: siteContent.brand.metaTitle || "Molotes El Tradicional",
-      description: siteContent.brand.metaDescription || "Sabor artesanal con un toque moderno.",
+      title,
+      description,
+      metadataBase: new URL(BASE_URL),
+      alternates: { canonical: BASE_URL },
+      openGraph: {
+        type: "website",
+        locale: "es_MX",
+        url: BASE_URL,
+        siteName: "Molotitos Amor",
+        title,
+        description,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true },
+      },
     };
   } catch {
     return {
-      title: "Molotes El Tradicional",
-      description: "Sabor artesanal con un toque moderno.",
+      title: "Molotitos Amor | Molotes en Ciudad del Carmen",
+      description:
+        "Molotes artesanales en Ciudad del Carmen. Crujientes por fuera, suaves por dentro. Ordena en línea y recibe en casa.",
+      metadataBase: new URL(BASE_URL),
+      alternates: { canonical: BASE_URL },
+      openGraph: {
+        type: "website",
+        locale: "es_MX",
+        url: BASE_URL,
+        siteName: "Molotitos Amor",
+      },
+      robots: { index: true, follow: true },
     };
   }
 }
@@ -44,6 +98,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="es">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+      </head>
       <body className={`${serif.variable} ${sans.variable} min-h-screen flex flex-col`}>
         <AppShell siteContent={siteContent}>{children}</AppShell>
       </body>
