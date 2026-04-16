@@ -125,16 +125,17 @@ export interface FooterContent {
   phoneValue: string;
   emailValue: string;
   hoursTitle: string;
-  mondayFridayLabel: string;
-  mondayFridayHours: string;
-  saturdayLabel: string;
-  saturdayHours: string;
-  sundayLabel: string;
-  sundayHours: string;
+  schedule: FooterScheduleItem[];
   copyrightText: string;
   privacyLabel: string;
   termsLabel: string;
   cookiesLabel: string;
+}
+
+export interface FooterScheduleItem {
+  id: string;
+  label: string;
+  hours: string;
 }
 
 export interface BrandContent {

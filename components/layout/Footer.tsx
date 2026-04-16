@@ -93,18 +93,12 @@ export const Footer = ({ siteContent }: { siteContent?: SiteContent | null }) =>
           <div>
             <h4 className="mb-6 text-lg font-bold uppercase tracking-widest text-mostaza">{footer.hoursTitle}</h4>
             <ul className="space-y-4 text-crema/70">
-              <li className="flex justify-between">
-                <span>{footer.mondayFridayLabel}</span>
-                <span className="text-crema">{footer.mondayFridayHours}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>{footer.saturdayLabel}</span>
-                <span className="text-crema">{footer.saturdayHours}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>{footer.sundayLabel}</span>
-                <span className="text-crema">{footer.sundayHours}</span>
-              </li>
+              {footer.schedule.map((item) => (
+                <li key={item.id} className="flex justify-between gap-4">
+                  <span>{item.label}</span>
+                  <span className="text-right text-crema">{item.hours}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

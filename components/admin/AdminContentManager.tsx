@@ -13,6 +13,7 @@ import { useAdminSiteContent } from "@/hooks/use-admin-site-content";
 import type {
   AdminContentSectionId,
   FrontendSectionConfig,
+  FooterScheduleItem,
   SiteContent,
 } from "@/types/site-content";
 
@@ -51,6 +52,32 @@ const updatePageSection = (
   pageSections: content.pageSections.map((section) =>
     section.key === sectionKey ? { ...section, ...patch } : section,
   ),
+});
+
+const createFooterScheduleItem = (): FooterScheduleItem => ({
+  id: crypto.randomUUID(),
+  label: "",
+  hours: "",
+});
+
+const updateFooterScheduleItem = (
+  content: SiteContent,
+  itemId: string,
+  patch: Partial<FooterScheduleItem>,
+): SiteContent => ({
+  ...content,
+  footer: {
+    ...content.footer,
+    schedule: content.footer.schedule.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
+  },
+});
+
+const removeFooterScheduleItem = (content: SiteContent, itemId: string): SiteContent => ({
+  ...content,
+  footer: {
+    ...content.footer,
+    schedule: content.footer.schedule.filter((item) => item.id !== itemId),
+  },
 });
 
 export const AdminContentManager = () => {
@@ -334,6 +361,99 @@ export const AdminContentManager = () => {
                     ))}
                   </div>
                 </article>
+
+                {currentSection.id === "footer" ? (
+                  <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-sm">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                      <div>
+                        <h4 className="text-lg font-serif font-bold text-sepia">Horarios dinamicos</h4>
+                        <p className="mt-1 text-sm text-sepia/60">
+                          Agrega, quita o reordena visualmente los horarios del footer como necesites.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  footer: {
+                                    ...prev.footer,
+                                    schedule: [...prev.footer.schedule, createFooterScheduleItem()],
+                                  },
+                                }
+                              : prev,
+                          )
+                        }
+                        className="inline-flex items-center justify-center rounded-xl bg-terracota px-4 py-3 font-bold text-crema transition-colors hover:bg-rojo-quemado"
+                      >
+                        Agregar horario
+                      </button>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      {form.footer.schedule.length === 0 ? (
+                        <p className="rounded-xl bg-crema px-4 py-3 text-sm text-sepia/60">
+                          Aun no hay horarios configurados. Agrega uno para empezar.
+                        </p>
+                      ) : null}
+
+                      {form.footer.schedule.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid gap-3 rounded-2xl border border-beige-tostado/20 bg-crema p-4 lg:grid-cols-[220px_1fr_auto]"
+                        >
+                          <label className="block">
+                            <span className="mb-2 block text-sm font-semibold text-sepia">Etiqueta</span>
+                            <input
+                              type="text"
+                              value={item.label}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev
+                                    ? updateFooterScheduleItem(prev, item.id, { label: event.target.value })
+                                    : prev,
+                                )
+                              }
+                              placeholder="Lunes, Miercoles, Sabado..."
+                              className="w-full rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+                            />
+                          </label>
+
+                          <label className="block">
+                            <span className="mb-2 block text-sm font-semibold text-sepia">Horario</span>
+                            <input
+                              type="text"
+                              value={item.hours}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev
+                                    ? updateFooterScheduleItem(prev, item.id, { hours: event.target.value })
+                                    : prev,
+                                )
+                              }
+                              placeholder="9:00 - 12:00"
+                              className="w-full rounded-xl border border-beige-tostado/30 bg-white px-4 py-3 focus:border-terracota focus:outline-none"
+                            />
+                          </label>
+
+                          <div className="flex items-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setForm((prev) => (prev ? removeFooterScheduleItem(prev, item.id) : prev))
+                              }
+                              className="inline-flex w-full items-center justify-center rounded-xl border border-rojo-quemado/30 px-4 py-3 font-semibold text-rojo-quemado transition-colors hover:bg-rojo-quemado/10"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ) : null}
               </>
             )}
           </section>

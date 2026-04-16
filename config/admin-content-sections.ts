@@ -36,7 +36,7 @@ export const adminContentSections: AdminContentSection[] = [
   {
     id: "footer",
     name: "Footer",
-    description: "Textos y enlaces visibles en el pie de pagina.",
+    description: "Textos, enlaces y encabezados visibles en el pie de pagina.",
     group: "system",
   },
   {
@@ -149,12 +149,6 @@ export const adminContentFieldRegistry: Partial<Record<AdminContentSectionId, Co
     { path: ["footer", "phoneValue"], label: "Telefono" },
     { path: ["footer", "emailValue"], label: "Email" },
     { path: ["footer", "hoursTitle"], label: "Titulo horario" },
-    { path: ["footer", "mondayFridayLabel"], label: "Lun a Vie etiqueta" },
-    { path: ["footer", "mondayFridayHours"], label: "Lun a Vie horario" },
-    { path: ["footer", "saturdayLabel"], label: "Sabados etiqueta" },
-    { path: ["footer", "saturdayHours"], label: "Sabados horario" },
-    { path: ["footer", "sundayLabel"], label: "Domingos etiqueta" },
-    { path: ["footer", "sundayHours"], label: "Domingos horario" },
     { path: ["footer", "copyrightText"], label: "Texto copyright", kind: "textarea" },
     { path: ["footer", "privacyLabel"], label: "Etiqueta privacidad" },
     { path: ["footer", "termsLabel"], label: "Etiqueta terminos" },

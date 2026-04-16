@@ -1,6 +1,58 @@
 import { defaultFrontendSections } from "@/config/site-sections";
 import { normalizeFrontendSections } from "@/lib/site-sections";
-import type { DeepPartial, SiteContent } from "@/types/site-content";
+import type { DeepPartial, FooterScheduleItem, SiteContent } from "@/types/site-content";
+
+const defaultFooterSchedule: FooterScheduleItem[] = [
+  { id: "monday-friday", label: "Lun - Vie:", hours: "9:00 - 21:00" },
+  { id: "saturday", label: "Sabados:", hours: "9:00 - 22:00" },
+  { id: "sunday", label: "Domingos:", hours: "10:00 - 18:00" },
+];
+
+interface LegacyFooterInput {
+  mondayFridayLabel?: string;
+  mondayFridayHours?: string;
+  saturdayLabel?: string;
+  saturdayHours?: string;
+  sundayLabel?: string;
+  sundayHours?: string;
+  schedule?: Array<Partial<FooterScheduleItem>>;
+}
+
+const normalizeFooterSchedule = (input?: LegacyFooterInput): FooterScheduleItem[] => {
+  if (input?.schedule?.length) {
+    return input.schedule.map((item, index) => {
+      const fallback = defaultFooterSchedule[index] ?? {
+        id: `schedule-${index + 1}`,
+        label: "",
+        hours: "",
+      };
+
+      return {
+        id: item.id ?? fallback.id,
+        label: item.label ?? fallback.label,
+        hours: item.hours ?? fallback.hours,
+      };
+    });
+  }
+
+  return [
+    {
+      id: "monday-friday",
+      label: input?.mondayFridayLabel ?? defaultFooterSchedule[0].label,
+      hours: input?.mondayFridayHours ?? defaultFooterSchedule[0].hours,
+    },
+    {
+      id: "saturday",
+      label: input?.saturdayLabel ?? defaultFooterSchedule[1].label,
+      hours: input?.saturdayHours ?? defaultFooterSchedule[1].hours,
+    },
+    {
+      id: "sunday",
+      label: input?.sundayLabel ?? defaultFooterSchedule[2].label,
+      hours: input?.sundayHours ?? defaultFooterSchedule[2].hours,
+    },
+  ];
+};
 
 export const defaultSiteContent: SiteContent = {
   brand: {
@@ -146,12 +198,7 @@ export const defaultSiteContent: SiteContent = {
     phoneValue: "+52 (222) 123 4567",
     emailValue: "hola@molotestradicional.com",
     hoursTitle: "Horario",
-    mondayFridayLabel: "Lun - Vie:",
-    mondayFridayHours: "9:00 - 21:00",
-    saturdayLabel: "Sabados:",
-    saturdayHours: "9:00 - 22:00",
-    sundayLabel: "Domingos:",
-    sundayHours: "10:00 - 18:00",
+    schedule: [...defaultFooterSchedule],
     copyrightText: "Copyright 2026 Molotes El Tradicional. Todos los derechos reservados.",
     privacyLabel: "Privacidad",
     termsLabel: "Terminos",
@@ -201,10 +248,25 @@ export const normalizeSiteContent = (input?: DeepPartial<SiteContent> | null): S
     ...defaultSiteContent.promotions,
     ...(input?.promotions ?? {}),
   },
-  footer: {
-    ...defaultSiteContent.footer,
-    ...(input?.footer ?? {}),
-  },
+  footer: (() => {
+    const footerInput = (input?.footer ?? {}) as Partial<SiteContent["footer"]> & LegacyFooterInput;
+    const {
+      schedule: _schedule,
+      mondayFridayLabel: _mondayFridayLabel,
+      mondayFridayHours: _mondayFridayHours,
+      saturdayLabel: _saturdayLabel,
+      saturdayHours: _saturdayHours,
+      sundayLabel: _sundayLabel,
+      sundayHours: _sundayHours,
+      ...footerRest
+    } = footerInput;
+
+    return {
+      ...defaultSiteContent.footer,
+      ...footerRest,
+      schedule: normalizeFooterSchedule(footerInput),
+    };
+  })(),
   operations: {
     ...defaultSiteContent.operations,
     ...(input?.operations ?? {}),
