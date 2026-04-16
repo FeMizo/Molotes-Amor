@@ -1,6 +1,6 @@
 import type { Combo } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
-import type { Order, OrderStatus } from "@/types/order";
+import type { Order, OrderInventoryAdjustment, OrderStatus } from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
 import type {
@@ -175,6 +175,31 @@ export const localOrderRepository: OrderRepository = {
     await writeStore(store);
     return updated;
   },
+  async remove(id, inventoryAdjustments: OrderInventoryAdjustment[] = []) {
+    const store = await readStore();
+    const idx = store.orders.findIndex((order) => order.id === id);
+    if (idx < 0) {
+      throw new Error("Pedido no encontrado");
+    }
+
+    for (const adjustment of inventoryAdjustments) {
+      const inventoryIdx = store.inventory.findIndex(
+        (record) => record.productId === adjustment.productId,
+      );
+
+      if (inventoryIdx < 0) {
+        continue;
+      }
+
+      store.inventory[inventoryIdx] = {
+        ...store.inventory[inventoryIdx],
+        stock: store.inventory[inventoryIdx].stock + adjustment.quantity,
+      };
+    }
+
+    store.orders.splice(idx, 1);
+    await writeStore(store);
+  },
 };
 
 export const localComboRepository: ComboRepository = {
@@ -275,6 +300,7 @@ const remoteStub: Repositories = {
     create: notImplemented,
     updateStatus: notImplemented,
     updateItems: notImplemented,
+    remove: notImplemented,
   },
   siteContent: {
     get: notImplemented,

@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api";
-import { getOrderById } from "@/services/orders/order.service";
+import { deleteOrder, getOrderById } from "@/services/orders/order.service";
 
 export const runtime = "nodejs";
 
@@ -13,5 +13,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return ok(order);
   } catch (error) {
     return fail(error instanceof Error ? error.message : "No se pudo obtener pedido.", 500);
+  }
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    await deleteOrder(id);
+    return ok({ ok: true });
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "No se pudo eliminar pedido.", 500);
   }
 }

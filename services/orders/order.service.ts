@@ -6,7 +6,12 @@ import {
   generatePaymentRef,
   isTransferConfigReady,
 } from "@/lib/payment";
-import type { CreateOrderInput, Order, OrderStatus } from "@/types/order";
+import type {
+  CreateOrderInput,
+  Order,
+  OrderInventoryAdjustment,
+  OrderStatus,
+} from "@/types/order";
 
 const toOrderId = (): string => `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -123,10 +128,15 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
     }
   }
 
+  const inventoryAdjustments: OrderInventoryAdjustment[] = [];
   for (const [productId, requiredQuantity] of stockRequirements.entries()) {
     const stock = inventoryMap.get(productId);
     if (stock && !stock.allowBackorder) {
       await repos.inventory.adjustStock(productId, -requiredQuantity);
+      inventoryAdjustments.push({
+        productId,
+        quantity: requiredQuantity,
+      });
     }
   }
 
@@ -165,6 +175,8 @@ export const createOrder = async (input: CreateOrderInput): Promise<Order> => {
           },
     notes: input.notes,
     deliveryDay: input.deliveryDay,
+    inventoryAdjustments,
+    inventoryAdjustmentsTracked: true,
   };
 
   return repos.orders.create(order);
@@ -178,6 +190,48 @@ export const listOrders = async (): Promise<Order[]> => {
 export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order> => {
   const repos = getRepositories();
   return repos.orders.updateStatus(id, status);
+};
+
+const resolveInventoryAdjustments = async (order: Order): Promise<OrderInventoryAdjustment[]> => {
+  if (order.inventoryAdjustmentsTracked) {
+    return order.inventoryAdjustments ?? [];
+  }
+
+  const repos = getRepositories();
+  const [products, combos] = await Promise.all([repos.products.list(), repos.combos.list()]);
+  const productMap = new Map(products.map((product) => [product.id, product]));
+  const comboMap = new Map(combos.map((combo) => [combo.id, combo]));
+  const adjustments = new Map<string, number>();
+
+  for (const item of order.items) {
+    const combo = comboMap.get(item.productId);
+    if (combo) {
+      for (const comboItem of combo.items) {
+        const product = productMap.get(comboItem.productId);
+        if (!product) {
+          continue;
+        }
+
+        adjustments.set(
+          comboItem.productId,
+          (adjustments.get(comboItem.productId) ?? 0) + comboItem.quantity * item.quantity,
+        );
+      }
+      continue;
+    }
+
+    if (productMap.has(item.productId)) {
+      adjustments.set(
+        item.productId,
+        (adjustments.get(item.productId) ?? 0) + item.quantity,
+      );
+    }
+  }
+
+  return [...adjustments.entries()].map(([productId, quantity]) => ({
+    productId,
+    quantity,
+  }));
 };
 
 export const updateOrderItems = async (
@@ -209,4 +263,16 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
   }
 
   return ensureOrdersHavePaymentRefs([order]).orders[0];
+};
+
+export const deleteOrder = async (id: string): Promise<void> => {
+  const repos = getRepositories();
+  const order = await repos.orders.findById(id);
+
+  if (!order) {
+    throw new Error("Pedido no encontrado");
+  }
+
+  const inventoryAdjustments = await resolveInventoryAdjustments(order);
+  await repos.orders.remove(id, inventoryAdjustments);
 };

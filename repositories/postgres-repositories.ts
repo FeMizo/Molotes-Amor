@@ -4,7 +4,13 @@ import { dbQuery, withDbClient } from "@/lib/db";
 import { normalizeSiteContent } from "@/data/site-content";
 import type { Combo, ComboItem } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
-import type { Order, OrderDeliveryDay, OrderItem, OrderStatus } from "@/types/order";
+import type {
+  Order,
+  OrderDeliveryDay,
+  OrderInventoryAdjustment,
+  OrderItem,
+  OrderStatus,
+} from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent } from "@/types/site-content";
 import type {
@@ -79,6 +85,8 @@ interface OrderRow {
   payment_clabe: string | null;
   notes: string | null;
   delivery_day: string | null;
+  inventory_adjustments: OrderInventoryAdjustment[] | string | null;
+  inventory_adjustments_tracked: boolean;
 }
 
 interface OrderItemRow {
@@ -172,6 +180,22 @@ const mapOrderRow = (row: OrderRow, items: OrderItem[]): Order => ({
   },
   notes: row.notes ?? undefined,
   deliveryDay: (row.delivery_day as OrderDeliveryDay) ?? undefined,
+  inventoryAdjustmentsTracked: row.inventory_adjustments_tracked,
+  inventoryAdjustments: (() => {
+    const payload =
+      typeof row.inventory_adjustments === "string"
+        ? JSON.parse(row.inventory_adjustments)
+        : row.inventory_adjustments;
+
+    if (!payload) {
+      return undefined;
+    }
+
+    return (payload as OrderInventoryAdjustment[]).map((item) => ({
+      productId: item.productId,
+      quantity: Number(item.quantity),
+    }));
+  })(),
 });
 
 const loadOrderItems = async (client: PoolClient, orderIds: string[]): Promise<Map<string, OrderItem[]>> => {
@@ -615,7 +639,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const ordersResult = await client.query<OrderRow>(
         `
-          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day, inventory_adjustments, inventory_adjustments_tracked
           FROM orders
           ORDER BY created_at DESC
         `,
@@ -631,7 +655,7 @@ export const postgresOrderRepository: OrderRepository = {
     return withDbClient(async (client) => {
       const orderResult = await client.query<OrderRow>(
         `
-          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
+          SELECT id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day, inventory_adjustments, inventory_adjustments_tracked
           FROM orders
           WHERE id = $1
         `,
@@ -674,9 +698,11 @@ export const postgresOrderRepository: OrderRepository = {
               payment_account_number,
               payment_clabe,
               notes,
-              delivery_day
+              delivery_day,
+              inventory_adjustments,
+              inventory_adjustments_tracked
             ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
             )
           `,
           [
@@ -700,6 +726,8 @@ export const postgresOrderRepository: OrderRepository = {
             order.payment?.clabe ?? null,
             order.notes ?? null,
             order.deliveryDay ?? null,
+            JSON.stringify(order.inventoryAdjustments ?? []),
+            order.inventoryAdjustmentsTracked ?? true,
           ],
         );
 
@@ -736,7 +764,7 @@ export const postgresOrderRepository: OrderRepository = {
         UPDATE orders
         SET status = $2
         WHERE id = $1
-        RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes
+        RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day, inventory_adjustments, inventory_adjustments_tracked
       `,
       [id, status],
     );
@@ -758,7 +786,7 @@ export const postgresOrderRepository: OrderRepository = {
             UPDATE orders
             SET subtotal = $2, total = $3
             WHERE id = $1
-            RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day
+            RETURNING id, payment_ref, subtotal, total, status, created_at, user_id, user_username, customer_name, customer_phone, customer_email, customer_address, payment_method, payment_transfer_reference, payment_bank, payment_account_holder, payment_account_number, payment_clabe, notes, delivery_day, inventory_adjustments, inventory_adjustments_tracked
           `,
           [id, subtotal, total],
         );
@@ -781,6 +809,69 @@ export const postgresOrderRepository: OrderRepository = {
 
         await client.query("COMMIT");
         return mapOrderRow(rows[0], items);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+  },
+  async remove(id, inventoryAdjustments = []) {
+    return withDbClient(async (client) => {
+      await client.query("BEGIN");
+
+      try {
+        const orderResult = await client.query<{ id: string }>(
+          `
+            SELECT id
+            FROM orders
+            WHERE id = $1
+            FOR UPDATE
+          `,
+          [id],
+        );
+
+        if (!orderResult.rows[0]) {
+          throw new Error("Pedido no encontrado");
+        }
+
+        const adjustments = new Map<string, number>();
+        for (const adjustment of inventoryAdjustments) {
+          if (adjustment.quantity <= 0) {
+            continue;
+          }
+          adjustments.set(
+            adjustment.productId,
+            (adjustments.get(adjustment.productId) ?? 0) + adjustment.quantity,
+          );
+        }
+
+        for (const [productId, quantity] of adjustments.entries()) {
+          const inventoryResult = await client.query<InventoryRow>(
+            `
+              SELECT product_id, stock, min_stock, allow_backorder
+              FROM inventory
+              WHERE product_id = $1
+              FOR UPDATE
+            `,
+            [productId],
+          );
+
+          if (!inventoryResult.rows[0]) {
+            continue;
+          }
+
+          await client.query(
+            `
+              UPDATE inventory
+              SET stock = stock + $2
+              WHERE product_id = $1
+            `,
+            [productId, quantity],
+          );
+        }
+
+        await client.query(`DELETE FROM orders WHERE id = $1`, [id]);
+        await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");
         throw error;

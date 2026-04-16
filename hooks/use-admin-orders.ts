@@ -49,5 +49,10 @@ export const useAdminOrders = () => {
     return updated;
   };
 
-  return { orders, loading, error, reload: load, updateStatus, updateItems };
+  const deleteOrder = async (id: string) => {
+    await adminClient.deleteOrder(id);
+    setOrders((prev) => prev.filter((order) => order.id !== id));
+  };
+
+  return { orders, loading, error, reload: load, updateStatus, updateItems, deleteOrder };
 };

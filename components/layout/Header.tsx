@@ -35,8 +35,16 @@ export const Header = ({ siteContent }: { siteContent?: SiteContent | null }) =>
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    if (!mobileOpen) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      setMobileOpen(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [mobileOpen, pathname]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

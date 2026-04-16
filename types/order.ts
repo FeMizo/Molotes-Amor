@@ -8,6 +8,11 @@ export type OrderStatus =
 
 export type OrderPaymentMethod = "efectivo" | "transferencia";
 
+export interface OrderInventoryAdjustment {
+  productId: string;
+  quantity: number;
+}
+
 export interface OrderItem {
   productId: string;
   productName: string;
@@ -48,6 +53,8 @@ export interface Order {
   payment?: OrderPayment;
   notes?: string;
   deliveryDay?: OrderDeliveryDay;
+  inventoryAdjustments?: OrderInventoryAdjustment[];
+  inventoryAdjustmentsTracked?: boolean;
 }
 
 export interface CreateOrderItemInput {

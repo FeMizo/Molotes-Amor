@@ -25,7 +25,7 @@ interface DraftItem {
 }
 
 export const AdminOrdersManager = () => {
-  const { orders, loading, error, updateStatus, updateItems } = useAdminOrders();
+  const { orders, loading, error, updateStatus, updateItems, deleteOrder } = useAdminOrders();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
@@ -39,6 +39,7 @@ export const AdminOrdersManager = () => {
   const [catalogProducts, setCatalogProducts] = useState<{ id: string; name: string; price: number }[]>([]);
   const [addProductId, setAddProductId] = useState("");
   const [addQuantity, setAddQuantity] = useState(1);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -159,6 +160,35 @@ export const AdminOrdersManager = () => {
       setFeedbackError(err instanceof Error ? err.message : "No se pudo actualizar el pedido.");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const removeSelectedOrder = async () => {
+    if (!selectedOrder) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Eliminar el pedido ${getOrderPaymentRef(selectedOrder)}? Esta accion lo borra definitivamente y restaura inventario cuando es posible.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setFeedback(null);
+    setFeedbackError(null);
+
+    try {
+      await deleteOrder(selectedOrder.id);
+      setSelectedOrderId(null);
+      closeEditMode();
+      setFeedback("Pedido eliminado.");
+    } catch (err) {
+      setFeedbackError(err instanceof Error ? err.message : "No se pudo eliminar el pedido.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -332,10 +362,19 @@ export const AdminOrdersManager = () => {
                   >
                     {adminOrderStatuses.map((status) => (
                       <option value={status} key={status}>
-                        {status}
-                      </option>
-                    ))}
+                      {status}
+                    </option>
+                  ))}
                   </select>
+                  <button
+                    type="button"
+                    onClick={() => void removeSelectedOrder()}
+                    disabled={deleteLoading}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rojo-quemado/30 px-4 py-3 text-sm font-semibold text-rojo-quemado transition-colors hover:bg-rojo-quemado/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Trash2 size={16} />
+                    {deleteLoading ? "Eliminando..." : "Eliminar pedido"}
+                  </button>
                 </div>
               </div>
 

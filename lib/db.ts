@@ -116,7 +116,9 @@ const createSchema = async (client: PoolClient): Promise<void> => {
       payment_account_number TEXT,
       payment_clabe TEXT,
       notes TEXT,
-      delivery_day TEXT
+      delivery_day TEXT,
+      inventory_adjustments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      inventory_adjustments_tracked BOOLEAN NOT NULL DEFAULT FALSE
     );
   `);
 
@@ -179,6 +181,16 @@ const createSchema = async (client: PoolClient): Promise<void> => {
   await client.query(`
     ALTER TABLE orders
     ADD COLUMN IF NOT EXISTS delivery_day TEXT;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS inventory_adjustments JSONB NOT NULL DEFAULT '[]'::jsonb;
+  `);
+
+  await client.query(`
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS inventory_adjustments_tracked BOOLEAN NOT NULL DEFAULT FALSE;
   `);
 
   await client.query(`
@@ -410,15 +422,17 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
             payment_transfer_reference,
             payment_bank,
             payment_account_holder,
-            payment_account_number,
-            payment_clabe,
-            notes,
-            delivery_day
-          ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
-          )
-          ON CONFLICT (id) DO NOTHING
-        `,
+          payment_account_number,
+          payment_clabe,
+          notes,
+          delivery_day,
+          inventory_adjustments,
+          inventory_adjustments_tracked
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
+        )
+        ON CONFLICT (id) DO NOTHING
+      `,
         [
           order.id,
           order.paymentRef,
@@ -440,6 +454,8 @@ const seedDatabase = async (client: PoolClient): Promise<void> => {
           order.payment?.clabe ?? null,
           order.notes ?? null,
           order.deliveryDay ?? null,
+          JSON.stringify(order.inventoryAdjustments ?? []),
+          Boolean(order.inventoryAdjustmentsTracked),
         ],
       );
 

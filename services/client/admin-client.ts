@@ -119,6 +119,10 @@ export const adminClient = {
       method: "PATCH",
       body: JSON.stringify({ items }),
     }),
+  deleteOrder: (id: string) =>
+    httpRequest<{ ok: true }>(`/api/admin/orders/${id}`, {
+      method: "DELETE",
+    }),
   createOrder: (payload: CreateOrderInput) =>
     httpRequest<Order>("/api/admin/orders", {
       method: "POST",

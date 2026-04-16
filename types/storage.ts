@@ -1,6 +1,11 @@
 import type { Combo } from "@/types/combo";
 import type { Inventory } from "@/types/inventory";
-import type { Order, OrderItem, OrderStatus } from "@/types/order";
+import type {
+  Order,
+  OrderInventoryAdjustment,
+  OrderItem,
+  OrderStatus,
+} from "@/types/order";
 import type { Product } from "@/types/product";
 import type { SiteContent, SiteContentRepository } from "@/types/site-content";
 
@@ -41,6 +46,7 @@ export interface OrderRepository {
   create(order: Order): Promise<Order>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
   updateItems(id: string, items: OrderItem[], subtotal: number, total: number): Promise<Order>;
+  remove(id: string, inventoryAdjustments?: OrderInventoryAdjustment[]): Promise<void>;
 }
 
 export type { SiteContentRepository };
