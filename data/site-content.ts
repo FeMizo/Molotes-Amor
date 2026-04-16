@@ -5,8 +5,8 @@ import type { DeepPartial, SiteContent } from "@/types/site-content";
 export const defaultSiteContent: SiteContent = {
   brand: {
     logo: "",
-    metaTitle: "Molotes El Tradicional",
-    metaDescription: "Sabor artesanal con un toque moderno.",
+    metaTitle: "Molotes en Ciudad del Carmen | Molotitos Amor",
+    metaDescription: "Molotes artesanales en Ciudad del Carmen. Crujientes por fuera, suaves por dentro. Ordena en línea y recibe en casa.",
   },
   home: {
     heroBadge: "Tradicion poblana desde 1985",
