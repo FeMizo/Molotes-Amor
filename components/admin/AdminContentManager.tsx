@@ -310,55 +310,65 @@ export const AdminContentManager = () => {
 
                 <article className="rounded-[1.5rem] border border-beige-tostado/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-terracota/20 hover:bg-crema/35 hover:shadow-sm">
                   <div className="grid gap-4 lg:grid-cols-2">
-                    {sectionFields.map((field) => (
-                      <label key={`${field.path[0]}.${field.path[1]}`} className="block">
-                        <span className="mb-2 block text-sm font-semibold text-sepia">{field.label}</span>
-                        {field.kind === "image" ? (
-                          <ImageUploadInput
-                            value={String(getFieldValue(form, field.path) ?? "")}
-                            onChange={(url) =>
-                              setForm((prev) =>
-                                prev ? setFieldValue(prev, field.path, url) : prev,
-                              )
-                            }
-                          />
-                        ) : field.kind === "textarea" ? (
-                          <textarea
-                            value={String(getFieldValue(form, field.path) ?? "")}
-                            onChange={(event) =>
-                              setForm((prev) =>
-                                prev ? setFieldValue(prev, field.path, event.target.value) : prev,
-                              )
-                            }
-                            className="min-h-28 w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
-                          />
-                        ) : field.kind === "switch" ? (
-                          <label className="inline-flex w-full items-center gap-3 rounded-xl bg-crema px-4 py-3 font-semibold text-sepia">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(getFieldValue(form, field.path))}
-                              onChange={(event) =>
+                    {sectionFields.map((field, index) => {
+                      const label = field.label.toLowerCase();
+                      const isWide =
+                        index === 0 || ["nombre", "titulo"].some((term) => label.includes(term));
+                      return (
+                        <label
+                          key={`${field.path[0]}.${field.path[1]}`}
+                          className={`block ${isWide ? "col-span-full" : ""}`}
+                        >
+                          <span className="mb-2 block text-sm font-semibold text-sepia">
+                            {field.label}
+                          </span>
+                          {field.kind === "image" ? (
+                            <ImageUploadInput
+                              value={String(getFieldValue(form, field.path) ?? "")}
+                              onChange={(url) =>
                                 setForm((prev) =>
-                                  prev ? setFieldValue(prev, field.path, event.target.checked) : prev,
+                                  prev ? setFieldValue(prev, field.path, url) : prev,
                                 )
                               }
                             />
-                            {Boolean(getFieldValue(form, field.path)) ? "Activo" : "Inactivo"}
-                          </label>
-                        ) : (
-                          <input
-                            type="text"
-                            value={String(getFieldValue(form, field.path) ?? "")}
-                            onChange={(event) =>
-                              setForm((prev) =>
-                                prev ? setFieldValue(prev, field.path, event.target.value) : prev,
-                              )
-                            }
-                            className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
-                          />
-                        )}
-                      </label>
-                    ))}
+                          ) : field.kind === "textarea" ? (
+                            <textarea
+                              value={String(getFieldValue(form, field.path) ?? "")}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev ? setFieldValue(prev, field.path, event.target.value) : prev,
+                                )
+                              }
+                              className="min-h-28 w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                            />
+                          ) : field.kind === "switch" ? (
+                            <label className="inline-flex w-full items-center gap-3 rounded-xl bg-crema px-4 py-3 font-semibold text-sepia">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(getFieldValue(form, field.path))}
+                                onChange={(event) =>
+                                  setForm((prev) =>
+                                    prev ? setFieldValue(prev, field.path, event.target.checked) : prev,
+                                  )
+                                }
+                              />
+                              {Boolean(getFieldValue(form, field.path)) ? "Activo" : "Inactivo"}
+                            </label>
+                          ) : (
+                            <input
+                              type="text"
+                              value={String(getFieldValue(form, field.path) ?? "")}
+                              onChange={(event) =>
+                                setForm((prev) =>
+                                  prev ? setFieldValue(prev, field.path, event.target.value) : prev,
+                                )
+                              }
+                              className="w-full rounded-xl border border-beige-tostado/30 bg-crema px-4 py-3 focus:border-terracota focus:outline-none"
+                            />
+                          )}
+                        </label>
+                      );
+                    })}
                   </div>
                 </article>
 
